@@ -1,0 +1,56 @@
+{
+  "skill_name": "react-rules",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Crea una aplicación React en el directorio actual para gestionar una lista de tareas: agregar tareas con un formulario (título obligatorio de al menos 3 caracteres y prioridad baja/media/alta), marcarlas como completadas, filtrarlas por estado y ver un contador de pendientes en el header. Las tareas se guardan en el navegador.",
+      "expected_output": "Proyecto Vite + React 19.3.1+ + TypeScript generado con el script, layout header/nav/main/footer con Tailwind, store de Zustand con persist, formulario con React Hook Form + Zod, filtro y contador derivados en el render (sin useEffect), build y lint sin errores.",
+      "files": [],
+      "expectations": [
+        "package.json con react >= 19.3.1",
+        "Archivos en TypeScript (.ts/.tsx), sin .js/.jsx en src",
+        "Tailwind CSS 4 configurado con @tailwindcss/vite e @import 'tailwindcss'",
+        "Layout con header, nav, main y footer",
+        "Store de Zustand creado con create() con estado y acciones",
+        "Las acciones del store no mutan el estado (sin push/splice/asignación directa)",
+        "Esquema Zod para el formulario y tipo con z.infer",
+        "Formulario con useForm + zodResolver",
+        "Contador de pendientes y lista filtrada calculados sin useEffect",
+        "npm run build termina sin errores",
+        "npm run lint termina sin errores"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Tengo una API REST en http://localhost:8080/api/customers que devuelve clientes con id, name, lastName, email y city (y acepta POST/PUT/DELETE). Crea un proyecto React en el directorio actual con una página que liste los clientes con un buscador, otra para crear/editar un cliente con validación, y que la lista se actualice sola después de guardar o eliminar.",
+      "expected_output": "Proyecto generado con el script; esquemas Zod de respuesta y formulario, servicio con lib/http.ts, hooks de TanStack Query (useQuery/useMutation con invalidateQueries), páginas con rutas en el router y en la navbar, formulario RHF + Zod (z.email()), buscador derivado con useMemo, proxy de Vite a :8080.",
+      "files": [],
+      "expectations": [
+        "Usa @tanstack/react-query con useQuery para listar",
+        "Mutaciones con useMutation que invalidan la query de la lista en onSuccess",
+        "Ningún componente usa useEffect + fetch para traer datos",
+        "Respuestas de la API validadas con esquemas Zod",
+        "Email validado con z.email()",
+        "Formulario con React Hook Form + zodResolver",
+        "Rutas nuevas registradas en App.tsx y en la navbar",
+        "Lista filtrada por el buscador derivada en el render (sin useEffect)",
+        "Hooks de datos en src/hooks y llamadas HTTP en src/services",
+        "npm run build termina sin errores"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Revisa y arregla este componente para que siga las buenas prácticas de React:\n\n```tsx\nimport { useEffect, useState } from 'react'\n\nexport function UserList({ users, onSelect }: { users: any[]; onSelect: (u: any) => void }) {\n  const [filter, setFilter] = useState('')\n  const [filtered, setFiltered] = useState<any[]>([])\n  const [selected, setSelected] = useState<any>(null)\n\n  useEffect(() => {\n    setFiltered(users.filter(u => u.name.includes(filter)))\n  }, [users, filter])\n\n  useEffect(() => {\n    if (selected) onSelect(selected)\n  }, [selected])\n\n  if (users.length === 0) return <p>Sin usuarios</p>\n  const [hover, setHover] = useState(false)\n\n  function sortByName() {\n    users.sort((a, b) => a.name.localeCompare(b.name))\n    setFiltered(users)\n  }\n\n  return (<div>...</div>)\n}\n```",
+      "expected_output": "Componente corregido: tipos en lugar de any, lista filtrada derivada (useMemo), onSelect llamado desde el handler, hook movido antes del return anticipado, orden sin mutar la prop (toSorted/copia), con explicación de cada cambio.",
+      "files": [],
+      "expectations": [
+        "Elimina el useEffect que calcula la lista filtrada y la deriva en el render",
+        "Llama a onSelect desde el event handler en vez de un useEffect",
+        "Mueve useState(hover) antes del return anticipado (o lo elimina)",
+        "No muta la prop users al ordenar (usa toSorted o una copia)",
+        "Reemplaza any por tipos explícitos",
+        "Explica en español el motivo de cada cambio"
+      ]
+    }
+  ]
+}
