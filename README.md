@@ -143,6 +143,10 @@ El layout usa HTML semántico: `header` con el nombre de la app y la barra de na
 
 Las reglas completas están en la skill [`react-rules`](.claude/skills/react-rules/SKILL.md).
 
+## Desarrollo guiado por especificaciones (SDD)
+
+El dashboard se construye por fases a partir de especificaciones: cada fase tiene su `spec.md` (qué y por qué), `plan.md` (cómo) y `tasks.md` (tareas en orden). El índice, el estado de cada fase y la cobertura de los requisitos están en [`specs/README.md`](specs/README.md). La fase 01 modifica el backend y sus specs viven en el repositorio de la API (`specs/01-paginacion-filtros-admin/`).
+
 ## Desarrollo con Claude Code
 
 El proyecto incluye skills de Claude Code registradas en [`CLAUDE.md`](CLAUDE.md):
@@ -151,5 +155,6 @@ El proyecto incluye skills de Claude Code registradas en [`CLAUDE.md`](CLAUDE.md
 |---|---|
 | `react-rules` | Genera el proyecto y aplica la estructura, el stack y las Reglas de React al escribir código |
 | `frontend-design` | Dirección visual de la interfaz: paleta, tipografía, layout y textos |
+| `sdd-next-task` | Ejecuta las tareas del SDD de una en una: implementa, verifica, hace commit y se detiene para revisión |
 
 La documentación del backend que usa Claude como referencia está en el [`README.md`](https://github.com/andresguzf/curso-springboot-claude-api/blob/main/README.md) y el [`CLAUDE.md`](https://github.com/andresguzf/curso-springboot-claude-api/blob/main/CLAUDE.md) del backend (en local, en la carpeta hermana `../3-spring-api`).

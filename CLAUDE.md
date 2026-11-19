@@ -24,6 +24,16 @@ Puntos que afectan directamente al frontend (detalle en esos archivos):
 - Los errores llegan como `ProblemDetail` (`title`, `detail`, `status`); la validación agrega `errors` (campo → mensaje), útil para `setError` en React Hook Form.
 - Si el backend cambia (endpoints, campos de un DTO, reglas de seguridad), actualiza los esquemas Zod y servicios del frontend en el mismo cambio.
 
+## Desarrollo guiado por especificaciones (SDD)
+
+El dashboard (frontend) y los cambios que necesita en el backend se construyen con SDD, en formato estilo Spec Kit (solo Markdown). Índice y estado de las fases: [`specs/README.md`](specs/README.md).
+
+- `specs/constitution.md` (frontend) y `../3-spring-api/specs/constitution.md` (backend): reglas que no se negocian.
+- Cada fase tiene `spec.md` (qué y por qué: historias, criterios de aceptación, `RF-NN-xx`), `plan.md` (cómo: contrato, decisiones, archivos, trazabilidad) y `tasks.md` (tareas con checkbox, dependencias, verificación y mensaje de commit).
+- Orden: 01 backend (`../3-spring-api/specs/01-paginacion-filtros-admin/`, tareas `A-xx`) → 02 base (`B-xx`) → 03 autenticación (`C-xx`) → 04 clientes (`D-xx`) → 05 usuarios (`E-xx`) → 06 pulido (`F-xx`). Las fases 02 y 03 no dependen del backend nuevo; la 04 necesita A-06 y la 05 necesita A-09 y A-10.
+- Las tareas se ejecutan **una a una** con la skill `sdd-next-task`: implementar, verificar, marcar `[x]`, commit en el repo de la tarea y pausa para revisión. Sin push ni merge a `main` sin el OK del usuario al cerrar cada fase.
+- Si la implementación se desvía de la spec, se actualiza `spec.md` / `plan.md` en el mismo commit.
+
 ## Comandos
 
 Una vez generado el proyecto:
@@ -41,6 +51,8 @@ npm run preview   # sirve el build
 |---|---|---|
 | `react-rules` | `.claude/skills/react-rules/` | Genera proyectos React con TypeScript (React 19.3.1+, Vite, Tailwind CSS 4, React Router) con estructura pages / components / hooks / stores / schemas / services, y aplica las Reglas de React: Zustand para estado global, Zod para validar, React Hook Form + Zod en formularios, TanStack Query para datos de API, `useEffect` solo para sistemas externos y layout semántico `header` / `nav` / `main` / `footer`. |
 | `frontend-design` | `.claude/skills/frontend-design/` | Dirección visual intencional y distintiva para UI nueva o rediseños: paleta, tipografía, layout, movimiento y textos de la interfaz, evitando el aspecto de plantilla genérica. Trabaja en dos pasadas: plan de diseño (tokens de color, tipografía, layout, principios) revisado contra el brief y luego el código, con autocrítica final. |
+
+| `sdd-next-task` | `.claude/skills/sdd-next-task/` | Ejecuta el SDD tarea por tarea: lee el índice `specs/README.md`, la constitución, la spec, el plan y el `tasks.md` de la fase (frontend o backend), toma la siguiente tarea pendiente con dependencias hechas (o la pedida por ID), la implementa, la verifica, marca el checkbox, hace commit y se detiene para revisión. |
 
 `frontend-design` viene del repositorio `anthropics/skills` y se instaló con el CLI de skills: el original vive en `.agents/skills/frontend-design/`, `.claude/skills/frontend-design` es un **symlink** a esa carpeta y la versión (commit y hash) queda fijada en `skills-lock.json`. No edites sus archivos a mano: se reemplazan al actualizarla.
 
@@ -69,7 +81,15 @@ Usa `frontend-design` cuando el usuario:
 - Pida crear una UI nueva donde la apariencia importa (página de inicio, dashboard, login, header/navbar/footer con identidad propia).
 - Pida definir o cambiar la paleta, las fuentes, el espaciado, las animaciones o los textos de la interfaz (botones, mensajes de error, estados vacíos).
 
-Cómo se combinan las dos skills:
+Usa `sdd-next-task` cuando el usuario:
+
+- Diga "siguiente tarea", "continúa con el SDD", "sigue con la spec" o "avanza con la fase".
+- Pida ejecutar una tarea por su ID (`A-04`, `B-01`, `D-03`…).
+- Pregunte qué tarea sigue o en qué estado están las specs.
+
+Al ejecutar una tarea, `sdd-next-task` carga además `react-rules` / `frontend-design` (frontend) o `spring-boot-best-practices` (backend) según lo que toque la tarea.
+
+Cómo se combinan `react-rules` y `frontend-design`:
 
 - En una UI nueva se usan **ambas**: `react-rules` manda en la estructura, el stack, el layout semántico y las reglas de React; `frontend-design` manda en la dirección visual (paleta, tipografía, composición, copy).
 - Los tokens del plan de diseño se implementan con Tailwind CSS 4: colores y fuentes en un bloque `@theme` de `src/index.css` y se usan como clases (`bg-primary`, `font-display`), no con CSS suelto por componente. La paleta `slate` de la plantilla base es solo un punto de partida neutro.
