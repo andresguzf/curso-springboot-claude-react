@@ -28,7 +28,7 @@ con A-09 (listado de usuarios) y A-10 (último admin) hechas.
   - Verificación: `npm run build && npm run lint`; en el navegador: crear USER y ADMIN, editar sin cambiar la contraseña, email duplicado
   - Commit: "Agrega ficha, alta y edición de usuarios"
 
-- [ ] **E-04** Acciones rápidas, eliminación y reglas de administradores en la UI
+- [x] **E-04** Acciones rápidas, eliminación y reglas de administradores en la UI
   - Depende de: E-03, B-07, A-10
   - Cubre: RF-05-05, RF-05-06, RF-05-07, RF-05-08, RF-05-09, RNF-05-01, RNF-05-02
   - Archivos: `src/lib/userRules.ts`, `src/components/users/UserTable.tsx`, `src/pages/{UsersPage,UserDetailPage}.tsx`, `src/hooks/useUsers.ts` (`useDeleteUser`)

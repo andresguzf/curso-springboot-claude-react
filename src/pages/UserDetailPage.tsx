@@ -1,15 +1,18 @@
 import type { ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { buttonClassName } from '../components/ui/buttonStyles.ts'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog.tsx'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
 import { RoleBadge } from '../components/users/RoleBadge.tsx'
+import { UserActions } from '../components/users/UserActions.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useListPath } from '../hooks/useListPath.ts'
-import { useUser } from '../hooks/useUsers.ts'
+import { useUserActions } from '../hooks/useUserActions.ts'
+import { useActiveAdminCount, useUser } from '../hooks/useUsers.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { formatDateTime } from '../lib/format.ts'
 import { HttpError } from '../lib/http.ts'
@@ -23,14 +26,17 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-// Ficha de usuario (ruta dentro de RequireRole ADMIN). Acciones: editar (E-03); cambiar rol,
-// habilitar / deshabilitar y eliminar llegan en E-04.
+// Ficha de usuario (ruta dentro de RequireRole ADMIN), con editar y las mismas acciones que la tabla.
 export function UserDetailPage() {
   const params = useParams()
   const id = Number(params.id)
   const user = useUser(id)
   const { user: me } = useAuth()
   const { listPath, listState } = useListPath('/users')
+  const navigate = useNavigate()
+  const activeAdmins = useActiveAdminCount()
+  // Tras eliminar, la ficha ya no existe: se vuelve al listado.
+  const actions = useUserActions({ onDeleted: () => navigate(listPath) })
   const backLink = (
     <Link to={listPath} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
       Volver a usuarios
@@ -103,6 +109,18 @@ export function UserDetailPage() {
           {data.updatedAt ? <span className="tabular-nums">{formatDateTime(data.updatedAt)}</span> : 'Sin cambios'}
         </Field>
       </dl>
+
+      <section aria-label="Acciones" className="mt-4 flex justify-end rounded-panel border border-line bg-surface px-5 py-4">
+        <UserActions
+          user={data}
+          me={me}
+          activeAdmins={activeAdmins.data}
+          onAction={actions.run}
+          busy={actions.busyUserId === data.id}
+        />
+      </section>
+
+      <ConfirmDialog {...actions.dialogProps} />
     </>
   )
 }

@@ -3,6 +3,7 @@ import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
 import { SearchField } from '../components/filters/SearchField.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { buttonClassName } from '../components/ui/buttonStyles.ts'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog.tsx'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Pagination } from '../components/ui/Pagination.tsx'
@@ -11,7 +12,8 @@ import { UserFilters } from '../components/users/UserFilters.tsx'
 import { UserTable } from '../components/users/UserTable.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useUserFilters } from '../hooks/useUserFilters.ts'
-import { useUsersPage } from '../hooks/useUsers.ts'
+import { useUserActions } from '../hooks/useUserActions.ts'
+import { useActiveAdminCount, useUsersPage } from '../hooks/useUsers.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { PAGE_SIZES } from '../schemas/common.ts'
 
@@ -23,6 +25,14 @@ export function UsersPage() {
   const { user: me } = useAuth()
   const location = useLocation()
   const data = users.data
+  const activeAdmins = useActiveAdminCount()
+
+  const actions = useUserActions({
+    // Si se eliminó la única fila de una página que no es la primera, se pasa a la anterior.
+    onDeleted: () => {
+      if (data?.content.length === 1 && filters.page > 1) setFilters({ page: filters.page - 1 })
+    },
+  })
 
   const isPageOutOfRange = data !== undefined && data.content.length === 0 && filters.page > 1
 
@@ -95,7 +105,10 @@ export function UsersPage() {
             <>
               <UserTable
                 users={data.content}
-                currentUserId={me?.id}
+                me={me}
+                activeAdmins={activeAdmins.data}
+                onAction={actions.run}
+                busyUserId={actions.busyUserId}
                 sort={filters.sort}
                 onSortChange={(sort) => setFilters({ sort })}
                 isDimmed={users.isPlaceholderData}
@@ -116,6 +129,8 @@ export function UsersPage() {
           )}
         </div>
       </FiltersLayout>
+
+      <ConfirmDialog {...actions.dialogProps} />
     </>
   )
 }

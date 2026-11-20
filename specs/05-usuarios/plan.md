@@ -28,8 +28,10 @@ Al cambiar rol, contraseña o estado, el backend revoca los refresh tokens del u
 | `src/services/userService.ts` | `page(filters)` (página 1 → 0) y `get(id)` — E-01; `create`, `update(id, values)` (omite `password` vacía) y `remove(id)` — E-03 / E-04 |
 | `src/hooks/useUrlFilters.ts` | `useUrlFilters(schema, config)`: toda la lógica de URL ↔ filtros (vuelta a la página 1, historial al escribir con `state.textEdit`, valores por defecto omitidos, `clearFilters` + `resetKey`, `activeCount`, `hasFilters`). `config` (constante de módulo): `textFields`, `cleared`, `countActive`. `useCustomerFilters` pasa a ser `useUrlFilters(customerFiltersSchema, CUSTOMER_FILTERS)` |
 | `src/hooks/useUserFilters.ts` | `useUrlFilters(userFiltersSchema, USER_FILTERS)`: texto `search`; cuenta rol y estado |
-| `src/hooks/useUsers.ts` | `userKeys` (`all`, `list`, `detail`, `activeAdmins`), `useUsersPage` (`keepPreviousData`), `useUser`, `useActiveAdminCount()` (`role=ADMIN&enabled=true&size=1` con `select` → `page.totalElements`) — E-01; `useCreateUser`, `useUpdateUser`, `useDeleteUser` (invalidan `userKeys.all` y publican el flash) — E-03 / E-04 |
-| `src/lib/userRules.ts` | funciones puras: `canDelete(user, me, activeAdmins)`, `canChangeRole(…)`, `canDisable(…)` → `{ allowed: boolean, reason?: string }` |
+| `src/hooks/useUsers.ts` | `userKeys` (`all`, `list`, `detail`, `activeAdmins`), `useUsersPage` (`keepPreviousData`), `useUser`, `useActiveAdminCount()` (`role=ADMIN&enabled=true&size=1` con `select` → `page.totalElements`) — E-01; `useCreateUser`, `useUpdateUser` (E-03); `useChangeUser` (PUT completo con un campo cambiado; flash «Rol cambiado a Administrador / Usuario», «Usuario habilitado / deshabilitado») y `useDeleteUser` (flash «Usuario eliminado», quita la ficha del cache) — E-04; todas invalidan `userKeys.all` (las de E-04 también tras un error, para refrescar la tabla ante un 409) |
+| `src/lib/userRules.ts` | funciones puras `roleChangeRule`, `statusChangeRule`, `deleteRule(user, me, activeAdmins)` → `{ allowed: true } \| { allowed: false, reason }`. Promover y habilitar siempre se permiten; degradar, deshabilitar y eliminar se bloquean sobre uno mismo (`SELF_REASON`, tiene prioridad) o sobre el último ADMIN habilitado (`LAST_ADMIN_REASON`); con el conteo cargando no se bloquea (decide el backend) |
+| `src/hooks/useUserActions.ts` | `run(action, user)`, `dialogProps` y `busyUserId`: estado `PendingAction`, decide si la acción pide confirmación (eliminar, degradar, deshabilitar a un ADMIN), ejecuta `useChangeUser` / `useDeleteUser`, muestra el error en el modal o en un flash y llama a `onDeleted`. Lo usan el listado y la ficha |
+| `src/components/users/UserActions.tsx` | botones «Cambiar a Administrador / Usuario», «Habilitar / Deshabilitar» y «Eliminar»; si una regla lo impide, el botón queda deshabilitado y el motivo se muestra debajo con `aria-describedby` |
 
 ## 3. Componentes y páginas
 
@@ -81,6 +83,8 @@ habilitar no piden confirmación.
 | `userRules` como funciones puras | Se prueban y reutilizan en tabla, ficha y formulario sin duplicar condiciones. |
 | `useActiveAdminCount` con `size=1` | Usa el conteo del servidor (`totalElements`) sin traer todos los usuarios. |
 | Confirmación al degradar o deshabilitar un ADMIN | Es una acción con efecto sobre el acceso de otra persona y se aplica con hasta 15 min de retraso. |
+| Etiquetas «Administrador» / «Usuario» en las acciones (no «ADMIN» / «USER») | Regla de `design.md`: los valores de la API no se muestran. |
+| La regla del último admin rara vez se ve en otra fila | Quien mira siempre es un ADMIN habilitado, así que el último admin habilitado suele ser uno mismo (manda `SELF_REASON`). Solo aparece en otra fila si el rol del JWT de quien mira está desactualizado (hasta 15 min tras ser degradado); el backend responde 409 igual. |
 
 ## 7. Riesgos
 

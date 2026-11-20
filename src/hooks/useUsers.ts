@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { UserFilters, UserFormValues } from '../schemas/user.ts'
+import { ROLE_LABELS, type Role, type User, type UserFilters, type UserFormValues } from '../schemas/user.ts'
 import { userService } from '../services/userService.ts'
 import { flash } from '../stores/flashStore.ts'
 
@@ -63,5 +63,37 @@ export function useUpdateUser(id: number) {
       flash.success(`Usuario «${user.email}» actualizado`)
       await queryClient.invalidateQueries({ queryKey: userKeys.all })
     },
+  })
+}
+
+export type UserChange = { role: Role } | { enabled: boolean }
+
+function changeMessage(change: UserChange): string {
+  if ('role' in change) return `Rol cambiado a ${ROLE_LABELS[change.role]}`
+  return change.enabled ? 'Usuario habilitado' : 'Usuario deshabilitado'
+}
+
+// Acción rápida desde la fila o la ficha: PUT completo { email, role, enabled } con un solo
+// campo cambiado (sin contraseña: el backend conserva la actual). Tras un error también se
+// invalida: un 409 suele significar que otro admin cambió algo y la tabla debe actualizarse.
+export function useChangeUser() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ user, change }: { user: User; change: UserChange }) =>
+      userService.update(user.id, { email: user.email, role: user.role, enabled: user.enabled, password: '', ...change }),
+    onSuccess: (_, { change }) => flash.success(changeMessage(change)),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
+  })
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (user: User) => userService.remove(user.id),
+    onSuccess: (_, user) => {
+      flash.success('Usuario eliminado')
+      queryClient.removeQueries({ queryKey: userKeys.detail(user.id) })
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
   })
 }
