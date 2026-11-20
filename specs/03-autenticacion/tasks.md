@@ -20,7 +20,7 @@ navegador necesitan el backend arriba.
   - Verificación: `npm run build && npm run lint`; en el navegador, login con el admin del `.env` del backend (credenciales locales, nunca en el código)
   - Commit: "Agrega la pantalla de inicio de sesión"
 
-- [ ] **C-03** Rutas protegidas, menú de usuario y logout
+- [x] **C-03** Rutas protegidas, menú de usuario y logout
   - Depende de: C-02
   - Cubre: RF-03-03, RF-03-04, RF-03-05, RF-03-07, RF-03-08
   - Archivos: `src/components/auth/{RequireAuth,RequireRole}.tsx`, `src/components/layout/{UserMenu,Navbar,Header}.tsx`, `src/hooks/useAuth.ts` (`useLogout`), `src/pages/{ForbiddenPage,NotFoundPage,RouteErrorPage}.tsx`, `src/App.tsx`
