@@ -72,8 +72,8 @@ habilitar no piden confirmación.
 
 | Caso | Qué hace la UI | Motivo |
 |---|---|---|
-| Cambio del propio email | tras el `onSuccess`, `authService.refresh()` y `setUser` | el JWT trae el email anterior como `sub`; sin renovar, `/me` responde 404 y el backend deja de reconocerlo como "uno mismo" |
-| Cambio de la propia contraseña | flash "Contraseña cambiada, inicia sesión de nuevo" y logout | el backend revoca sus refresh tokens |
+| Cambio del propio email | en el `onSuccess` de `useUpdateUser`, `await refreshSession()` (nuevo en `lib/http.ts`: usa la promesa compartida de `refreshOnce`) **antes** de invalidar las consultas; `onRefreshed` actualiza el usuario del header | el JWT trae el email anterior como `sub`; sin renovar, `/me` responde 404 y el backend deja de reconocerlo como "uno mismo". Llamar a `authService.refresh()` aparte podría correr en paralelo con el refresh de un 401 y el backend lo tomaría como reuso (revoca todas las sesiones) |
+| Cambio de la propia contraseña | `authService.logout()` (borra las cookies), `queryClient.clear()`, `clear({ loggedOut: true })` y flash "Contraseña cambiada, inicia sesión de nuevo"; `RequireAuth` lleva al login sin ruta de origen | el backend revoca sus refresh tokens, pero el access token seguiría vivo hasta 15 min si no se borra la cookie |
 | Rol o estado propio | acciones deshabilitadas en la UI | el backend responde 409 |
 
 ## 6. Decisiones

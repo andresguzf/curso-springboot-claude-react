@@ -1,6 +1,9 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ROLE_LABELS, type Role, type User, type UserFilters, type UserFormValues } from '../schemas/user.ts'
+import { refreshSession } from '../lib/http.ts'
+import { authService } from '../services/authService.ts'
 import { userService } from '../services/userService.ts'
+import { useAuthStore } from '../stores/authStore.ts'
 import { flash } from '../stores/flashStore.ts'
 
 // Claves del cache de usuarios. Las mutaciones (E-03, E-04) invalidan `all`: se refrescan juntos
@@ -59,7 +62,28 @@ export function useUpdateUser(id: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (values: UserFormValues) => userService.update(id, values),
-    onSuccess: async (user) => {
+    onSuccess: async (user, values) => {
+      const me = useAuthStore.getState().user
+      const isMe = user.id === me?.id
+
+      // La propia contraseña: el backend revocó todas mis sesiones (refresh tokens). Se cierra la
+      // sesión aquí (logout borra las cookies, el access token seguiría vivo hasta 15 min).
+      if (isMe && values.password !== '') {
+        await authService.logout().catch(() => undefined)
+        queryClient.clear()
+        useAuthStore.getState().clear({ loggedOut: true })
+        flash.info('Contraseña cambiada, inicia sesión de nuevo')
+        return
+      }
+
+      // El propio email: el JWT trae el email anterior y el backend ya no lo encuentra. Se renueva la
+      // sesión ANTES de refrescar datos (con refreshSession, la promesa compartida: nunca dos
+      // /refresh en paralelo) y onRefreshed actualiza el usuario del header.
+      if (isMe && user.email !== me.email) {
+        const renewed = await refreshSession()
+        if (!renewed) return // onSessionExpired ya llevó al login con su aviso
+      }
+
       flash.success(`Usuario «${user.email}» actualizado`)
       await queryClient.invalidateQueries({ queryKey: userKeys.all })
     },

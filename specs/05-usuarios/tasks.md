@@ -36,7 +36,7 @@ con A-09 (listado de usuarios) y A-10 (último admin) hechas.
   - Verificación: `npm run build && npm run lint`; en el navegador con dos admins (degradar funciona) y con uno solo (UI bloquea); forzar el PUT con curl y ver el 409
   - Commit: "Agrega cambio de rol, estado y eliminación de usuarios con las reglas de administradores"
 
-- [ ] **E-05** Cambios sobre el propio usuario
+- [x] **E-05** Cambios sobre el propio usuario
   - Depende de: E-04, C-01
   - Cubre: RF-05-10
   - Archivos: `src/hooks/useUsers.ts` (`useUpdateUser`: detectar edición propia), `src/services/authService.ts` (si hace falta)
