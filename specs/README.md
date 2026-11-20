@@ -31,7 +31,7 @@ necesita A-09 y A-10.
 
 | # | Fase | Repo | Spec | Tareas | Estado |
 |---|---|---|---|---|---|
-| 01 | A · Paginación, filtros y último admin | `3-spring-api` | [spec](../../3-spring-api/specs/01-paginacion-filtros-admin/spec.md) | A-01 … A-11 | En curso (6/11) |
+| 01 | A · Paginación, filtros y último admin | `3-spring-api` | [spec](../../3-spring-api/specs/01-paginacion-filtros-admin/spec.md) | A-01 … A-11 | En curso (7/11) |
 | 02 | B · Base del frontend, diseño y componentes | `4-react` | [spec](02-base-frontend/spec.md) | B-01 … B-09 | Pendiente |
 | 03 | C · Autenticación y rutas por rol | `4-react` | [spec](03-autenticacion/spec.md) | C-01 … C-04 | Pendiente |
 | 04 | D · Clientes | `4-react` | [spec](04-clientes/spec.md) | D-01 … D-09 | Pendiente |
