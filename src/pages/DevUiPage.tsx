@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
 import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog.tsx'
@@ -69,6 +70,45 @@ function ConfirmDialogDemo() {
         onCancel={() => setOutcome(null)}
       />
     </>
+  )
+}
+
+// Filtros de ejemplo con estado local; en las páginas reales vendrán de la URL (spec 04).
+function FiltersDemo() {
+  const [status, setStatus] = useState('')
+  const [city, setCity] = useState('')
+  // Derivado en el render: no hace falta otro estado ni un effect.
+  const activeCount = [status, city.trim()].filter(Boolean).length
+
+  return (
+    <FiltersLayout
+      activeCount={activeCount}
+      onClear={() => {
+        setStatus('')
+        setCity('')
+      }}
+      filters={
+        <>
+          <FormField label="Estado">
+            {(field) => (
+              <Select {...field} value={status} onChange={(event) => setStatus(event.target.value)}>
+                <option value="">Todos</option>
+                <option value="true">Activos</option>
+                <option value="false">Inactivos</option>
+              </Select>
+            )}
+          </FormField>
+          <FormField label="Ciudad">
+            {(field) => <Input {...field} value={city} onChange={(event) => setCity(event.target.value)} />}
+          </FormField>
+        </>
+      }
+    >
+      <div className="rounded-panel border border-line bg-surface p-5 text-sm text-ink-muted">
+        Aquí irá la tabla. Colapsa el sidebar con el botón de la izquierda y recarga la página: conserva su estado.
+        En pantallas chicas, los filtros se abren con el botón «Filtros».
+      </div>
+    </FiltersLayout>
   )
 }
 
@@ -176,6 +216,11 @@ export function DevUiPage() {
           />
         </Group>
       </div>
+
+      <section className="mt-6 space-y-3">
+        <h2 className="text-xl font-semibold">Sidebar de filtros</h2>
+        <FiltersDemo />
+      </section>
     </>
   )
 }

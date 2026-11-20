@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, type ReactNode, type SyntheticEvent } from 'react'
+import { useId, useRef, type ReactNode, type SyntheticEvent } from 'react'
+import { useModalDialog } from '../../hooks/useModalDialog.ts'
 import { Button } from './Button.tsx'
 
 type ConfirmDialogProps = {
@@ -33,24 +34,11 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
+  // El foco empieza en Cancelar: la opción segura ante un Enter apresurado.
+  const dialogRef = useModalDialog(open, cancelRef)
   const titleId = useId()
   const descriptionId = useId()
-
-  // Sincroniza la prop `open` con el <dialog> del DOM (un sistema externo a React).
-  // Se compara con dialog.open para tolerar el doble montaje de StrictMode.
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open && !dialog.open) {
-      dialog.showModal()
-      // El foco empieza en Cancelar: la opción segura ante un Enter apresurado.
-      cancelRef.current?.focus()
-    } else if (!open && dialog.open) {
-      dialog.close()
-    }
-  }, [open])
 
   // Esc dispara el evento "cancel" del <dialog>. Se evita el cierre nativo para que el estado
   // del padre siga siendo la única fuente de verdad (el padre pone open=false).

@@ -65,10 +65,11 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Verificación: `npm run build && npm run lint`; en `/dev/ui` probar teclado (Tab, Shift+Tab, Esc) y los dos casos simulados
   - Commit: "Agrega el modal de confirmación accesible"
 
-- [ ] **B-08** Sidebar de filtros colapsable
+- [x] **B-08** Sidebar de filtros colapsable
   - Depende de: B-05
   - Cubre: RF-02-10, RNF-02-01
-  - Archivos: `src/stores/uiStore.ts`, `src/components/filters/FiltersSidebar.tsx`, `src/components/filters/FiltersLayout.tsx`, `src/pages/DevUiPage.tsx`
+  - Archivos: `src/stores/uiStore.ts`, `src/components/filters/FiltersSidebar.tsx`, `src/components/filters/FiltersLayout.tsx`, `src/pages/DevUiPage.tsx`, `src/components/filters/FiltersDrawer.tsx` (cajón en móvil), `src/hooks/useMediaQuery.ts`, `src/hooks/useModalDialog.ts` (lógica del `<dialog>` compartida; `ConfirmDialog` pasa a usarlo)
+  - Nota: `FiltersLayout` renderiza solo el sidebar (desde `lg`, 64rem) o solo el cajón, según `useMediaQuery`, para no duplicar campos. El botón de colapsar es un único elemento que no se desmonta (si no, el foco del teclado se perdía al colapsar). Los campos siguen montados con el sidebar colapsado (`hidden`), así no se pierde lo escrito
   - Hecho cuando: el `aside` izquierdo se colapsa y expande con `aria-expanded`; el estado persiste al recargar; en móvil se abre como drawer
   - Verificación: `npm run build && npm run lint`; en `/dev/ui` colapsar, recargar, y probar a 375 px
   - Commit: "Agrega el sidebar de filtros colapsable con estado persistente"
