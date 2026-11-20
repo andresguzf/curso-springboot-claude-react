@@ -39,9 +39,26 @@ Situación actual: un solo chunk de JavaScript de **555,66 kB** (169,90 kB gzip)
 | `src/components/ui/IconButton.tsx` | `button` de 32 × 32 px (área táctil suficiente) con `aria-label` obligatorio, `tone` (`neutral` / `danger`), `disabled` y `aria-describedby` pasados al botón. Ayuda visible (`label`) en un tooltip propio que aparece con `:hover` y `:focus-visible` (CSS, sin `title`, que no sirve en táctil ni con teclado); el icono es `aria-hidden`. |
 | Iconos (propuesta) | Editar `Pencil`, Eliminar `Trash2`, Cambiar a Administrador `ShieldCheck`, Cambiar a Usuario `ShieldMinus`, Deshabilitar `UserX`, Habilitar `UserCheck`; paginación `ChevronsLeft`, `ChevronLeft`, `ChevronRight`, `ChevronsRight`; tema `Sun` / `Moon`. Tamaño 16–18 px, `strokeWidth` 1.75, color `ink-muted` que pasa a `ink` en hover; eliminar en `danger`. |
 | Uso | `CustomerTable` (Editar, Eliminar), `UserTable` / `UserActions` (Editar, Cambiar rol, Habilitar / Deshabilitar, Eliminar) y la sección «Acciones» de `UserDetailPage`. El motivo de una regla de administradores se sigue mostrando como texto bajo los iconos (`aria-describedby`). |
+| Exportar (`ExportMenu`) | Un `IconButton` «Exportar» (`Download`) con `popovertarget` hacia un menú `popover` nativo: el navegador lo pone en la capa superior y lo cierra con Esc o con un clic fuera, sin effects. El menú (`role="menu"`, ítems `role="menuitem"`) lista CSV (`FileText`), Excel (`FileSpreadsheet`), PDF (`FileType`) y XML (`FileCode`) con su nombre; se posiciona bajo el botón con CSS anchor positioning (`anchor-name` / `position-anchor`). Al elegir un formato se cierra el menú y el botón muestra la carga hasta que termina la descarga. |
 | Enlaces | «Editar» navega: se usa un `Link` con el mismo aspecto (`iconButtonClassName`) y el mismo tooltip, no un `button`. |
 
-## 3. Paginación por rango
+## 3. Tablas compactas
+
+A 1024 px con el sidebar abierto la tabla tiene ~710 px; hoy clientes ocupa ~1.200 px con 8 columnas. Medidas que se combinan:
+
+| Pieza | Cómo |
+|---|---|
+| Columnas por ancho del contenedor | `DataTable` envuelve la tabla en un contenedor `@container` (Tailwind 4) y cada columna puede declarar desde qué ancho se ve (`minWidth`: `'md' \| 'lg' \| 'xl' \| '2xl'` → clases `hidden @2xl:table-cell`…, en celda y encabezado). Al ser el ancho **del contenedor** (no de la ventana), abrir o colapsar el sidebar reacomoda las columnas sin JavaScript. |
+| Prioridades (propuesta, se ajusta midiendo) | Clientes: nombre, email, estado y acciones siempre; ciudad desde `@2xl`; nacimiento y alta desde `@4xl`; teléfono desde `@5xl`. Usuarios: email, rol, estado y acciones siempre; alta desde `@xl`. |
+| Fechas solo con el día | `formatDay(localDateTime)` en `lib/format.ts` (toma la parte `yyyy-MM-dd` y la reordena, sin `new Date()`): la columna «Alta» muestra `20-11-2026`. La ficha sigue con `formatDateTime`. |
+| Email recortado | Celda con ancho máximo y `truncate`; el texto completo como `title` y en la ficha. |
+| Acciones | Iconos de 32 px con espacio de 4 px (de G-02) en vez de enlaces de texto. |
+| Celdas | Padding horizontal de 12 a 10 px solo si hace falta tras medir; la altura de fila (44 px) no cambia. |
+| Móvil | A 375 px quedan nombre, estado y acciones; si aun así no cabe, el scroll horizontal queda **dentro** de la tabla, nunca en la página. |
+
+Verificación con medidas reales: ancho de la tabla frente al de su contenedor a 1024, 1280 y 1440 px, con el sidebar abierto y colapsado, para clientes (USER y ADMIN, que suma la columna de acciones) y usuarios.
+
+## 4. Paginación por rango
 
 Función pura `pageWindow(current, total, radius)` en `src/lib/pagination.ts` (se prueba sin React):
 
@@ -61,11 +78,11 @@ Función pura `pageWindow(current, total, radius)` en `src/lib/pagination.ts` (s
 - Móvil: se calcula la ventana de radio 3 y los números a más de 1 de la actual llevan `hidden sm:inline-flex` (solo CSS, sin `useMediaQuery`); el «…» de cada lado se muestra si hay páginas ocultas en ese tamaño.
 - Se mantienen «Mostrando a–b de N» y «Por página».
 
-## 4. Tema oscuro
+## 5. Tema oscuro
 
-### 4.1 Propuesta de paleta (G-04, a aprobar)
+### 5.1 Propuesta de paleta (G-05, a aprobar)
 
-Punto de partida, inspirado en el modo oscuro de macOS con un tinte azul y violeta como acento. La tarea G-04 la ajusta con `frontend-design`, comprueba contrastes y la presenta para aprobación:
+Punto de partida, inspirado en el modo oscuro de macOS con un tinte azul y violeta como acento. La tarea G-05 la ajusta con `frontend-design`, comprueba contrastes y la presenta para aprobación:
 
 | Token | Claro (actual) | Oscuro (propuesta) | Uso |
 |---|---|---|---|
@@ -77,7 +94,7 @@ Punto de partida, inspirado en el modo oscuro de macOS con un tinte azul y viole
 | `accent` / `accent-strong` / `accent-soft` | ámbar | `#8B7CF6` / `#B9AEFF` / `#2E2A4A` | violeta: navegación activa, foco, selección |
 | `danger` / `success` / `warning` | — | `#F2867E` / `#6FD3A0` / `#E8B75C` | estados, ajustados para fondo oscuro |
 
-### 4.2 Implementación (G-05)
+### 5.2 Implementación (G-06)
 
 | Pieza | Cómo |
 |---|---|
@@ -87,7 +104,7 @@ Punto de partida, inspirado en el modo oscuro de macOS con un tinte azul y viole
 | Sin destello | Script en línea en `index.html` (antes del CSS) que lee `localStorage['ui']` y pone `data-theme` antes del primer pintado. |
 | Selector | `src/components/layout/ThemeToggle.tsx` en el header (y en la esquina del `AuthLayout`): `IconButton` con `Sun` / `Moon` y `aria-label` «Cambiar a tema oscuro» / «Cambiar a tema claro». |
 
-## 5. Decisiones
+## 6. Decisiones
 
 | Decisión | Motivo |
 |---|---|
@@ -97,27 +114,34 @@ Punto de partida, inspirado en el modo oscuro de macOS con un tinte azul y viole
 | Ventana ±1 en móvil, con CSS | ±3 más cuatro botones no cabe en 375 px; resolverlo con clases evita estado y effects. |
 | Violeta solo en el tema oscuro | El ámbar sobre gris azulado oscuro pierde contraste y se ve terroso; el violeta da el acento frío que pide el tema. El claro conserva su identidad. |
 | Tema por tokens y `data-theme` | Un solo juego de componentes; el tema es solo datos (RNF-07-03). |
+| Exportar: un icono con menú, no un icono por formato | Cuatro iconos de «archivo» se distinguen mal entre sí y ocupan más; el menú muestra el nombre de cada formato. `popover` nativo: cierre con Esc y clic fuera sin effects. |
+| Columnas por container queries | El espacio de la tabla depende del sidebar, no solo de la ventana; con `@container` las columnas responden a su espacio real sin `useMediaQuery` ni estado. |
+| Solo el día en las tablas | La hora del alta rara vez decide algo en un listado; la ficha la conserva. |
 
-## 6. Riesgos
+## 7. Riesgos
 
 | Riesgo | Mitigación |
 |---|---|
 | Destello del tema al recargar | Script en línea en `index.html` antes del CSS. |
-| Colores fijos que no cambian con el tema | Búsqueda de `white`, `black`, `rgb(` y `#` en `src/` durante G-05 y prueba visual de cada pantalla en oscuro. |
+| Colores fijos que no cambian con el tema | Búsqueda de `white`, `black`, `rgb(` y `#` en `src/` durante G-06 y prueba visual de cada pantalla en oscuro. |
 | Iconos sin significado claro | Tooltip visible y nombre accesible con el verbo; el motivo de las reglas sigue en texto. |
 | Chunk inicial aún grande tras dividir | Separar librerías de proveedor (§1) y medir. |
+| Información escondida al ocultar columnas | Solo se ocultan columnas secundarias, siempre visibles en la ficha; al colapsar el sidebar reaparecen. |
+| Navegadores sin anchor positioning | El menú `popover` sigue funcionando (capa superior, Esc, clic fuera); solo cambia su posición. Se verifica en el navegador del curso. |
 
-## 7. Trazabilidad
+## 8. Trazabilidad
 
 | Requisito | Tareas |
 |---|---|
 | RF-07-01 | G-01 |
 | RF-07-02 | G-02 |
 | RF-07-03 | G-02 |
-| RF-07-04 | G-03 |
-| RF-07-05 | G-04 |
-| RF-07-06 | G-05 |
-| RF-07-07 | G-06 |
+| RF-07-04 | G-04 |
+| RF-07-05 | G-05 |
+| RF-07-06 | G-06 |
+| RF-07-07 | G-07 |
+| RF-07-08 | G-02 |
+| RF-07-09 | G-03 |
 | RNF-07-01 | G-01 |
-| RNF-07-02 | G-05 |
-| RNF-07-03 | G-05 |
+| RNF-07-02 | G-06 |
+| RNF-07-03 | G-06 |
