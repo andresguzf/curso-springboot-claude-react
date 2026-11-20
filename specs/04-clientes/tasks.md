@@ -20,7 +20,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`
   - Commit: "Agrega filtros de clientes sincronizados con la URL y búsqueda con debounce"
 
-- [ ] **D-03** Tabla de datos y paginación reutilizables
+- [x] **D-03** Tabla de datos y paginación reutilizables
   - Depende de: B-05
   - Cubre: RF-04-01, RF-04-02, RNF-04-03
   - Archivos: `src/components/ui/DataTable.tsx`, `src/components/ui/Pagination.tsx`, `src/pages/DevUiPage.tsx` (ejemplo con datos ficticios)

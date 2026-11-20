@@ -43,8 +43,8 @@ La página de la API empieza en 0; en la URL del frontend empieza en 1 (más nat
 
 | Archivo | Contenido |
 |---|---|
-| `src/components/ui/DataTable.tsx` | genérico: `columns: { key, header, sortField?, cell, className? }[]`, `rows`, `getRowId`, `sort`, `onSortChange`, `isDimmed`; `caption` oculto; botón en el encabezado con `aria-sort`; scroll horizontal propio |
-| `src/components/ui/Pagination.tsx` | "Mostrando a–b de N", anterior / siguiente / números con elipsis, selector de tamaño; `nav aria-label="Paginación"` |
+| `src/components/ui/DataTable.tsx` | genérico: `columns: { key, header, sortField?, cell, className? }[]`, `rows`, `getRowId`, `sort`, `onSortChange`, `isDimmed`, `empty` (contenido si no hay filas); `caption` oculto; botón en el encabezado con `aria-sort` (primer clic asc, luego alterna); encabezado fijo y scroll propio (`max-h-[70vh] overflow-auto`, horizontal a 375 px) |
+| `src/components/ui/Pagination.tsx` | "Mostrando a–b de N" ("Sin resultados" si no hay), anterior / siguiente / números con elipsis (máx. 7: `1 … 5 6 7 … 12`), página actual con `aria-current`; selector de tamaño con las opciones de la prop `sizes`; `nav aria-label="Paginación"` |
 | `src/components/filters/DateRangeField.tsx` | dos `input type="date"` con validación `desde <= hasta` |
 | `src/components/customers/CustomerFilters.tsx` | contenido del `FiltersSidebar` (estado, ciudad, rangos) |
 | `src/components/customers/CustomerSearch.tsx` | buscador de la barra superior; estado local que se ajusta en el render si cambia la URL (patrón `prevSearch`), debounce en el `onChange` |
