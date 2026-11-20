@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens de diseño aprobados en specs/02-base-frontend/design.md (B-04):
+ * grafito + un solo acento ámbar. Se usan como clases de Tailwind:
+ * bg-canvas, text-ink, border-line, bg-primary, bg-accent-soft, rounded-panel...
+ */
+@theme {
+  --font-sans: 'Atkinson Hyperlegible Next Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #f2f3f5; /* Neblina: fondo de la app */
+  --color-surface: #ffffff; /* Papel: tablas, paneles, modal */
+  --color-ink: #1f2933; /* Grafito: texto principal */
+  --color-ink-muted: #5b6470; /* Piedra: texto secundario */
+  --color-line: #d9dde2; /* Escarcha: divisores decorativos */
+  --color-line-strong: #7d8692; /* Pizarra: borde de inputs (≥ 3:1) */
+  --color-primary: #1f2933; /* Grafito: header y botón principal */
+  --color-primary-hover: #323f4f;
+  --color-accent: #b7791f; /* Ámbar: foco, selección, sección actual. Nunca como texto */
+  --color-accent-strong: #8f5a0e; /* Ámbar tostado: texto en acento */
+  --color-accent-soft: #fbf0da; /* Ámbar claro: fondo de lo activo o seleccionado */
+  --color-danger: #a3262d; /* Granate */
+  --color-success: #2d6a4f; /* Alerce */
+  --color-warning: #8a4b12; /* Cobre oscuro */
+
+  /* Radios por jerarquía: controles < paneles < modal */
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-dialog: 14px;
+
+  /* Entrada del mensaje flash: corta y sin rebote. Se usa con motion-safe: (sin animación si se pide reducir el movimiento). */
+  --animate-flash-in: flash-in 150ms ease-out;
+
+  @keyframes flash-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink antialiased;
+  }
+
+  /* Foco visible en toda la app: anillo ámbar con separación, se ve sobre papel y sobre grafito */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}

@@ -4,7 +4,7 @@
 |---|---|
 | Fase | B |
 | Repo | `4-react` |
-| Estado | Pendiente |
+| Estado | Hecha |
 | Depende de | — (no necesita la spec 01 del backend) |
 | La necesitan | Specs 03, 04, 05 y 06 |
 | Constitución | [`../constitution.md`](../constitution.md) |
@@ -102,4 +102,4 @@ colapsable.
 
 ## Preguntas abiertas
 
-- Paleta y tipografía: se deciden en la tarea B-04 con el plan visual de `frontend-design`.
+- ~~Paleta y tipografía~~ Resuelta en B-04: grafito + acento ámbar y Atkinson Hyperlegible Next ([`design.md`](design.md)).

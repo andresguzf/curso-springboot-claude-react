@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** el proyecto aún no está generado. Este README describe el stack, la estructura y la puesta en marcha **tal como quedarán** al generarlo con la skill `react-rules` (ver [Generar el proyecto](#generar-el-proyecto)). Actualízalo cuando la app exista.
+> **Estado:** el proyecto ya está generado (React 19.3.1, Vite 8, Tailwind 4) y tiene el proxy hacia la API configurado. Las pantallas se construyen por fases según las [especificaciones](specs/README.md): las secciones "Funcionalidades previstas" y "Conexión con el backend" describen el resultado esperado al terminar todas las fases.
 
 ## Stack
 
@@ -25,12 +25,12 @@ Todas las dependencias se instalan en su última versión publicada al generar e
 
 ## Requisitos
 
-- Node.js 22.22 o superior (lo pide React Router 8), o Node 24 LTS
+- Node.js 22.22 o superior (lo pide React Router 8); se recomienda la LTS más reciente
 - El [backend de Spring Boot](https://github.com/andresguzf/curso-springboot-claude-api) corriendo en `http://localhost:8080` (con PostgreSQL), para usar la app con datos reales
 
-## Generar el proyecto
+## Cómo se generó el proyecto
 
-El proyecto se crea con el script de la skill `react-rules`, que parte de la plantilla oficial de Vite (`react-ts`), agrega la estructura y el layout base, instala las dependencias y verifica que compile. No sobrescribe archivos existentes como este README o `CLAUDE.md`:
+El proyecto se creó con el script de la skill `react-rules`, que parte de la plantilla oficial de Vite (`react-ts`), agrega la estructura y el layout base, instala las dependencias en su última versión y verifica que compile. No sobrescribe archivos existentes como este README o `CLAUDE.md`, y se niega a correr si ya hay un `package.json` (no hace falta volver a ejecutarlo):
 
 ```bash
 bash .claude/skills/react-rules/scripts/create_project.sh .
@@ -89,8 +89,9 @@ La API protege la sesión con **JWT en cookies `HttpOnly`** y **CSRF**, así que
   ```
 
 - **Cookies**: todas las peticiones salen con `credentials: 'include'` desde `src/lib/http.ts`.
-- **CSRF**: los `POST`, `PUT` y `DELETE` (salvo el login) llevan la cabecera `X-XSRF-TOKEN` con el valor de la cookie `XSRF-TOKEN`.
-- **Sesión expirada**: el `access_token` dura 15 minutos; ante un 401 se llama a `POST /api/auth/refresh` y se reintenta la petición. Si el refresh también falla, se vuelve al login.
+- **CSRF**: los `POST`, `PUT` y `DELETE` (salvo el login) llevan la cabecera `X-XSRF-TOKEN` con el valor de la cookie `XSRF-TOKEN`; si la cookie no existe, primero se pide `GET /api/auth/csrf`. Un 403 "Token CSRF inválido" renueva el token y reintenta una vez.
+- **Sesión expirada**: el `access_token` dura 15 minutos; ante un 401 se hace **un solo** `POST /api/auth/refresh` compartido entre todas las peticiones (el backend rota el refresh token y detecta reusos) y cada petición se reintenta una vez. Si el refresh falla, la app vuelve al login (spec 03).
+- **Descargas**: las exportaciones usan `http.download()`, que pasa por la misma renovación de sesión.
 - **Errores**: la API responde en formato `ProblemDetail` (`title`, `detail`, `status`). Los errores de validación traen `errors` (campo → mensaje), que se muestran junto a cada campo del formulario.
 
 Endpoints usados (detalle completo, roles y ejemplos en el README del backend):
@@ -98,8 +99,8 @@ Endpoints usados (detalle completo, roles y ejemplos en el README del backend):
 | Recurso | Endpoints |
 |---|---|
 | Autenticación | `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`, `GET /api/auth/csrf` |
-| Clientes | `GET /api/customers?search=&active=`, `GET`/`PUT`/`DELETE /api/customers/{id}`, `POST /api/customers` |
-| Usuarios (solo `ADMIN`) | `/api/users` |
+| Clientes | `GET /api/customers` (paginado, con filtros y orden; `?format=` para exportar), `GET`/`PUT`/`DELETE /api/customers/{id}`, `POST /api/customers` |
+| Usuarios (solo `ADMIN`) | `GET /api/users` (paginado, con filtros), `GET`/`PUT`/`DELETE /api/users/{id}`, `POST /api/users` |
 
 ## Funcionalidades previstas
 
@@ -115,22 +116,38 @@ Según lo que ofrece la API:
 
 ```
 src/
-├── main.tsx              # StrictMode + QueryClientProvider + devtools
-├── App.tsx               # Router con el Layout como ruta raíz
-├── index.css             # @import 'tailwindcss' (y tokens de diseño en @theme)
+├── main.tsx              # fuente, StrictMode, QueryClientProvider y devtools
+├── App.tsx               # router: AppLayout como ruta raíz (+ /dev/ui solo en desarrollo)
+├── index.css             # Tailwind + tokens de diseño (@theme) y foco ámbar global
 ├── components/
-│   ├── layout/           # Layout, Header, Navbar, Footer
-│   ├── ui/               # Componentes genéricos reutilizables (FormField, Button...)
-│   └── {recurso}/        # Componentes de un recurso (CustomerForm, CustomerList...)
-├── pages/                # Una página por ruta: conecta hooks con componentes
-├── hooks/                # Custom hooks: de datos (useCustomers) y de UI
-├── stores/               # Stores de Zustand (estado global del cliente)
-├── schemas/              # Esquemas Zod y tipos derivados con z.infer
-├── services/             # Funciones que llaman a la API (sin React)
-└── lib/                  # http.ts (fetch + validación Zod), queryClient.ts, utilidades
+│   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), Footer
+│   ├── ui/               # Button, Input, Select, FormField, Badge, Spinner, EmptyState, PageHeader,
+│   │                     # FlashMessages / FlashMessage y ConfirmDialog
+│   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio) y FiltersDrawer (móvil)
+│   └── {recurso}/        # componentes de un recurso (clientes, usuarios) — specs 04 y 05
+├── pages/                # una página por ruta (HomePage, NotFoundPage, DevUiPage)
+├── hooks/                # useMediaQuery, useModalDialog y, más adelante, hooks de datos
+├── stores/               # flashStore (mensajes flash) y uiStore (sidebar, persistido)
+├── schemas/              # Zod: common (página, ProblemDetail) y user
+├── services/             # authService (login, refresh, logout, me, csrf)
+└── lib/                  # http.ts (cliente HTTP), query.ts (toQuery), queryClient.ts
 ```
 
-El layout usa HTML semántico: `header` con el nombre de la app y la barra de navegación (`nav`), `main` con el contenido centrado y `footer`.
+El layout usa HTML semántico: `header` (banda grafito con la marca y la navegación `nav`), región de mensajes flash, `main` y `footer`.
+
+## Interfaz
+
+La dirección visual está en [`specs/02-base-frontend/design.md`](specs/02-base-frontend/design.md): grafito con un solo acento ámbar, fondo gris frío y la fuente **Atkinson Hyperlegible Next** (autoalojada, con cifras tabulares). Los tokens se usan como clases de Tailwind (`bg-canvas`, `text-ink`, `bg-primary`, `bg-accent-soft`, `rounded-panel`…).
+
+Piezas compartidas que usan todas las pantallas:
+
+| Pieza | Qué hace |
+|---|---|
+| Mensajes flash | Arriba de la app, se cierran solos a los 5 s (se pausan con el puntero o el foco) y con la X; máximo 3. Se publican con `flash.success(…)`, `flash.error(…)` o `flash.info(…)` |
+| `ConfirmDialog` | Modal de confirmación con `<dialog>` nativo: foco inicial en Cancelar, Esc cancela, bloquea el doble envío y muestra el error dentro. Reemplaza a `confirm()` |
+| `FiltersLayout` | Filtros en un sidebar izquierdo colapsable (recuerda su estado al recargar) o, en pantallas chicas, en un cajón lateral |
+
+Con `npm run dev`, la página **`/dev/ui`** muestra el catálogo de componentes para revisarlos (no existe en el build de producción).
 
 ## Convenciones
 
