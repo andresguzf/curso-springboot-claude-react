@@ -23,11 +23,12 @@ Al cambiar rol, contraseña o estado, el backend revoca los refresh tokens del u
 
 | Archivo | Contenido |
 |---|---|
-| `src/schemas/user.ts` | `userPageSchema = pagedSchema(userSchema)`; `userFiltersSchema` (`search`, `role`, `enabled`, `page`, `size`, `sort` con `.catch()`); `userCreateSchema` (password 8–72 obligatoria); `userUpdateSchema` (password `''` u 8–72) |
-| `src/services/userService.ts` | `page(filters)`, `get(id)`, `create`, `update(id, values)` (omite `password` vacía), `remove(id)` |
-| `src/hooks/useUrlFilters.ts` | generalización de `useCustomerFilters(schema)` si el código se repite; `useCustomerFilters` pasa a usarla |
-| `src/hooks/useUserFilters.ts` | `useUrlFilters(userFiltersSchema)` |
-| `src/hooks/useUsers.ts` | `userKeys`, `useUsersPage`, `useUser`, `useActiveAdminCount()` (`role=ADMIN&enabled=true&size=1` → `page.totalElements`), `useCreateUser`, `useUpdateUser`, `useDeleteUser` (invalidan `userKeys.all` y publican el flash) |
+| `src/schemas/user.ts` | `userPageSchema = pagedSchema(userSchema)`; `USER_SORT_FIELDS`; `userFiltersSchema` (`search`, `role`, `enabled`, `page`, `size`, `sort` con `.catch()`; orden por defecto `email,asc`, como el backend) — E-01; `userCreateSchema` (password 8–72 obligatoria) y `userUpdateSchema` (password `''` u 8–72) — E-03 |
+| `src/schemas/common.ts` | `PAGE_SIZES`, `pageParam`, `sizeParam` y `sortParam(fields, fallback)`: parámetros de listado en la URL compartidos por clientes y usuarios (movidos desde `customer.ts` sin cambiar su comportamiento) |
+| `src/services/userService.ts` | `page(filters)` (página 1 → 0) y `get(id)` — E-01; `create`, `update(id, values)` (omite `password` vacía) y `remove(id)` — E-03 / E-04 |
+| `src/hooks/useUrlFilters.ts` | `useUrlFilters(schema, config)`: toda la lógica de URL ↔ filtros (vuelta a la página 1, historial al escribir con `state.textEdit`, valores por defecto omitidos, `clearFilters` + `resetKey`, `activeCount`, `hasFilters`). `config` (constante de módulo): `textFields`, `cleared`, `countActive`. `useCustomerFilters` pasa a ser `useUrlFilters(customerFiltersSchema, CUSTOMER_FILTERS)` |
+| `src/hooks/useUserFilters.ts` | `useUrlFilters(userFiltersSchema, USER_FILTERS)`: texto `search`; cuenta rol y estado |
+| `src/hooks/useUsers.ts` | `userKeys` (`all`, `list`, `detail`, `activeAdmins`), `useUsersPage` (`keepPreviousData`), `useUser`, `useActiveAdminCount()` (`role=ADMIN&enabled=true&size=1` con `select` → `page.totalElements`) — E-01; `useCreateUser`, `useUpdateUser`, `useDeleteUser` (invalidan `userKeys.all` y publican el flash) — E-03 / E-04 |
 | `src/lib/userRules.ts` | funciones puras: `canDelete(user, me, activeAdmins)`, `canChangeRole(…)`, `canDisable(…)` → `{ allowed: boolean, reason?: string }` |
 
 ## 3. Componentes y páginas

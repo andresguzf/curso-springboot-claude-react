@@ -35,3 +35,23 @@ export const problemDetailSchema = z.object({
 })
 
 export type ProblemDetail = z.infer<typeof problemDetailSchema>
+
+// --- Parámetros de listados en la URL (compartidos por clientes y usuarios) ---
+
+export const PAGE_SIZES = [10, 25, 50] as const
+
+// Página desde 1 (en la API, desde 0: la conversión vive en cada servicio).
+export const pageParam = z.coerce.number().int().min(1).catch(1)
+
+export const sizeParam = z.coerce
+  .number()
+  .refine((size) => PAGE_SIZES.some((allowed) => allowed === size))
+  .catch(PAGE_SIZES[0])
+
+// "campo,asc" o "campo,desc", solo con campos de la lista blanca del backend (si no, 400).
+export function sortParam(fields: readonly string[], fallback: string) {
+  return z
+    .string()
+    .regex(new RegExp(`^(${fields.join('|')}),(asc|desc)$`))
+    .catch(fallback)
+}

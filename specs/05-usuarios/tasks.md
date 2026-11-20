@@ -4,7 +4,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
 [constitución](../constitution.md#6-calidad-definición-de-hecho). Requiere el backend
 con A-09 (listado de usuarios) y A-10 (último admin) hechas.
 
-- [ ] **E-01** Esquemas, servicio y hooks de usuarios
+- [x] **E-01** Esquemas, servicio y hooks de usuarios
   - Depende de: D-02, A-09
   - Cubre: RF-05-01, RF-05-02
   - Archivos: `src/schemas/user.ts`, `src/services/userService.ts`, `src/hooks/useUrlFilters.ts` (generalización), `src/hooks/useCustomerFilters.ts` (usa la generalización), `src/hooks/useUserFilters.ts`, `src/hooks/useUsers.ts` (`userKeys`, `useUsersPage`, `useUser`, `useActiveAdminCount`)

@@ -4,7 +4,7 @@
 |---|---|
 | Fase | E |
 | Repo | `4-react` |
-| Estado | Pendiente |
+| Estado | En curso |
 | Depende de | Spec 04 (componentes de tabla y filtros) y spec 01 del backend (A-09: listado de usuarios; A-10: último admin) |
 | La necesitan | Spec 06 |
 | Constitución | [`../constitution.md`](../constitution.md) |
