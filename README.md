@@ -90,7 +90,7 @@ La API protege la sesión con **JWT en cookies `HttpOnly`** y **CSRF**, así que
 
 - **Cookies**: todas las peticiones salen con `credentials: 'include'` desde `src/lib/http.ts`.
 - **CSRF**: los `POST`, `PUT` y `DELETE` (salvo el login) llevan la cabecera `X-XSRF-TOKEN` con el valor de la cookie `XSRF-TOKEN`; si la cookie no existe, primero se pide `GET /api/auth/csrf`. Un 403 "Token CSRF inválido" renueva el token y reintenta una vez.
-- **Sesión expirada**: el `access_token` dura 15 minutos; ante un 401 se hace **un solo** `POST /api/auth/refresh` compartido entre todas las peticiones (el backend rota el refresh token y detecta reusos) y cada petición se reintenta una vez. Si el refresh falla, la app vuelve al login (spec 03).
+- **Sesión expirada**: el `access_token` dura 15 minutos; ante un 401 se hace **un solo** `POST /api/auth/refresh` compartido entre todas las peticiones (el backend rota el refresh token y detecta reusos) y cada petición se reintenta una vez. Si el refresh falla, la app vuelve al login (ver «Flujo de sesión»).
 - **Descargas**: las exportaciones usan `http.download()`, que pasa por la misma renovación de sesión.
 - **Errores**: la API responde en formato `ProblemDetail` (`title`, `detail`, `status`). Los errores de validación traen `errors` (campo → mensaje), que se muestran junto a cada campo del formulario.
 
@@ -102,35 +102,57 @@ Endpoints usados (detalle completo, roles y ejemplos en el README del backend):
 | Clientes | `GET /api/customers` (paginado, con filtros y orden; `?format=` para exportar), `GET`/`PUT`/`DELETE /api/customers/{id}`, `POST /api/customers` |
 | Usuarios (solo `ADMIN`) | `GET /api/users` (paginado, con filtros), `GET`/`PUT`/`DELETE /api/users/{id}`, `POST /api/users` |
 
+### Flujo de sesión
+
+El frontend solo conoce **quién** está en sesión (`authStore`: `user` y `status`); los tokens los maneja el navegador en las cookies.
+
+| Momento | Qué pasa |
+|---|---|
+| Al cargar la app | `main.tsx` llama una vez a `initSession()` (antes del render, sin `useEffect`): `GET /api/auth/me`. Mientras responde, `status` es `checking` y las rutas protegidas muestran un spinner, no el login. Si el access token venció, `http.ts` renueva la sesión y reintenta `/me` sin que se note. |
+| Login | `POST /api/auth/login`; el backend pone las cookies y devuelve el usuario. Se vacía la caché de datos y se entra a la ruta que se intentaba abrir (o al inicio). Credenciales incorrectas: «Email o contraseña incorrectos». |
+| Rutas | `RequireAuth` envía al login a quien no tiene sesión, guardando la ruta de origen en `location.state` (no en la URL). `RequireRole role="ADMIN"` envía a `/forbidden` a un `USER`; la navegación oculta lo que su rol no puede usar. |
+| Access token vencido (15 min) | La primera petición recibe 401 y hace **un solo** `POST /api/auth/refresh`; las que lleguen mientras tanto esperan esa misma promesa y todas se reintentan. El refresh trae el usuario: si su rol cambió, la interfaz se actualiza. |
+| Refresh vencido o revocado (7 días, logout en otro equipo, cambio de contraseña) | Se limpia la sesión y la caché, se va al login con el flash «Tu sesión expiró, inicia sesión de nuevo» y, al entrar, se vuelve a la ruta donde estaba. Al abrir la app sin sesión no se muestra ese aviso: nunca hubo sesión. |
+| Cerrar sesión | `POST /api/auth/logout` (el backend revoca el refresh token y borra las cookies); se limpia la sesión aunque la API falle, se va al login con el flash «Sesión cerrada» y el siguiente login empieza en el inicio. |
+
+**Cómo probar la renovación sin esperar 15 minutos**: las cookies son `HttpOnly` (DevTools > Application > Cookies permite borrarlas a mano) o, más fiel, levanta el backend con tokens cortos; el `Max-Age` de las cookies sigue esos tiempos, así que el navegador las borra solo al vencer:
+
+```bash
+./mvnw -DskipTests spring-boot:run -Dspring-boot.run.arguments="--app.jwt.access-token-expiration=20s --app.jwt.refresh-token-expiration=90s"
+```
+
+Con la pestaña Network abierta: pasados 20 s, recargar muestra `/me` 401 → un solo `/refresh` 200 → `/me` 200. Pasados 90 s sin actividad, la siguiente petición lleva al login con el aviso y, al entrar, de vuelta a la ruta original.
+
 ## Funcionalidades previstas
 
 Según lo que ofrece la API:
 
-- **Login y logout**, con el usuario en sesión visible en el header.
+- **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (hecho, spec 03).
 - **Clientes** (roles `USER` y `ADMIN`): listado con buscador por texto y filtro por estado activo/inactivo.
 - **Crear, editar y eliminar clientes** (solo `ADMIN`): formulario validado y errores del servidor (p. ej. email duplicado, 409) mostrados en el campo correspondiente. Las acciones de escritura se ocultan para el rol `USER`.
 - **Administración de usuarios** (solo `ADMIN`).
-- Página 404 para rutas inexistentes.
+- Páginas «Sin permiso» (`/forbidden`), 404 para rutas inexistentes y «Algo salió mal» para errores inesperados (hecho, spec 03).
 
 ## Estructura
 
 ```
 src/
-├── main.tsx              # fuente, StrictMode, QueryClientProvider y devtools
-├── App.tsx               # router: AppLayout como ruta raíz (+ /dev/ui solo en desarrollo)
+├── main.tsx              # fuente, handlers de sesión, initSession(), StrictMode, QueryClientProvider
+├── App.tsx               # router: /login (AuthLayout) y el resto en RequireAuth + AppLayout (+ /dev/ui en desarrollo)
 ├── index.css             # Tailwind + tokens de diseño (@theme) y foco ámbar global
 ├── components/
-│   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), Footer
+│   ├── auth/             # LoginForm, RequireAuth (sesión) y RequireRole (rol)
+│   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), UserMenu, Footer
 │   ├── ui/               # Button, Input, Select, FormField, Badge, Spinner, EmptyState, PageHeader,
 │   │                     # FlashMessages / FlashMessage y ConfirmDialog
 │   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio) y FiltersDrawer (móvil)
 │   └── {recurso}/        # componentes de un recurso (clientes, usuarios) — specs 04 y 05
-├── pages/                # una página por ruta (HomePage, NotFoundPage, DevUiPage)
-├── hooks/                # useMediaQuery, useModalDialog y, más adelante, hooks de datos
-├── stores/               # flashStore (mensajes flash) y uiStore (sidebar, persistido)
-├── schemas/              # Zod: common (página, ProblemDetail) y user
+├── pages/                # una página por ruta (Home, Login, Forbidden, NotFound, RouteError, DevUi)
+├── hooks/                # useAuth / useLogin / useLogout, useMediaQuery, useModalDialog
+├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar, persistido)
+├── schemas/              # Zod: common (página, ProblemDetail), user (+ ROLE_LABELS) y auth (login)
 ├── services/             # authService (login, refresh, logout, me, csrf)
-└── lib/                  # http.ts (cliente HTTP), query.ts (toQuery), queryClient.ts
+└── lib/                  # http.ts (cliente HTTP), session.ts (initSession), query.ts (toQuery), queryClient.ts
 ```
 
 El layout usa HTML semántico: `header` (banda grafito con la marca y la navegación `nav`), región de mensajes flash, `main` y `footer`.

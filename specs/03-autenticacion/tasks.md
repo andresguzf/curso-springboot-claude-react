@@ -28,7 +28,7 @@ navegador necesitan el backend arriba.
   - Verificación: `npm run build && npm run lint`; en el navegador como ADMIN y como USER (crear un USER con el curl del README del backend)
   - Commit: "Agrega rutas protegidas por rol, menú de usuario y cierre de sesión"
 
-- [ ] **C-04** Verificar la renovación de sesión de punta a punta y documentar la fase C
+- [x] **C-04** Verificar la renovación de sesión de punta a punta y documentar la fase C
   - Depende de: C-03
   - Cubre: RF-03-06, RF-03-09
   - Archivos: `README.md` (sección "Conexión con el backend"), `CLAUDE.md`, `specs/03-autenticacion/spec.md` (estado: Hecha), `specs/README.md` (estado); correcciones en `src/lib/http.ts` si la prueba falla

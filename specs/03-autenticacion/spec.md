@@ -4,7 +4,7 @@
 |---|---|
 | Fase | C |
 | Repo | `4-react` |
-| Estado | En curso |
+| Estado | Hecha |
 | Depende de | Spec 02 (B-03, B-05, B-06) |
 | La necesitan | Specs 04, 05 y 06 |
 | Constitución | [`../constitution.md`](../constitution.md) |
