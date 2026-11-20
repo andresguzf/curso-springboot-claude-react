@@ -4,7 +4,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
 [constitución](../constitution.md#6-calidad-definición-de-hecho). Requiere el backend
 con la tarea A-06 hecha (listado paginado y filtros).
 
-- [ ] **D-01** Esquemas, servicio y formateo de fechas de clientes
+- [x] **D-01** Esquemas, servicio y formateo de fechas de clientes
   - Depende de: C-03, A-06
   - Cubre: RF-04-01, RNF-04-02
   - Archivos: `src/schemas/customer.ts` (`customerSchema`, `customerPageSchema`, `customerFiltersSchema`), `src/services/customerService.ts` (`page`, `get`), `src/lib/format.ts`
