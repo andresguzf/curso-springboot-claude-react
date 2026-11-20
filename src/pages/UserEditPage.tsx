@@ -14,6 +14,7 @@ import { HttpError } from '../lib/http.ts'
 import { applyServerErrors } from '../lib/serverErrors.ts'
 import { USER_FORM_FIELDS, type User, type UserFormValues } from '../schemas/user.ts'
 import { flash } from '../stores/flashStore.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 function toFormValues(user: User): UserFormValues {
   return { email: user.email, password: '', role: user.role, enabled: user.enabled }
@@ -29,6 +30,7 @@ export function UserEditPage() {
   const navigate = useNavigate()
   const { listPath } = useListPath('/users')
   const user = useUser(id)
+  useDocumentTitle(user.data ? `Editar a ${user.data.email}` : 'Editar usuario')
   const update = useUpdateUser(id)
   const [pending, setPending] = useState<PendingSubmit | null>(null)
 
@@ -52,6 +54,7 @@ export function UserEditPage() {
   if (isNotFound) {
     return (
       <EmptyState
+        titleAs="h1"
         title="Usuario no encontrado"
         description="Puede que se haya eliminado o que el enlace no sea correcto."
         action={
@@ -66,6 +69,7 @@ export function UserEditPage() {
   if (user.isError) {
     return (
       <EmptyState
+        titleAs="h1"
         title="No se pudo cargar el usuario"
         description={errorMessage(user.error, 'Inténtalo de nuevo en unos minutos.')}
         action={

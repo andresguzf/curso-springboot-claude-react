@@ -4,6 +4,7 @@ import { LoginForm } from '../components/auth/LoginForm.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
 import { useAuth, useLogin } from '../hooks/useAuth.ts'
 import { HttpError } from '../lib/http.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 // RequireAuth (C-03) guarda en location.state la ruta que se intentaba abrir.
 // El state es `unknown`: se valida con safeParse y, si no sirve, se vuelve al inicio.
@@ -23,6 +24,7 @@ function loginErrorMessage(error: Error | null): string | undefined {
 }
 
 export function LoginPage() {
+  useDocumentTitle('Iniciar sesión')
   const { status } = useAuth()
   const login = useLogin()
   const location = useLocation()

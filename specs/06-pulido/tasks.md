@@ -3,7 +3,7 @@
 Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" en la
 [constitución](../constitution.md#6-calidad-definición-de-hecho).
 
-- [ ] **F-01** Página de inicio con resumen
+- [x] **F-01** Página de inicio con resumen
   - Depende de: D-05, E-02
   - Cubre: RF-06-01, RNF-06-01
   - Archivos: `src/hooks/useDashboardStats.ts`, `src/pages/DashboardPage.tsx`, `src/App.tsx` (ruta índice)
@@ -11,7 +11,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador como ADMIN y como USER
   - Commit: "Agrega la página de inicio con el resumen de clientes y usuarios"
 
-- [ ] **F-02** Esqueletos, estados vacíos, títulos y foco al navegar
+- [x] **F-02** Esqueletos, estados vacíos, títulos y foco al navegar
   - Depende de: F-01
   - Cubre: RF-06-02, RF-06-03
   - Archivos: `src/components/ui/TableSkeleton.tsx`, `src/components/ui/EmptyState.tsx`, `src/hooks/useDocumentTitle.ts`, `src/components/ui/PageHeader.tsx`, páginas de clientes y usuarios
@@ -19,7 +19,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador con red lenta (DevTools) y con teclado
   - Commit: "Agrega estados de carga, vacíos, títulos de página y foco al navegar"
 
-- [ ] **F-03** Revisión responsive y auditoría de accesibilidad
+- [x] **F-03** Revisión responsive y auditoría de accesibilidad
   - Depende de: F-02, E-05
   - Cubre: RF-06-04, RF-06-05
   - Archivos: los componentes que la auditoría señale
@@ -27,7 +27,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; Lighthouse / axe y recorrido completo como USER y ADMIN en móvil y escritorio
   - Commit: "Mejora el diseño responsive y la accesibilidad del dashboard"
 
-- [ ] **F-04** Limpieza y documentación final
+- [x] **F-04** Limpieza y documentación final
   - Depende de: F-03
   - Cubre: RF-06-06
   - Archivos: `src/pages/DevUiPage.tsx` (eliminar) y su ruta, `README.md`, `CLAUDE.md`, `../3-spring-api/README.md` (enlace al frontend, commit en ese repo), `specs/06-pulido/spec.md` (estado: Hecha), `specs/README.md` (todas las fases en "Hecha")

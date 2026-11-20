@@ -7,9 +7,11 @@ import { errorMessage } from '../lib/errors.ts'
 import { applyServerErrors } from '../lib/serverErrors.ts'
 import { EMPTY_USER_FORM, USER_FORM_FIELDS } from '../schemas/user.ts'
 import { flash } from '../stores/flashStore.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 // Alta de usuario (ruta dentro de RequireRole ADMIN).
 export function UserCreatePage() {
+  useDocumentTitle('Nuevo usuario')
   const navigate = useNavigate()
   const { listPath } = useListPath('/users')
   const create = useCreateUser()

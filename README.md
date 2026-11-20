@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** el proyecto ya está generado (React 19.3.1, Vite 8, Tailwind 4) y tiene el proxy hacia la API configurado. Las pantallas se construyen por fases según las [especificaciones](specs/README.md): las secciones "Funcionalidades previstas" y "Conexión con el backend" describen el resultado esperado al terminar todas las fases.
+> **Estado:** terminado. Las seis fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive (React 19.3.1, Vite 8, Tailwind 4).
 
 ## Stack
 
@@ -123,14 +123,13 @@ El frontend solo conoce **quién** está en sesión (`authStore`: `user` y `stat
 
 Con la pestaña Network abierta: pasados 20 s, recargar muestra `/me` 401 → un solo `/refresh` 200 → `/me` 200. Pasados 90 s sin actividad, la siguiente petición lleva al login con el aviso y, al entrar, de vuelta a la ruta original.
 
-## Funcionalidades previstas
+## Funcionalidades
 
-Según lo que ofrece la API:
-
-- **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (hecho, spec 03).
-- **Clientes** (hecho, spec 04), ver «Pantallas de clientes».
-- **Administración de usuarios** (solo `ADMIN`; hecho, spec 05), ver «Administración de usuarios».
-- Páginas «Sin permiso» (`/forbidden`), 404 para rutas inexistentes y «Algo salió mal» para errores inesperados (hecho, spec 03).
+- **Resumen** (`/`): total de clientes, activos, dados de alta este mes y, para `ADMIN`, usuarios. Cada cifra abre el listado ya filtrado y sale de una consulta de una sola fila (`size=1` → `totalElements`).
+- **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (ver «Flujo de sesión»).
+- **Clientes**, ver «Pantallas de clientes».
+- **Administración de usuarios** (solo `ADMIN`), ver «Administración de usuarios».
+- Páginas «Sin permiso» (`/forbidden`), 404 para rutas inexistentes y «Algo salió mal» para errores inesperados.
 
 ### Pantallas de clientes
 
@@ -167,22 +166,24 @@ Toda la sección es solo para `ADMIN`: un `USER` no ve «Usuarios» en el menú 
 ```
 src/
 ├── main.tsx              # fuente, handlers de sesión, initSession(), StrictMode, QueryClientProvider
-├── App.tsx               # router: /login (AuthLayout) y el resto en RequireAuth + AppLayout (+ /dev/ui en desarrollo)
+├── App.tsx               # router: /login (AuthLayout) y el resto en RequireAuth + AppLayout; rutas ADMIN en RequireRole
 ├── index.css             # Tailwind + tokens de diseño (@theme) y foco ámbar global
 ├── components/
 │   ├── auth/             # LoginForm, RequireAuth (sesión) y RequireRole (rol)
 │   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), UserMenu, Footer
 │   ├── ui/               # Button (+ buttonStyles), Input, Select, FormField, Badge, Spinner, EmptyState,
-│   │                     # PageHeader, FlashMessages / FlashMessage, ConfirmDialog, DataTable y Pagination
+│   │                     # PageHeader, FlashMessages / FlashMessage, ConfirmDialog, DataTable, Pagination
+│   │                     # y TableSkeleton
 │   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil), DateRangeField
 │   │                     # y SearchField (buscador con debounce)
 │   ├── customers/        # CustomerTable, CustomerSearch, CustomerFilters, CustomerForm, ExportMenu
 │   └── users/            # UserTable, UserFilters, UserForm, UserActions, RoleBadge
-├── pages/                # una página por ruta (Home, Login, Customers, CustomerDetail / Create / Edit, Users,
-│                         # UserDetail / Create / Edit, Forbidden, NotFound, RouteError, DevUi)
+├── pages/                # una página por ruta (Dashboard, Login, Customers, CustomerDetail / Create / Edit,
+│                         # Users, UserDetail / Create / Edit, Forbidden, NotFound, RouteError)
 ├── hooks/                # useAuth; useUrlFilters (URL ↔ filtros) con useCustomerFilters y useUserFilters;
 │                         # useCustomers y useUsers (consultas y mutaciones), useUserActions, useExportCustomers,
-│                         # useListPath, useDebouncedCallback / useDebouncedText, useMediaQuery, useModalDialog
+│                         # useDashboardStats, useListPath, useDocumentTitle, useDebouncedCallback /
+│                         # useDebouncedText, useMediaQuery, useModalDialog
 ├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar, persistido)
 ├── schemas/              # Zod: common (página, ProblemDetail, parámetros de listado), auth (login), customer y
 │                         # user (respuesta, filtros de la URL, formularios, ROLE_LABELS)
@@ -209,7 +210,7 @@ Piezas compartidas que usan todas las pantallas:
 | `DataTable` | Tabla genérica con encabezado fijo, orden por columna (`aria-sort`), filas de 44 px, datos atenuados mientras carga y scroll propio (a 375 px se desplaza dentro de su recuadro) |
 | `Pagination` | «Mostrando a–b de N», anterior / siguiente, números con elipsis y selector de tamaño |
 
-Con `npm run dev`, la página **`/dev/ui`** muestra el catálogo de componentes para revisarlos (no existe en el build de producción).
+**Accesibilidad y responsive** (spec 06): cada página tiene su título de pestaña («Clientes · Cartera») y, al llegar a una pantalla, el foco va a su `h1` (cambiar filtros u orden no lo mueve); las tablas muestran un esqueleto en la primera carga; los estados vacíos dicen qué hacer; con `prefers-reduced-motion` no hay animaciones de entrada. A 375 px la página no se desborda, los filtros pasan a un cajón y las tablas se desplazan dentro de su recuadro. Lighthouse (accesibilidad) da 100 en login, clientes, usuarios, el modal y el cajón de filtros. `public/robots.txt` impide indexar el panel.
 
 ## Convenciones
 

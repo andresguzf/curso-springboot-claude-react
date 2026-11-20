@@ -12,6 +12,7 @@ import { useCustomersListPath } from '../hooks/useCustomersListPath.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { formatDate, formatDateTime } from '../lib/format.ts'
 import { HttpError } from '../lib/http.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -26,6 +27,7 @@ export function CustomerDetailPage() {
   const params = useParams()
   const id = Number(params.id)
   const customer = useCustomer(id)
+  useDocumentTitle(customer.data ? `${customer.data.name} ${customer.data.lastName}` : 'Cliente')
   const { isAdmin } = useAuth()
   const { listPath, listState } = useCustomersListPath()
   const backLink = (
@@ -39,6 +41,7 @@ export function CustomerDetailPage() {
   if (isNotFound) {
     return (
       <EmptyState
+        titleAs="h1"
         title="Cliente no encontrado"
         description="Puede que se haya eliminado o que el enlace no sea correcto."
         action={backLink}
@@ -49,6 +52,7 @@ export function CustomerDetailPage() {
   if (customer.isError) {
     return (
       <EmptyState
+        titleAs="h1"
         title="No se pudo cargar el cliente"
         description={errorMessage(customer.error, 'Inténtalo de nuevo en unos minutos.')}
         action={

@@ -9,14 +9,16 @@ export function FlashMessages() {
 
   return (
     <div className="sticky top-0 z-50 h-0">
-      <div
+      {/* section con nombre = landmark de región: se puede saltar a ella; cada mensaje lleva su
+          propio role="status" / "alert" para que el lector lo anuncie al aparecer. */}
+      <section
         aria-label="Notificaciones"
         className="pointer-events-none absolute inset-x-0 top-3 flex flex-col items-center gap-2 px-4"
       >
         {messages.map((message) => (
           <FlashMessage key={message.id} flash={message} onDismiss={dismiss} />
         ))}
-      </div>
+      </section>
     </div>
   )
 }

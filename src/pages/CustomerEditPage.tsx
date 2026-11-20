@@ -11,6 +11,7 @@ import { HttpError } from '../lib/http.ts'
 import { applyServerErrors } from '../lib/serverErrors.ts'
 import { CUSTOMER_FORM_FIELDS, type Customer, type CustomerFormValues } from '../schemas/customer.ts'
 import { flash } from '../stores/flashStore.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 // Solo los campos editables: id y fechas de auditoría los asigna el backend.
 function toFormValues(customer: Customer): CustomerFormValues {
@@ -25,6 +26,7 @@ export function CustomerEditPage() {
   const navigate = useNavigate()
   const { listPath } = useCustomersListPath()
   const customer = useCustomer(id)
+  useDocumentTitle(customer.data ? `Editar a ${customer.data.name} ${customer.data.lastName}` : 'Editar cliente')
   const update = useUpdateCustomer(id)
 
   const isNotFound = !Number.isInteger(id) || id <= 0 || (customer.error instanceof HttpError && customer.error.status === 404)
@@ -32,6 +34,7 @@ export function CustomerEditPage() {
   if (isNotFound) {
     return (
       <EmptyState
+        titleAs="h1"
         title="Cliente no encontrado"
         description="Puede que se haya eliminado o que el enlace no sea correcto."
         action={
@@ -46,6 +49,7 @@ export function CustomerEditPage() {
   if (customer.isError) {
     return (
       <EmptyState
+        titleAs="h1"
         title="No se pudo cargar el cliente"
         description={errorMessage(customer.error, 'Inténtalo de nuevo en unos minutos.')}
         action={
