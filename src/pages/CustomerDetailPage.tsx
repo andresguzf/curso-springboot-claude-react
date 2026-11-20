@@ -1,18 +1,17 @@
 import type { ReactNode } from 'react'
-import { Link, useLocation, useParams } from 'react-router'
-import { z } from 'zod'
+import { Link, useParams } from 'react-router'
 import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
+import { buttonClassName } from '../components/ui/buttonStyles.ts'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
+import { useAuth } from '../hooks/useAuth.ts'
 import { useCustomer } from '../hooks/useCustomers.ts'
+import { useCustomersListPath } from '../hooks/useCustomersListPath.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { formatDate, formatDateTime } from '../lib/format.ts'
 import { HttpError } from '../lib/http.ts'
-
-// La tabla deja en location.state el query string del listado; el state es `unknown`.
-const listStateSchema = z.object({ listSearch: z.string() })
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -25,14 +24,12 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 export function CustomerDetailPage() {
   const params = useParams()
-  const location = useLocation()
   const id = Number(params.id)
   const customer = useCustomer(id)
-
-  const listState = listStateSchema.safeParse(location.state)
-  const backTo = `/customers${listState.success ? listState.data.listSearch : ''}`
+  const { isAdmin } = useAuth()
+  const { listPath, listState } = useCustomersListPath()
   const backLink = (
-    <Link to={backTo} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
+    <Link to={listPath} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
       Volver a clientes
     </Link>
   )
@@ -75,7 +72,20 @@ export function CustomerDetailPage() {
 
   return (
     <>
-      <PageHeader title={`${data.name} ${data.lastName}`} actions={backLink} />
+      <PageHeader
+        title={`${data.name} ${data.lastName}`}
+        actions={
+          <>
+            {backLink}
+            {isAdmin && (
+              // Se reenvía el state: al guardar, la edición vuelve al listado con sus filtros.
+              <Link to={`/customers/${data.id}/edit`} state={listState} className={buttonClassName({ variant: 'primary' })}>
+                Editar
+              </Link>
+            )}
+          </>
+        }
+      />
 
       <dl className="divide-y divide-line rounded-panel border border-line bg-surface">
         <Field label="Email">{data.email}</Field>

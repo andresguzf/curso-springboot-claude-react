@@ -2,11 +2,14 @@ import { CustomerFilters } from '../components/customers/CustomerFilters.tsx'
 import { CustomerSearch } from '../components/customers/CustomerSearch.tsx'
 import { CustomerTable } from '../components/customers/CustomerTable.tsx'
 import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
+import { Link, useLocation } from 'react-router'
 import { Button } from '../components/ui/Button.tsx'
+import { buttonClassName } from '../components/ui/buttonStyles.ts'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Pagination } from '../components/ui/Pagination.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
+import { useAuth } from '../hooks/useAuth.ts'
 import { useCustomerFilters } from '../hooks/useCustomerFilters.ts'
 import { useCustomersPage } from '../hooks/useCustomers.ts'
 import { errorMessage } from '../lib/errors.ts'
@@ -17,6 +20,8 @@ import { PAGE_SIZES } from '../schemas/customer.ts'
 export function CustomersPage() {
   const { filters, setFilters, clearFilters, activeCount, hasFilters, resetKey } = useCustomerFilters()
   const customers = useCustomersPage(filters)
+  const { isAdmin } = useAuth()
+  const location = useLocation()
   const data = customers.data
 
   // Página fuera de rango (?page=99 o tras borrar el último registro de la última página).
@@ -44,7 +49,21 @@ export function CustomersPage() {
 
   return (
     <>
-      <PageHeader title="Clientes" description="Busca, filtra y ordena la cartera de clientes." />
+      <PageHeader
+        title="Clientes"
+        description="Busca, filtra y ordena la cartera de clientes."
+        actions={
+          isAdmin && (
+            <Link
+              to="/customers/new"
+              state={{ listSearch: location.search }}
+              className={buttonClassName({ variant: 'primary' })}
+            >
+              Nuevo cliente
+            </Link>
+          )
+        }
+      />
 
       <FiltersLayout
         activeCount={activeCount}
@@ -80,6 +99,7 @@ export function CustomersPage() {
                 sort={filters.sort}
                 onSortChange={(sort) => setFilters({ sort })}
                 isDimmed={customers.isPlaceholderData}
+                canEdit={isAdmin}
                 empty={emptyState}
               />
               {!isPageOutOfRange && (

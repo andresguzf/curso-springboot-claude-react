@@ -60,3 +60,68 @@ export const customerFiltersSchema = z.object({
 })
 
 export type CustomerFilters = z.infer<typeof customerFiltersSchema>
+
+// Fecha de hoy en hora local (yyyy-MM-dd). Se llama al validar, no durante el render.
+function todayIsoDate(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
+
+// Formulario de alta y edición. Mismas reglas y mensajes que las validaciones del CustomerDto
+// (obligatorios, máximos, email válido, fecha pasada): el usuario ve el error antes de enviar.
+// El backend valida igual; sus errores (400 por campo, 409 de email) se muestran con applyServerErrors.
+export const customerFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre es obligatorio')
+    .max(80, 'El nombre no puede superar los 80 caracteres'),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, 'El apellido es obligatorio')
+    .max(80, 'El apellido no puede superar los 80 caracteres'),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'El email es obligatorio')
+    .max(150, 'El email no puede superar los 150 caracteres')
+    .pipe(z.email('El email no tiene un formato válido')),
+  phone: z
+    .string()
+    .trim()
+    .min(1, 'El teléfono es obligatorio')
+    .max(30, 'El teléfono no puede superar los 30 caracteres'),
+  address: z
+    .string()
+    .trim()
+    .min(1, 'La dirección es obligatoria')
+    .max(200, 'La dirección no puede superar los 200 caracteres'),
+  city: z
+    .string()
+    .trim()
+    .min(1, 'La ciudad es obligatoria')
+    .max(80, 'La ciudad no puede superar los 80 caracteres'),
+  birthDate: z
+    .string()
+    .min(1, 'La fecha de nacimiento es obligatoria')
+    .pipe(z.iso.date('Ingresa una fecha válida'))
+    .refine((date) => date < todayIsoDate(), 'La fecha de nacimiento debe ser una fecha pasada'),
+  active: z.boolean(),
+})
+
+export type CustomerFormValues = z.infer<typeof customerFormSchema>
+
+export const CUSTOMER_FORM_FIELDS = customerFormSchema.keyof().options
+
+// Valores iniciales del alta: un cliente nuevo queda activo, como en el backend.
+export const EMPTY_CUSTOMER_FORM: CustomerFormValues = {
+  name: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  address: '',
+  city: '',
+  birthDate: '',
+  active: true,
+}

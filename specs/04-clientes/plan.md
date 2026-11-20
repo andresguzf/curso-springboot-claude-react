@@ -23,7 +23,7 @@ La página de la API empieza en 0; en la URL del frontend empieza en 1 (más nat
 | `customerSchema` | `birthDate: z.iso.date()`, `createdAt: z.iso.datetime({ local: true })`, `updatedAt: … .nullable()` |
 | `customerPageSchema` | `pagedSchema(customerSchema)` |
 | `customerFiltersSchema` | filtros de la URL con `.catch()` en cada campo: `search`, `active` (`'true' | 'false'`), `city`, `birthFrom`, `birthTo`, `createdFrom`, `createdTo`, `page` (≥ 1, por defecto 1), `size` (10 / 25 / 50), `sort` (regex sobre la lista blanca, por defecto `id,asc`) |
-| `customerFormSchema` | máximos 80 / 80 / 150 / 30 / 200 / 80, `z.email()`, `birthDate` pasada, `active: z.boolean()` |
+| `customerFormSchema` | mismos mensajes que el `CustomerDto`: obligatorios con `trim`, máximos 80 / 80 / 150 / 30 / 200 / 80, `z.email()`, `birthDate` obligatoria, ISO y anterior a hoy (fecha local calculada al validar), `active: z.boolean()`; `CUSTOMER_FORM_FIELDS` (campos para `applyServerErrors`) y `EMPTY_CUSTOMER_FORM` (alta: activo por defecto) |
 
 `type CustomerFilters = z.infer<typeof customerFiltersSchema>`; los tipos de datos con `z.infer`.
 
@@ -39,7 +39,7 @@ La página de la API empieza en 0; en la URL del frontend empieza en 1 (más nat
 | `src/hooks/useExportCustomers.ts` | mutación que descarga con un object URL temporal y `<a download>`; flash de error en `onError` |
 | `src/lib/format.ts` | `formatDate('1990-05-20')` separando el string (sin `new Date`, que interpreta UTC y en Chile mostraría el día anterior); `formatDateTime` con `Intl.DateTimeFormat('es-CL')` |
 | `src/lib/errors.ts` | `errorMessage(error, fallback)`: `detail` del ProblemDetail o `fallback`; sin respuesta, "No se pudo conectar con el servidor…" (listado y detalle) |
-| `src/lib/serverErrors.ts` | `applyServerErrors(error, setError)`: 400 con `fieldErrors` → `setError` por campo; 409 "Recurso duplicado" → `setError('email')`; devuelve `false` si no aplicó nada |
+| `src/lib/serverErrors.ts` | `applyServerErrors(error, setError, { fields, conflict })`: 400 con `fieldErrors` → `setError` en los campos conocidos (foco en el primero); 409 → `setError(conflict.field, conflict.message)` ("Ya existe un cliente con este email"); devuelve `false` si no aplicó nada y la página publica un flash de error |
 
 ## 4. Componentes y páginas
 
@@ -51,11 +51,13 @@ La página de la API empieza en 0; en la URL del frontend empieza en 1 (más nat
 | `src/components/customers/CustomerFilters.tsx` | contenido del `FiltersSidebar`, presentacional (`filters`, `onChange(patch)`): estado (Todos / Activos / Inactivos), ciudad (`useDebouncedText`), rango de nacimiento y rango de alta |
 | `src/components/customers/CustomerSearch.tsx` | buscador de la barra superior (`input type="search"` con etiqueta oculta) sobre `useDebouncedText`; la página le pone `key={resetKey}` |
 | `src/components/customers/CustomerTable.tsx` | columnas (nombre → orden por `lastName`, email, teléfono, ciudad, nacimiento, estado, alta); el nombre enlaza al detalle con `state.listSearch` (query string actual) para volver con los mismos filtros; editar y eliminar por fila llegan en D-06 / D-07 |
-| `src/components/customers/CustomerForm.tsx` | presentacional: `defaultValues`, `onSubmit`, `isPending`; recibe `setError` vía callback o expone el form para `applyServerErrors` |
+| `src/components/customers/CustomerForm.tsx` | presentacional: `defaultValues`, `submitLabel`, `isPending`, `cancelTo`; `onSubmit(values, setError)` entrega los valores validados y `setError` para `applyServerErrors` |
+| `src/hooks/useCustomersListPath.ts` | lee `state.listSearch` (validado con Zod) y devuelve `listPath` (volver al listado con sus filtros) y `listState` (reenviarlo: detalle → editar); lo usan detalle, alta y edición |
+| `src/components/ui/buttonStyles.ts` | `buttonClassName({ variant, size })`, compartido por `Button` y los `Link` con aspecto de botón ("Nuevo cliente", "Editar", "Cancelar") |
 | `src/components/customers/ExportMenu.tsx` | menú con CSV, Excel, PDF y XML |
 | `src/pages/CustomersPage.tsx` | `FiltersLayout` + `PageHeader` + buscador + tabla + paginación (Nuevo cliente, Exportar y `ConfirmDialog` llegan en D-06 a D-08). Estados: carga inicial (spinner), error con "Reintentar" (`refetch`; con `keepPreviousData` el error descarta los datos previos), vacío según el caso (página fuera de rango → "Ir a la primera página" sin paginación; con filtros → "Limpiar filtros"; sin clientes) y datos previos atenuados al paginar |
 | `src/pages/CustomerDetailPage.tsx` | ficha (`dl`) con todos los campos y fechas de auditoría ("Sin cambios" si `updatedAt` es null); "Volver a clientes" con el query string de `state.listSearch`; id inválido o 404 → "Cliente no encontrado"; otro error → "Reintentar" |
-| `src/pages/CustomerCreatePage.tsx`, `src/pages/CustomerEditPage.tsx` | formulario; edición con `key={customer.id}`; navegan en `onSuccess` |
+| `src/pages/CustomerCreatePage.tsx`, `src/pages/CustomerEditPage.tsx` | formulario; edición con `key={customer.id}` (estados de carga, 404 y error como el detalle); el flash lo publica el hook en `onSuccess` y la página navega al listado (`listPath`) en el `onSuccess` de `mutate`; `onError` → `applyServerErrors` o flash de error. "Nuevo cliente" (cabecera del listado), "Editar" (columna de acciones y detalle) solo para ADMIN |
 
 Rutas: `customers`, `customers/:id` (todos; en `Navbar`, "Clientes" y `end` solo para `/`, así sigue marcado en el detalle); `customers/new`, `customers/:id/edit` dentro de `RequireRole role="ADMIN"`.
 

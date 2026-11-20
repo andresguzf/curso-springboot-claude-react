@@ -44,7 +44,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; en el navegador: URL compartida en otra pestaña, botón atrás, sidebar colapsado tras recargar, `?page=99`
   - Commit: "Agrega el listado de clientes con paginación, orden, búsqueda y filtros"
 
-- [ ] **D-06** Alta y edición de clientes con validación y mensajes flash
+- [x] **D-06** Alta y edición de clientes con validación y mensajes flash
   - Depende de: D-05, B-06
   - Cubre: RF-04-08, RF-04-10, RF-04-11, RNF-04-01
   - Archivos: `src/schemas/customer.ts` (`customerFormSchema`), `src/services/customerService.ts` (`create`, `update`), `src/hooks/useCustomers.ts` (mutaciones), `src/lib/serverErrors.ts`, `src/components/customers/CustomerForm.tsx`, `src/pages/{CustomerCreatePage,CustomerEditPage}.tsx`, `src/App.tsx` (rutas ADMIN)

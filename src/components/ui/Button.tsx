@@ -1,8 +1,6 @@
 import type { ComponentProps } from 'react'
+import { buttonClassName, type ButtonSize, type ButtonVariant } from './buttonStyles.ts'
 import { Spinner } from './Spinner.tsx'
-
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
-type ButtonSize = 'sm' | 'md'
 
 // ComponentProps<'button'> incluye `ref`: en React 19 es una prop más y llega al <button> con ...props.
 type ButtonProps = ComponentProps<'button'> & {
@@ -10,18 +8,6 @@ type ButtonProps = ComponentProps<'button'> & {
   size?: ButtonSize
   /** Muestra un spinner y bloquea el botón mientras la acción está en curso (evita doble envío). */
   isPending?: boolean
-}
-
-const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-white hover:bg-primary-hover',
-  secondary: 'border border-line-strong bg-surface text-ink hover:bg-canvas',
-  danger: 'bg-danger text-white hover:bg-danger/90',
-  ghost: 'text-ink hover:bg-canvas',
-}
-
-const SIZES: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-sm',
-  md: 'h-10 px-4 text-[0.9375rem]',
 }
 
 // Botón de la app. Por defecto type="button": así un botón dentro de un formulario no lo envía
@@ -41,7 +27,7 @@ export function Button({
       type={type}
       disabled={disabled || isPending}
       aria-busy={isPending || undefined}
-      className={`inline-flex items-center justify-center gap-2 rounded-control font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      className={`${buttonClassName({ variant, size })} ${className}`}
       {...props}
     >
       {isPending && <Spinner label="Procesando" />}

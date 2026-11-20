@@ -11,12 +11,15 @@ type CustomerTableProps = {
   onSortChange: (sort: string) => void
   isDimmed?: boolean
   empty?: ReactNode
+  /** ADMIN: muestra las acciones de escritura por fila. */
+  canEdit?: boolean
 }
 
 // Tabla de clientes. El nombre enlaza al detalle y lleva el query string actual en el state,
 // para que "Volver a clientes" regrese con los mismos filtros y en la misma página.
-export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty }: CustomerTableProps) {
+export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, canEdit = false }: CustomerTableProps) {
   const location = useLocation()
+  const listState = { listSearch: location.search }
 
   const columns: DataTableColumn<Customer>[] = [
     {
@@ -26,7 +29,7 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty }
       cell: (customer) => (
         <Link
           to={`/customers/${customer.id}`}
-          state={{ listSearch: location.search }}
+          state={listState}
           className="font-medium text-ink underline-offset-2 hover:underline"
         >
           {customer.name} {customer.lastName}
@@ -57,6 +60,25 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty }
       className: 'tabular-nums',
     },
   ]
+
+  // Acciones de escritura: solo ADMIN (un USER ni las ve). Eliminar se agrega en D-07.
+  if (canEdit) {
+    columns.push({
+      key: 'actions',
+      header: 'Acciones',
+      className: 'text-right',
+      cell: (customer) => (
+        <Link
+          to={`/customers/${customer.id}/edit`}
+          state={listState}
+          aria-label={`Editar a ${customer.name} ${customer.lastName}`}
+          className="text-sm font-medium text-accent-strong underline-offset-2 hover:underline"
+        >
+          Editar
+        </Link>
+      ),
+    })
+  }
 
   return (
     <DataTable
