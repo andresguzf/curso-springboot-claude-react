@@ -3,10 +3,10 @@ import { Navbar } from './Navbar.tsx'
 
 export function Header() {
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
-        <Link to="/" className="text-lg font-semibold text-slate-900">
-          4-react
+    <header className="bg-primary text-white">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+        <Link to="/" className="text-lg font-semibold">
+          Cartera
         </Link>
         <Navbar />
       </div>

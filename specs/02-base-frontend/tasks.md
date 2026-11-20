@@ -29,10 +29,11 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Nota: sin sesión ya se verificó en el navegador que tres 401 simultáneos generan un solo `/refresh` y un solo `onSessionExpired`, y el reintento CSRF (403 → `GET /api/auth/csrf` → reintento con cabecera). El refresh exitoso y `download` con sesión quedan para C-04 y D-08
   - Commit: "Agrega renovación de sesión con refresh único, descargas y servicio de autenticación"
 
-- [ ] **B-04** Dirección visual aprobada y tokens de diseño
+- [x] **B-04** Dirección visual aprobada y tokens de diseño
   - Depende de: B-01
   - Cubre: RF-02-06, RNF-02-03
-  - Archivos: `specs/02-base-frontend/design.md` (nuevo), `src/index.css` (`@theme`), `src/main.tsx` (fuente), `package.json` (`@fontsource/…`)
+  - Archivos: `specs/02-base-frontend/design.md` (nuevo), `src/index.css` (`@theme`), `src/main.tsx` (fuente), `package.json` (`@fontsource/…`), `index.html` y componentes de la plantilla (`Layout`, `Header`, `Navbar`, `Footer`, `HomePage`, `NotFoundPage`: colores `slate` → tokens y nombre «Cartera»)
+  - Nota: el usuario pidió cambiar la paleta de la v1 (lapislázuli) y aprobó la v2 (grafito + acento ámbar); el badge de rol se muestra como «Administrador» / «Usuario»
   - Hecho cuando: el plan visual hecho con `frontend-design` está en `design.md` y **el usuario lo aprobó** (la tarea se detiene a pedir aprobación antes de escribir estilos); los tokens están en `@theme` y la fuente se sirve localmente
   - Verificación: `npm run build && npm run lint`; `HomePage` usa los tokens nuevos en el navegador
   - Commit: "Agrega la dirección visual y los tokens de diseño"

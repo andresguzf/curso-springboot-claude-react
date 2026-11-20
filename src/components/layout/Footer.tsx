@@ -4,9 +4,9 @@ const CURRENT_YEAR = new Date().getFullYear()
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto max-w-5xl px-4 py-6 text-center text-sm text-slate-500">
-        © {CURRENT_YEAR} 4-react
+    <footer className="border-t border-line bg-surface">
+      <div className="mx-auto max-w-5xl px-4 py-6 text-center text-sm text-ink-muted">
+        © {CURRENT_YEAR} Cartera
       </div>
     </footer>
   )

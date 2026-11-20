@@ -10,8 +10,8 @@ const NAV_ITEMS: NavItem[] = [{ to: '/', label: 'Inicio' }]
 
 function linkClassName({ isActive }: { isActive: boolean }) {
   return isActive
-    ? 'rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white'
-    : 'rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100'
+    ? 'border-b-2 border-accent px-1 py-2 text-sm font-medium text-white'
+    : 'border-b-2 border-transparent px-1 py-2 text-sm font-medium text-white/80 hover:text-white'
 }
 
 export function Navbar() {
