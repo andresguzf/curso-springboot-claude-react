@@ -1,6 +1,8 @@
+import { Link, useLocation } from 'react-router'
 import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
 import { SearchField } from '../components/filters/SearchField.tsx'
 import { Button } from '../components/ui/Button.tsx'
+import { buttonClassName } from '../components/ui/buttonStyles.ts'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Pagination } from '../components/ui/Pagination.tsx'
@@ -19,6 +21,7 @@ export function UsersPage() {
   const { filters, setFilters, clearFilters, activeCount, hasFilters, resetKey } = useUserFilters()
   const users = useUsersPage(filters)
   const { user: me } = useAuth()
+  const location = useLocation()
   const data = users.data
 
   const isPageOutOfRange = data !== undefined && data.content.length === 0 && filters.page > 1
@@ -46,7 +49,15 @@ export function UsersPage() {
 
   return (
     <>
-      <PageHeader title="Usuarios" description="Quién puede entrar a Cartera y con qué rol." />
+      <PageHeader
+        title="Usuarios"
+        description="Quién puede entrar a Cartera y con qué rol."
+        actions={
+          <Link to="/users/new" state={{ listSearch: location.search }} className={buttonClassName({ variant: 'primary' })}>
+            Nuevo usuario
+          </Link>
+        }
+      />
 
       <FiltersLayout
         activeCount={activeCount}

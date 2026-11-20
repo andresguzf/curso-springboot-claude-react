@@ -41,3 +41,31 @@ export const userFiltersSchema = z.object({
 })
 
 export type UserFilters = z.infer<typeof userFiltersSchema>
+
+const emailField = z
+  .string()
+  .trim()
+  .min(1, 'El email es obligatorio')
+  .max(150, 'El email no puede superar los 150 caracteres')
+  .pipe(z.email('El email no tiene un formato válido'))
+
+const PASSWORD_LENGTH = 'La contraseña debe tener entre 8 y 72 caracteres'
+
+// Alta: contraseña obligatoria (8 a 72, como el UserDto; BCrypt ignora lo que pase de 72 bytes).
+export const userCreateSchema = z.object({
+  email: emailField,
+  password: z.string().min(1, 'La contraseña es obligatoria').min(8, PASSWORD_LENGTH).max(72, PASSWORD_LENGTH),
+  role: roleSchema,
+  enabled: z.boolean(),
+})
+
+// Edición: contraseña opcional. Vacía conserva la actual (el servicio no la envía).
+export const userUpdateSchema = userCreateSchema.extend({
+  password: z.string().refine((password) => password === '' || (password.length >= 8 && password.length <= 72), PASSWORD_LENGTH),
+})
+
+export type UserFormValues = z.infer<typeof userCreateSchema>
+
+export const USER_FORM_FIELDS = userCreateSchema.keyof().options
+
+export const EMPTY_USER_FORM: UserFormValues = { email: '', password: '', role: 'USER', enabled: true }

@@ -20,7 +20,7 @@ con A-09 (listado de usuarios) y A-10 (último admin) hechas.
   - Verificación: `npm run build && npm run lint`; en el navegador como ADMIN y como USER
   - Commit: "Agrega el listado de usuarios con búsqueda y filtros por rol y estado"
 
-- [ ] **E-03** Ficha, alta y edición de usuarios
+- [x] **E-03** Ficha, alta y edición de usuarios
   - Depende de: E-02, D-06
   - Cubre: RF-05-03, RF-05-04, RF-05-05, RF-05-09
   - Archivos: `src/schemas/user.ts` (`userCreateSchema`, `userUpdateSchema`), `src/services/userService.ts` (`create`, `update`), `src/hooks/useUsers.ts` (mutaciones), `src/components/users/UserForm.tsx`, `src/pages/{UserDetailPage,UserCreatePage,UserEditPage}.tsx`

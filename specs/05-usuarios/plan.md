@@ -39,10 +39,12 @@ Al cambiar rol, contraseña o estado, el backend revoca los refresh tokens del u
 | `src/components/filters/SearchField.tsx` | buscador genérico con `useDebouncedText` (`label` oculto, `placeholder`); lo usan usuarios («Buscar por email») y `CustomerSearch`, que pasa a ser un envoltorio |
 | `src/components/users/UserTable.tsx` | `DataTable` con email (la fila propia marcada con «Tú»), `RoleBadge`, estado (Habilitado / Deshabilitado) y alta, todas ordenables — E-02; enlace a la ficha (E-03) y acciones por fila según `userRules` (E-04) |
 | `src/components/users/RoleBadge.tsx` | badge con `ROLE_LABELS`: «Administrador» (ámbar claro) / «Usuario» (neutro) |
-| `src/components/users/UserForm.tsx` | presentacional; modo `create` / `edit` (password obligatoria u opcional) |
+| `src/components/users/UserForm.tsx` | presentacional; `mode` `create` / `edit` elige el esquema (contraseña obligatoria u opcional, «Nueva contraseña» con la ayuda «Déjala vacía para conservar la actual»); rol (Usuario / Administrador) y «Usuario habilitado»; `onSubmit(values, setError)` |
+| `src/hooks/useListPath.ts` | `useListPath(base)`: generalización de `useCustomersListPath` (que pasa a usarla) para volver al listado con sus filtros desde la ficha, el alta y la edición |
+| `src/lib/serverErrors.ts` | `conflict.title` opcional: en usuarios solo el 409 «Recurso duplicado» va al campo email; los 409 de reglas de admin («Operación no permitida») se muestran en el modal o en un flash |
 | `src/pages/UsersPage.tsx` | `FiltersLayout` + buscador + tabla + paginación, con los mismos estados que clientes (carga, error con reintento, vacío solo por filtros o página fuera de rango) — E-02; "Nuevo usuario" (E-03) y `ConfirmDialog` para eliminar, degradar o deshabilitar (E-04) |
-| `src/pages/UserDetailPage.tsx` | ficha con acciones |
-| `src/pages/UserCreatePage.tsx`, `src/pages/UserEditPage.tsx` | formulario; edición con `key={user.id}`; confirmación si el cambio degrada a un ADMIN |
+| `src/pages/UserDetailPage.tsx` | ficha (`dl`): email, rol, estado, alta y última modificación; «Este es tu usuario» en la propia; acciones: volver y Editar (E-03), cambiar rol, estado y eliminar (E-04) |
+| `src/pages/UserCreatePage.tsx`, `src/pages/UserEditPage.tsx` | formulario; edición con `key={user.id}`; si el cambio degrada a un ADMIN, el envío queda pendiente (`{ values, setError }` en estado local) hasta confirmar en `ConfirmDialog` («Cambiar a Usuario»): un 409 de reglas se muestra dentro del modal, el de email duplicado cierra el modal y va al campo. Flash «Usuario «email» creado / actualizado» desde el hook; la tabla enlaza el email a la ficha y tiene la columna «Editar»; «Nuevo usuario» en la cabecera del listado |
 
 Rutas `users`, `users/new`, `users/:id`, `users/:id/edit` dentro de `RequireRole role="ADMIN"`;
 `NAV_ITEMS` con `roles: ['ADMIN']` para "Usuarios".

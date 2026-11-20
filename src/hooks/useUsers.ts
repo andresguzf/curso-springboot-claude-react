@@ -1,6 +1,7 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import type { UserFilters } from '../schemas/user.ts'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { UserFilters, UserFormValues } from '../schemas/user.ts'
 import { userService } from '../services/userService.ts'
+import { flash } from '../stores/flashStore.ts'
 
 // Claves del cache de usuarios. Las mutaciones (E-03, E-04) invalidan `all`: se refrescan juntos
 // el listado, las fichas y el conteo de administradores.
@@ -38,5 +39,29 @@ export function useActiveAdminCount() {
     queryKey: userKeys.activeAdmins(),
     queryFn: () => userService.page(ACTIVE_ADMINS),
     select: (page) => page.page.totalElements,
+  })
+}
+
+// Alta y edición: flash e invalidación en onSuccess (también refresca el conteo de admins);
+// la navegación la decide la página en el onSuccess de mutate.
+export function useCreateUser() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (values: UserFormValues) => userService.create(values),
+    onSuccess: async (user) => {
+      flash.success(`Usuario «${user.email}» creado`)
+      await queryClient.invalidateQueries({ queryKey: userKeys.all })
+    },
+  })
+}
+
+export function useUpdateUser(id: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (values: UserFormValues) => userService.update(id, values),
+    onSuccess: async (user) => {
+      flash.success(`Usuario «${user.email}» actualizado`)
+      await queryClient.invalidateQueries({ queryKey: userKeys.all })
+    },
   })
 }
