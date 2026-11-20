@@ -28,7 +28,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; revisar en `/dev/ui` con teclado y a 375 px
   - Commit: "Agrega tabla de datos con orden por columna y paginación reutilizables"
 
-- [ ] **D-04** Filtros de clientes en el sidebar
+- [x] **D-04** Filtros de clientes en el sidebar
   - Depende de: B-08, D-02
   - Cubre: RF-04-04
   - Archivos: `src/components/filters/DateRangeField.tsx`, `src/components/customers/CustomerFilters.tsx`

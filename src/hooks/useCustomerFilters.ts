@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocation, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { customerFiltersSchema, type CustomerFilters } from '../schemas/customer.ts'
@@ -56,9 +56,15 @@ export function useCustomerFilters() {
     })
   }
 
+  // Cambia en cada "Limpiar filtros". La página lo usa como `key` de los campos de filtro y del
+  // buscador: al remontarse descartan lo que se estaba escribiendo y su debounce pendiente
+  // (si no, un texto aún sin aplicar se aplicaría después de limpiar).
+  const [resetKey, setResetKey] = useState(0)
+
   // Quita búsqueda y filtros del sidebar; conserva el tamaño de página y el orden.
   function clearFilters() {
     setSearchParams(toSearchParams({ ...filters, ...EMPTY_FILTERS, page: 1 }))
+    setResetKey((key) => key + 1)
   }
 
   // Filtros activos del sidebar (cada rango cuenta como uno). La búsqueda no cuenta: se ve en su caja.
@@ -71,5 +77,5 @@ export function useCustomerFilters() {
 
   const hasFilters = activeCount > 0 || filters.search !== ''
 
-  return { filters, setFilters, clearFilters, activeCount, hasFilters }
+  return { filters, setFilters, clearFilters, activeCount, hasFilters, resetKey }
 }
