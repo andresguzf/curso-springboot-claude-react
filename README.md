@@ -100,7 +100,7 @@ Endpoints usados (detalle completo, roles y ejemplos en el README del backend):
 |---|---|
 | Autenticación | `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`, `GET /api/auth/csrf` |
 | Clientes | `GET /api/customers?search&active&city&birthFrom&birthTo&createdFrom&createdTo&page&size&sort` (JSON paginado: `{content, page}`), el mismo con `&format=csv\|xlsx\|pdf\|xml` para exportar todo el resultado (sin `page` ni `size`), `GET`/`PUT`/`DELETE /api/customers/{id}`, `POST /api/customers` |
-| Usuarios (solo `ADMIN`) | `GET /api/users` (paginado, con filtros), `GET`/`PUT`/`DELETE /api/users/{id}`, `POST /api/users` |
+| Usuarios (solo `ADMIN`) | `GET /api/users?search&role&enabled&page&size&sort` (paginado; orden por `id`, `email`, `role`, `enabled` o `createdAt`), `GET /api/users/{id}`, `POST /api/users` `{email, password, role, enabled}`, `PUT /api/users/{id}` (completo; sin `password` conserva la actual), `DELETE /api/users/{id}`. Las reglas de administradores responden 409 |
 
 ### Flujo de sesión
 
@@ -129,7 +129,7 @@ Según lo que ofrece la API:
 
 - **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (hecho, spec 03).
 - **Clientes** (hecho, spec 04), ver «Pantallas de clientes».
-- **Administración de usuarios** (solo `ADMIN`).
+- **Administración de usuarios** (solo `ADMIN`; hecho, spec 05), ver «Administración de usuarios».
 - Páginas «Sin permiso» (`/forbidden`), 404 para rutas inexistentes y «Algo salió mal» para errores inesperados (hecho, spec 03).
 
 ### Pantallas de clientes
@@ -143,6 +143,25 @@ Según lo que ofrece la API:
 
 **La URL es el estado del listado**: filtros, orden, tamaño y página viven en el query string (`/customers?search=perez&active=true&page=2&sort=lastName,desc`), así un enlace copiado reproduce el resultado y el botón atrás restaura el anterior. La página empieza en 1 en la URL y en 0 en la API; los valores por defecto (página 1, 10 por página, orden `id,asc`) no se escriben y un parámetro inválido se ignora.
 
+### Administración de usuarios
+
+Toda la sección es solo para `ADMIN`: un `USER` no ve «Usuarios» en el menú y, si abre `/users`, va a «Sin permiso».
+
+| Ruta | Qué hace |
+|---|---|
+| `/users` | Tabla paginada y ordenable (email, rol, estado, alta), buscador por email y filtros de rol y estado en el sidebar; la URL guarda todo, como en clientes (orden por defecto: email). Tu fila se marca con «Tú». Por fila: Editar, «Cambiar a Administrador / Usuario», «Habilitar / Deshabilitar» y «Eliminar». |
+| `/users/:id` | Ficha con email, rol, estado, alta y última modificación, y las mismas acciones. |
+| `/users/new`, `/users/:id/edit` | Formulario con email, contraseña, rol (Usuario / Administrador) y «Usuario habilitado». La contraseña es obligatoria al crear (8 a 72 caracteres) y opcional al editar: vacía conserva la actual. Un email repetido aparece bajo su campo. |
+
+**Reglas de administradores** (el backend las aplica con un 409; la interfaz las anticipa con el motivo visible bajo las acciones):
+
+- Nadie puede eliminarse, quitarse el rol de administrador ni deshabilitarse a sí mismo: «No puedes eliminar ni quitarte permisos a ti mismo».
+- Debe quedar al menos un administrador habilitado: «Debe quedar al menos un administrador habilitado».
+- Eliminar, degradar a un administrador o deshabilitarlo pide confirmación en un modal («Se cerrarán sus sesiones; el cambio se aplica en máximo 15 minutos»: el rol viaja en el JWT y dura hasta que vence). Promover y habilitar se aplican al instante.
+- Si aun así el backend responde 409 (otro administrador cambió algo en paralelo), el mensaje aparece en el modal o en un aviso y la tabla se actualiza.
+
+**Cambios sobre tu propio usuario**: si cambias tu email, la sesión se renueva enseguida y sigues dentro; si cambias tu contraseña, el backend cierra todas tus sesiones y vuelves al login con el aviso «Contraseña cambiada, inicia sesión de nuevo».
+
 ## Estructura
 
 ```
@@ -155,20 +174,23 @@ src/
 │   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), UserMenu, Footer
 │   ├── ui/               # Button (+ buttonStyles), Input, Select, FormField, Badge, Spinner, EmptyState,
 │   │                     # PageHeader, FlashMessages / FlashMessage, ConfirmDialog, DataTable y Pagination
-│   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil) y DateRangeField
+│   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil), DateRangeField
+│   │                     # y SearchField (buscador con debounce)
 │   ├── customers/        # CustomerTable, CustomerSearch, CustomerFilters, CustomerForm, ExportMenu
-│   └── {recurso}/        # componentes de otro recurso (usuarios, spec 05)
-├── pages/                # una página por ruta (Home, Login, Customers, CustomerDetail / Create / Edit,
-│                         # Forbidden, NotFound, RouteError, DevUi)
-├── hooks/                # useAuth, useCustomers (consultas y mutaciones), useCustomerFilters (URL),
-│                         # useExportCustomers, useCustomersListPath, useDebouncedCallback / useDebouncedText,
-│                         # useMediaQuery, useModalDialog
+│   └── users/            # UserTable, UserFilters, UserForm, UserActions, RoleBadge
+├── pages/                # una página por ruta (Home, Login, Customers, CustomerDetail / Create / Edit, Users,
+│                         # UserDetail / Create / Edit, Forbidden, NotFound, RouteError, DevUi)
+├── hooks/                # useAuth; useUrlFilters (URL ↔ filtros) con useCustomerFilters y useUserFilters;
+│                         # useCustomers y useUsers (consultas y mutaciones), useUserActions, useExportCustomers,
+│                         # useListPath, useDebouncedCallback / useDebouncedText, useMediaQuery, useModalDialog
 ├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar, persistido)
-├── schemas/              # Zod: common (página, ProblemDetail), user (+ ROLE_LABELS), auth (login) y customer
-│                         # (respuesta, filtros de la URL, formulario, formatos de exportación)
-├── services/             # authService y customerService (page, get, create, update, remove, exportFile)
+├── schemas/              # Zod: common (página, ProblemDetail, parámetros de listado), auth (login), customer y
+│                         # user (respuesta, filtros de la URL, formularios, ROLE_LABELS)
+├── services/             # authService, customerService (+ exportFile) y userService (page, get, create,
+│                         # update, remove)
 └── lib/                  # http.ts (cliente HTTP), session.ts, query.ts (toQuery), queryClient.ts, format.ts
-                          # (fechas es-CL), errors.ts, serverErrors.ts (errores por campo), saveFile.ts
+                          # (fechas es-CL), errors.ts, serverErrors.ts (errores por campo), saveFile.ts,
+                          # userRules.ts (reglas de administradores)
 ```
 
 El layout usa HTML semántico: `header` (banda grafito con la marca y la navegación `nav`), región de mensajes flash, `main` y `footer`.

@@ -8,10 +8,11 @@ type NavItem = {
   roles?: Role[]
 }
 
-// Agrega aquí una entrada por cada página del menú (Usuarios en E-02 con roles: ['ADMIN']).
+// Una entrada por cada página del menú; `roles` la oculta a los demás (la ruta además está protegida).
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Resumen' },
   { to: '/customers', label: 'Clientes' },
+  { to: '/users', label: 'Usuarios', roles: ['ADMIN'] },
 ]
 
 function linkClassName({ isActive }: { isActive: boolean }) {

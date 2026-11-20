@@ -35,7 +35,7 @@ necesita A-09 y A-10.
 | 02 | B · Base del frontend, diseño y componentes | `4-react` | [spec](02-base-frontend/spec.md) | B-01 … B-09 | Hecha |
 | 03 | C · Autenticación y rutas por rol | `4-react` | [spec](03-autenticacion/spec.md) | C-01 … C-04 | Hecha |
 | 04 | D · Clientes | `4-react` | [spec](04-clientes/spec.md) | D-01 … D-09 | Hecha |
-| 05 | E · Usuarios y roles | `4-react` | [spec](05-usuarios/spec.md) | E-01 … E-06 | Pendiente |
+| 05 | E · Usuarios y roles | `4-react` | [spec](05-usuarios/spec.md) | E-01 … E-06 | Hecha |
 | 06 | F · Pulido, accesibilidad y documentación | `4-react` | [spec](06-pulido/spec.md) | F-01 … F-04 | Pendiente |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.

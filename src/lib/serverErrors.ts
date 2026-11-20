@@ -4,8 +4,11 @@ import { HttpError } from './http.ts'
 type ServerErrorOptions<T extends FieldValues> = {
   /** Campos del formulario: solo a ellos se asignan los errores 400. */
   fields: readonly Path<T>[]
-  /** Dónde mostrar un 409 (valor duplicado) y con qué mensaje. */
-  conflict?: { field: Path<T>; message: string }
+  /**
+   * Dónde mostrar un 409 (valor duplicado) y con qué mensaje. Con `title`, solo los 409 con ese
+   * título del ProblemDetail (p. ej. "Recurso duplicado"; en usuarios, otros 409 son reglas de admin).
+   */
+  conflict?: { field: Path<T>; message: string; title?: string }
 }
 
 // Lleva los errores del backend a los campos del formulario (React Hook Form):
@@ -28,7 +31,7 @@ export function applyServerErrors<T extends FieldValues>(
     return known.length > 0
   }
 
-  if (error.status === 409 && conflict) {
+  if (error.status === 409 && conflict && (conflict.title === undefined || conflict.title === error.title)) {
     setError(conflict.field, { type: 'server', message: conflict.message }, { shouldFocus: true })
     return true
   }

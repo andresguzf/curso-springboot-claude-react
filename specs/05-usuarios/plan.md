@@ -23,24 +23,30 @@ Al cambiar rol, contraseña o estado, el backend revoca los refresh tokens del u
 
 | Archivo | Contenido |
 |---|---|
-| `src/schemas/user.ts` | `userPageSchema = pagedSchema(userSchema)`; `userFiltersSchema` (`search`, `role`, `enabled`, `page`, `size`, `sort` con `.catch()`); `userCreateSchema` (password 8–72 obligatoria); `userUpdateSchema` (password `''` u 8–72) |
-| `src/services/userService.ts` | `page(filters)`, `get(id)`, `create`, `update(id, values)` (omite `password` vacía), `remove(id)` |
-| `src/hooks/useUrlFilters.ts` | generalización de `useCustomerFilters(schema)` si el código se repite; `useCustomerFilters` pasa a usarla |
-| `src/hooks/useUserFilters.ts` | `useUrlFilters(userFiltersSchema)` |
-| `src/hooks/useUsers.ts` | `userKeys`, `useUsersPage`, `useUser`, `useActiveAdminCount()` (`role=ADMIN&enabled=true&size=1` → `page.totalElements`), `useCreateUser`, `useUpdateUser`, `useDeleteUser` (invalidan `userKeys.all` y publican el flash) |
-| `src/lib/userRules.ts` | funciones puras: `canDelete(user, me, activeAdmins)`, `canChangeRole(…)`, `canDisable(…)` → `{ allowed: boolean, reason?: string }` |
+| `src/schemas/user.ts` | `userPageSchema = pagedSchema(userSchema)`; `USER_SORT_FIELDS`; `userFiltersSchema` (`search`, `role`, `enabled`, `page`, `size`, `sort` con `.catch()`; orden por defecto `email,asc`, como el backend) — E-01; `userCreateSchema` (password 8–72 obligatoria) y `userUpdateSchema` (password `''` u 8–72) — E-03 |
+| `src/schemas/common.ts` | `PAGE_SIZES`, `pageParam`, `sizeParam` y `sortParam(fields, fallback)`: parámetros de listado en la URL compartidos por clientes y usuarios (movidos desde `customer.ts` sin cambiar su comportamiento) |
+| `src/services/userService.ts` | `page(filters)` (página 1 → 0) y `get(id)` — E-01; `create`, `update(id, values)` (omite `password` vacía) y `remove(id)` — E-03 / E-04 |
+| `src/hooks/useUrlFilters.ts` | `useUrlFilters(schema, config)`: toda la lógica de URL ↔ filtros (vuelta a la página 1, historial al escribir con `state.textEdit`, valores por defecto omitidos, `clearFilters` + `resetKey`, `activeCount`, `hasFilters`). `config` (constante de módulo): `textFields`, `cleared`, `countActive`. `useCustomerFilters` pasa a ser `useUrlFilters(customerFiltersSchema, CUSTOMER_FILTERS)` |
+| `src/hooks/useUserFilters.ts` | `useUrlFilters(userFiltersSchema, USER_FILTERS)`: texto `search`; cuenta rol y estado |
+| `src/hooks/useUsers.ts` | `userKeys` (`all`, `list`, `detail`, `activeAdmins`), `useUsersPage` (`keepPreviousData`), `useUser`, `useActiveAdminCount()` (`role=ADMIN&enabled=true&size=1` con `select` → `page.totalElements`) — E-01; `useCreateUser`, `useUpdateUser` (E-03); `useChangeUser` (PUT completo con un campo cambiado; flash «Rol cambiado a Administrador / Usuario», «Usuario habilitado / deshabilitado») y `useDeleteUser` (flash «Usuario eliminado», quita la ficha del cache) — E-04; todas invalidan `userKeys.all` (las de E-04 también tras un error, para refrescar la tabla ante un 409) |
+| `src/lib/userRules.ts` | funciones puras `roleChangeRule`, `statusChangeRule`, `deleteRule(user, me, activeAdmins)` → `{ allowed: true } \| { allowed: false, reason }`. Promover y habilitar siempre se permiten; degradar, deshabilitar y eliminar se bloquean sobre uno mismo (`SELF_REASON`, tiene prioridad) o sobre el último ADMIN habilitado (`LAST_ADMIN_REASON`); con el conteo cargando no se bloquea (decide el backend) |
+| `src/hooks/useUserActions.ts` | `run(action, user)`, `dialogProps` y `busyUserId`: estado `PendingAction`, decide si la acción pide confirmación (eliminar, degradar, deshabilitar a un ADMIN), ejecuta `useChangeUser` / `useDeleteUser`, muestra el error en el modal o en un flash y llama a `onDeleted`. Lo usan el listado y la ficha |
+| `src/components/users/UserActions.tsx` | botones «Cambiar a Administrador / Usuario», «Habilitar / Deshabilitar» y «Eliminar»; si una regla lo impide, el botón queda deshabilitado y el motivo se muestra debajo con `aria-describedby` |
 
 ## 3. Componentes y páginas
 
 | Archivo | Contenido |
 |---|---|
-| `src/components/users/UserFilters.tsx` | rol y estado en el `FiltersSidebar` |
-| `src/components/users/UserTable.tsx` | `DataTable` con `RoleBadge`, estado y menú de acciones por fila según `userRules` |
-| `src/components/users/RoleBadge.tsx` | badge USER / ADMIN |
-| `src/components/users/UserForm.tsx` | presentacional; modo `create` / `edit` (password obligatoria u opcional) |
-| `src/pages/UsersPage.tsx` | `FiltersLayout` + buscador + tabla + paginación + `ConfirmDialog` (eliminar, degradar, deshabilitar) |
-| `src/pages/UserDetailPage.tsx` | ficha con acciones |
-| `src/pages/UserCreatePage.tsx`, `src/pages/UserEditPage.tsx` | formulario; edición con `key={user.id}`; confirmación si el cambio degrada a un ADMIN |
+| `src/components/users/UserFilters.tsx` | rol (Todos / Administrador / Usuario) y estado (Todos / Habilitados / Deshabilitados) en el `FiltersSidebar`; presentacional |
+| `src/components/filters/SearchField.tsx` | buscador genérico con `useDebouncedText` (`label` oculto, `placeholder`); lo usan usuarios («Buscar por email») y `CustomerSearch`, que pasa a ser un envoltorio |
+| `src/components/users/UserTable.tsx` | `DataTable` con email (la fila propia marcada con «Tú»), `RoleBadge`, estado (Habilitado / Deshabilitado) y alta, todas ordenables — E-02; enlace a la ficha (E-03) y acciones por fila según `userRules` (E-04) |
+| `src/components/users/RoleBadge.tsx` | badge con `ROLE_LABELS`: «Administrador» (ámbar claro) / «Usuario» (neutro) |
+| `src/components/users/UserForm.tsx` | presentacional; `mode` `create` / `edit` elige el esquema (contraseña obligatoria u opcional, «Nueva contraseña» con la ayuda «Déjala vacía para conservar la actual»); rol (Usuario / Administrador) y «Usuario habilitado»; `onSubmit(values, setError)` |
+| `src/hooks/useListPath.ts` | `useListPath(base)`: generalización de `useCustomersListPath` (que pasa a usarla) para volver al listado con sus filtros desde la ficha, el alta y la edición |
+| `src/lib/serverErrors.ts` | `conflict.title` opcional: en usuarios solo el 409 «Recurso duplicado» va al campo email; los 409 de reglas de admin («Operación no permitida») se muestran en el modal o en un flash |
+| `src/pages/UsersPage.tsx` | `FiltersLayout` + buscador + tabla + paginación, con los mismos estados que clientes (carga, error con reintento, vacío solo por filtros o página fuera de rango) — E-02; "Nuevo usuario" (E-03) y `ConfirmDialog` para eliminar, degradar o deshabilitar (E-04) |
+| `src/pages/UserDetailPage.tsx` | ficha (`dl`): email, rol, estado, alta y última modificación; «Este es tu usuario» en la propia; acciones: volver y Editar (E-03), cambiar rol, estado y eliminar (E-04) |
+| `src/pages/UserCreatePage.tsx`, `src/pages/UserEditPage.tsx` | formulario; edición con `key={user.id}`; si el cambio degrada a un ADMIN, el envío queda pendiente (`{ values, setError }` en estado local) hasta confirmar en `ConfirmDialog` («Cambiar a Usuario»): un 409 de reglas se muestra dentro del modal, el de email duplicado cierra el modal y va al campo. Flash «Usuario «email» creado / actualizado» desde el hook; la tabla enlaza el email a la ficha y tiene la columna «Editar»; «Nuevo usuario» en la cabecera del listado |
 
 Rutas `users`, `users/new`, `users/:id`, `users/:id/edit` dentro de `RequireRole role="ADMIN"`;
 `NAV_ITEMS` con `roles: ['ADMIN']` para "Usuarios".
@@ -66,8 +72,8 @@ habilitar no piden confirmación.
 
 | Caso | Qué hace la UI | Motivo |
 |---|---|---|
-| Cambio del propio email | tras el `onSuccess`, `authService.refresh()` y `setUser` | el JWT trae el email anterior como `sub`; sin renovar, `/me` responde 404 y el backend deja de reconocerlo como "uno mismo" |
-| Cambio de la propia contraseña | flash "Contraseña cambiada, inicia sesión de nuevo" y logout | el backend revoca sus refresh tokens |
+| Cambio del propio email | en el `onSuccess` de `useUpdateUser`, `await refreshSession()` (nuevo en `lib/http.ts`: usa la promesa compartida de `refreshOnce`) **antes** de invalidar las consultas; `onRefreshed` actualiza el usuario del header | el JWT trae el email anterior como `sub`; sin renovar, `/me` responde 404 y el backend deja de reconocerlo como "uno mismo". Llamar a `authService.refresh()` aparte podría correr en paralelo con el refresh de un 401 y el backend lo tomaría como reuso (revoca todas las sesiones) |
+| Cambio de la propia contraseña | `authService.logout()` (borra las cookies), `queryClient.clear()`, `clear({ loggedOut: true })` y flash "Contraseña cambiada, inicia sesión de nuevo"; `RequireAuth` lleva al login sin ruta de origen | el backend revoca sus refresh tokens, pero el access token seguiría vivo hasta 15 min si no se borra la cookie |
 | Rol o estado propio | acciones deshabilitadas en la UI | el backend responde 409 |
 
 ## 6. Decisiones
@@ -77,6 +83,8 @@ habilitar no piden confirmación.
 | `userRules` como funciones puras | Se prueban y reutilizan en tabla, ficha y formulario sin duplicar condiciones. |
 | `useActiveAdminCount` con `size=1` | Usa el conteo del servidor (`totalElements`) sin traer todos los usuarios. |
 | Confirmación al degradar o deshabilitar un ADMIN | Es una acción con efecto sobre el acceso de otra persona y se aplica con hasta 15 min de retraso. |
+| Etiquetas «Administrador» / «Usuario» en las acciones (no «ADMIN» / «USER») | Regla de `design.md`: los valores de la API no se muestran. |
+| La regla del último admin rara vez se ve en otra fila | Quien mira siempre es un ADMIN habilitado, así que el último admin habilitado suele ser uno mismo (manda `SELF_REASON`). Solo aparece en otra fila si el rol del JWT de quien mira está desactualizado (hasta 15 min tras ser degradado); el backend responde 409 igual. |
 
 ## 7. Riesgos
 

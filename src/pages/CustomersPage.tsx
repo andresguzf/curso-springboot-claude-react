@@ -17,7 +17,8 @@ import { useCustomerFilters } from '../hooks/useCustomerFilters.ts'
 import { useCustomersPage, useDeleteCustomer } from '../hooks/useCustomers.ts'
 import { useExportCustomers } from '../hooks/useExportCustomers.ts'
 import { errorMessage } from '../lib/errors.ts'
-import { PAGE_SIZES, type Customer } from '../schemas/customer.ts'
+import { PAGE_SIZES } from '../schemas/common.ts'
+import type { Customer } from '../schemas/customer.ts'
 
 // Listado de clientes: orquesta los filtros (en la URL), la consulta a la API y los componentes.
 // Sin useEffect: los datos vienen de TanStack Query y cada cambio sale de un handler.

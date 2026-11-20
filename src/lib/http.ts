@@ -125,6 +125,15 @@ function refreshOnce(): Promise<User | null> {
   return refreshing
 }
 
+/**
+ * Renueva la sesión ahora (p. ej. tras cambiar el propio email: el JWT trae el anterior).
+ * Usa la misma promesa compartida que los 401, así nunca hay dos /refresh en paralelo.
+ * Avisa a onRefreshed / onSessionExpired como cualquier renovación; devuelve el usuario o null.
+ */
+export function refreshSession(): Promise<User | null> {
+  return refreshOnce()
+}
+
 async function doRefresh(): Promise<User | null> {
   try {
     const response = await send(REFRESH_ENDPOINT, { method: 'POST' }, { accept: 'application/json', retry: false })

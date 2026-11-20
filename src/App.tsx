@@ -13,6 +13,10 @@ import { HomePage } from './pages/HomePage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
 import { NotFoundPage } from './pages/NotFoundPage.tsx'
 import { RouteErrorPage } from './pages/RouteErrorPage.tsx'
+import { UserCreatePage } from './pages/UserCreatePage.tsx'
+import { UserDetailPage } from './pages/UserDetailPage.tsx'
+import { UserEditPage } from './pages/UserEditPage.tsx'
+import { UsersPage } from './pages/UsersPage.tsx'
 
 // Rutas que solo existen con `npm run dev` (catálogo de componentes; se elimina en F-04).
 const devRoutes: RouteObject[] = import.meta.env.DEV ? [{ path: 'dev/ui', element: <DevUiPage /> }] : []
@@ -39,13 +43,17 @@ const router = createBrowserRouter([
           // Lectura de clientes: USER y ADMIN.
           { path: 'customers', element: <CustomersPage /> },
           { path: 'customers/:id', element: <CustomerDetailPage /> },
-          // Escritura de clientes: solo ADMIN (un USER va a /forbidden). 'customers/new' gana a
-          // 'customers/:id' porque React Router prioriza los segmentos fijos.
+          // Solo ADMIN (un USER va a /forbidden): escritura de clientes y toda la sección de usuarios.
+          // 'customers/new' gana a 'customers/:id' porque React Router prioriza los segmentos fijos.
           {
             element: <RequireRole role="ADMIN" />,
             children: [
               { path: 'customers/new', element: <CustomerCreatePage /> },
               { path: 'customers/:id/edit', element: <CustomerEditPage /> },
+              { path: 'users', element: <UsersPage /> },
+              { path: 'users/new', element: <UserCreatePage /> },
+              { path: 'users/:id', element: <UserDetailPage /> },
+              { path: 'users/:id/edit', element: <UserEditPage /> },
             ],
           },
           ...devRoutes,
