@@ -15,7 +15,7 @@ El frontend consume la API REST de Spring Boot del proyecto hermano `../3-spring
 | Recurso | Qué contiene |
 |---|---|
 | [`../3-spring-api/README.md`](../3-spring-api/README.md) | Stack y puesta en marcha (PostgreSQL con Docker, variables de entorno), seguridad y roles (`USER` / `ADMIN`), autenticación en `/api/auth` (cookies `access_token`, `refresh_token` y `XSRF-TOKEN`, ejemplos con curl), endpoints de `/api/customers` y `/api/users` con ejemplos de request/response, formatos de exportación (content negotiation), formato de errores (`ProblemDetail`) y estructura del proyecto. |
-| [`../3-spring-api/CLAUDE.md`](../3-spring-api/CLAUDE.md) | Guía técnica del backend: comandos para levantarlo (`./mvnw -DskipTests spring-boot:run`), configuración (`.env`), arquitectura en capas y DTOs, reglas de acceso de `SecurityConfig`, detalles de JWT en cookies `HttpOnly`, CSRF, rotación del refresh token y el buscador `GET /api/customers?search=&active=`. |
+| [`../3-spring-api/CLAUDE.md`](../3-spring-api/CLAUDE.md) | Guía técnica del backend: comandos para levantarlo (`./mvnw -DskipTests spring-boot:run`), configuración (`.env`), arquitectura en capas y DTOs, reglas de acceso de `SecurityConfig`, detalles de JWT en cookies `HttpOnly`, CSRF, rotación del refresh token y los listados paginados con filtros (`CustomerFilter`, `UserFilter`, `Pageables`). |
 
 Puntos que afectan directamente al frontend (detalle en esos archivos):
 
@@ -23,6 +23,18 @@ Puntos que afectan directamente al frontend (detalle en esos archivos):
 - La sesión va en cookies `HttpOnly`: JavaScript no lee ni guarda tokens. Las peticiones llevan `credentials: 'include'` y las escrituras la cabecera `X-XSRF-TOKEN` con el valor de la cookie `XSRF-TOKEN`.
 - Los errores llegan como `ProblemDetail` (`title`, `detail`, `status`); la validación agrega `errors` (campo → mensaje), útil para `setError` en React Hook Form.
 - Si el backend cambia (endpoints, campos de un DTO, reglas de seguridad), actualiza los esquemas Zod y servicios del frontend en el mismo cambio.
+- Los listados `GET /api/customers` y `GET /api/users` en JSON son **paginados** (`{content, page:{size, number, totalElements, totalPages}}`, `page` desde 0, `size` máx. 100, `sort=campo,asc|desc` con lista blanca) y aceptan filtros; `GET /api/customers?format=csv|xlsx|pdf|xml` exporta todo el resultado filtrado. Usa `pagedSchema(item)` de `src/schemas/common.ts`.
+
+## Arquitectura del frontend (piezas compartidas)
+
+- **`src/lib/http.ts`** es el único lugar que llama a `fetch`: `credentials: 'include'`, cabecera CSRF en escrituras (pide `/api/auth/csrf` si falta la cookie), respuestas validadas con Zod y errores como `HttpError` (`status`, `title`, `detail`, `fieldErrors`). Ante un 401 usa **`refreshOnce`**: una sola promesa de `POST /api/auth/refresh` compartida por todas las peticiones; no la reemplaces por refresh paralelos (el backend rota el refresh token y revocaría todas las sesiones). Un 403 "Token CSRF inválido" renueva el token y reintenta una vez. `http.download()` para exportaciones.
+- **`setAuthHandlers({ onRefreshed, onSessionExpired })`**: `lib/` no importa stores ni el router; la app registra en `main.tsx` qué hacer cuando la sesión se renueva o expira (se avisa una vez por renovación). Se conecta en la spec 03.
+- **`flashStore`** (`src/stores/flashStore.ts`): mensajes flash globales (máx. 3, 5 s). Publícalos con `flash.success/error/info(texto)` desde handlers u `onSuccess` / `onError` de mutaciones, nunca desde un `useEffect` que observa datos. La región (`FlashMessages`) ya está en `AppLayout`.
+- **`ConfirmDialog`** (`src/components/ui/`): toda eliminación o acción destructiva lo usa (nunca `confirm()`). El padre controla `open` con estado local y le pasa `isPending` y `error` de la mutación; `tone="danger"` y `confirmLabel` con el verbo ("Eliminar").
+- **`FiltersLayout`** (`src/components/filters/`): `filters` (campos), `activeCount`, `onClear` y el contenido como `children`. Desde `lg` muestra `FiltersSidebar` (colapsable, estado en `uiStore` persistido); en pantallas chicas, `FiltersDrawer`.
+- **Hooks**: `useModalDialog(open, initialFocusRef)` sincroniza un `<dialog>` modal (lo usan `ConfirmDialog` y el cajón); `useMediaQuery(query)` con `useSyncExternalStore`.
+- **Componentes base** en `src/components/ui/`: `Button` (variantes, `isPending`, acepta `ref`), `Input`, `Select`, `FormField` (recibe el campo como función: `{(field) => <Input {...field} />}`, así asocia etiqueta, ayuda y error), `Badge` (estado y rol en minúscula de oración: «Administrador» / «Usuario»), `Spinner`, `EmptyState`, `PageHeader` (el `h1` de cada página).
+- **Estilos**: solo tokens del `@theme` de `src/index.css` (dirección visual en `specs/02-base-frontend/design.md`); el ámbar (`accent`) nunca como color de texto (usa `accent-strong`). La ruta `/dev/ui` (solo `npm run dev`) es el catálogo de componentes; agrega ahí las piezas nuevas para revisarlas.
 
 ## Desarrollo guiado por especificaciones (SDD)
 

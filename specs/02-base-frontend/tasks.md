@@ -74,7 +74,7 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Verificación: `npm run build && npm run lint`; en `/dev/ui` colapsar, recargar, y probar a 375 px
   - Commit: "Agrega el sidebar de filtros colapsable con estado persistente"
 
-- [ ] **B-09** Documentar la fase B
+- [x] **B-09** Documentar la fase B
   - Depende de: B-03, B-06, B-07, B-08
   - Cubre: RF-02-12
   - Archivos: `README.md`, `CLAUDE.md`, `specs/02-base-frontend/spec.md` (estado: Hecha), `specs/README.md` (estado)
