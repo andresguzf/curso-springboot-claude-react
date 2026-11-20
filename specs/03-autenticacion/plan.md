@@ -33,7 +33,7 @@ export function initSession(): void  // authService.me() → setUser | clear (40
 
 `src/main.tsx` (orden, una sola vez al cargar el módulo):
 
-1. `setAuthHandlers({ onRefreshed: setUser, onSessionExpired })`, donde `onSessionExpired` hace `clear()`, `queryClient.clear()` y `flash.info('Tu sesión expiró, inicia sesión de nuevo')`.
+1. `setAuthHandlers({ onRefreshed: setUser, onSessionExpired })`, donde `onSessionExpired` hace `clear()`, `queryClient.clear()` y `flash.info('Tu sesión expiró, inicia sesión de nuevo')`. El flash se muestra solo si el estado anterior era `authenticated`: al abrir la app sin sesión, `/me` → 401 → refresh fallido también llama a `onSessionExpired` (con estado `checking`) y no hay nada que avisar.
 2. `initSession()`.
 3. `createRoot(...).render(...)`.
 

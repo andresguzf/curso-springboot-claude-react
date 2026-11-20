@@ -4,7 +4,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
 [constitución](../constitution.md#6-calidad-definición-de-hecho). Las pruebas en
 navegador necesitan el backend arriba.
 
-- [ ] **C-01** Store de sesión e inicialización al cargar
+- [x] **C-01** Store de sesión e inicialización al cargar
   - Depende de: B-03, B-06
   - Cubre: RF-03-02, RF-03-06, RNF-03-01
   - Archivos: `src/stores/authStore.ts`, `src/lib/session.ts`, `src/main.tsx`
