@@ -20,12 +20,13 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Verificación: `npm run build && npm run lint`; en la consola del navegador (dev) un `POST` sin sesión lleva la cabecera y devuelve `HttpError` 401
   - Commit: "Agrega cliente HTTP con cookies, CSRF y errores ProblemDetail"
 
-- [ ] **B-03** Renovación de sesión, descargas y servicio de autenticación
+- [x] **B-03** Renovación de sesión, descargas y servicio de autenticación
   - Depende de: B-02
   - Cubre: RF-02-04, RF-02-05, RNF-02-02
   - Archivos: `src/lib/http.ts` (`refreshOnce`, `setAuthHandlers`, reintento CSRF, `download`), `src/schemas/user.ts`, `src/services/authService.ts`
   - Hecho cuando: tres 401 simultáneos producen un solo `/api/auth/refresh` y un reintento cada una; si el refresh falla se llama `onSessionExpired`; un 403 "Token CSRF inválido" se reintenta una vez; `download` devuelve blob y nombre; `lib/` no importa stores
   - Verificación: `npm run build && npm run lint`; prueba manual en C-04 (con login real)
+  - Nota: sin sesión ya se verificó en el navegador que tres 401 simultáneos generan un solo `/refresh` y un solo `onSessionExpired`, y el reintento CSRF (403 → `GET /api/auth/csrf` → reintento con cabecera). El refresh exitoso y `download` con sesión quedan para C-04 y D-08
   - Commit: "Agrega renovación de sesión con refresh único, descargas y servicio de autenticación"
 
 - [ ] **B-04** Dirección visual aprobada y tokens de diseño

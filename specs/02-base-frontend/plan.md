@@ -38,7 +38,7 @@ export const http = {
   }
   ```
 
-  Si `refreshOnce()` devuelve usuario → `handlers.onRefreshed(user)` y un reintento; si no → `handlers.onSessionExpired()` y se propaga el 401. Compartir la promesa es obligatorio: dos `/refresh` paralelos con la misma cookie se detectan como reuso y el backend revoca todas las sesiones.
+  `refreshOnce()` llama a `handlers.onRefreshed(user)` o a `handlers.onSessionExpired()` **una sola vez por renovación** (dentro de la promesa compartida), aunque esperen varias peticiones. Con usuario, cada petición se reintenta una vez; sin usuario, se propaga el 401. `/api/auth/me` sí renueva (al recargar la app con el access token vencido); login, refresh, logout y csrf no. Compartir la promesa es obligatorio: dos `/refresh` paralelos con la misma cookie se detectan como reuso y el backend revoca todas las sesiones.
 - 403 con `title === 'Token CSRF inválido'` → `GET /api/auth/csrf` y un reintento. Otros 403 se propagan.
 - `download`: mismo flujo; nombre desde `Content-Disposition` (`filename*=UTF-8''…` o `filename=`).
 
