@@ -38,10 +38,11 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Verificación: `npm run build && npm run lint`; `HomePage` usa los tokens nuevos en el navegador
   - Commit: "Agrega la dirección visual y los tokens de diseño"
 
-- [ ] **B-05** Layout del dashboard y componentes base
+- [x] **B-05** Layout del dashboard y componentes base
   - Depende de: B-04
   - Cubre: RF-02-07, RF-02-11, RNF-02-01
-  - Archivos: `src/components/layout/{AppLayout,AuthLayout,Header,Navbar,Footer}.tsx`, `src/components/ui/{Button,Input,Select,FormField,Badge,Spinner,EmptyState,PageHeader}.tsx`, `src/pages/DevUiPage.tsx` (ruta `/dev/ui` solo en desarrollo), `src/App.tsx`
+  - Archivos: `src/components/layout/{AppLayout,AuthLayout,Header,Navbar,Footer}.tsx`, `src/components/ui/{Button,Input,Select,FormField,Badge,Spinner,EmptyState,PageHeader}.tsx`, `src/pages/DevUiPage.tsx` (ruta `/dev/ui` solo en desarrollo), `src/App.tsx`, `src/pages/HomePage.tsx` (usa `PageHeader`); se elimina `Layout.tsx` de la plantilla
+  - Nota: `FormField` recibe el campo como función (`{(field) => <Input {...field} />}`) para pasarle `id`, `aria-describedby` y `aria-invalid` sin `cloneElement`. La región de mensajes flash se agrega al `AppLayout` en B-06
   - Hecho cuando: el layout tiene `header`, región flash, `main` ancho y `footer`; `NAV_ITEMS` acepta `roles`; los componentes base se ven en `/dev/ui`; sin scroll horizontal a 375 px
   - Verificación: `npm run build && npm run lint`; revisar `/dev/ui` en escritorio y a 375 px, foco visible con Tab
   - Commit: "Agrega el layout del dashboard y los componentes base de UI"
