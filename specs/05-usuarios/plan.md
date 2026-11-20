@@ -35,11 +35,12 @@ Al cambiar rol, contraseña o estado, el backend revoca los refresh tokens del u
 
 | Archivo | Contenido |
 |---|---|
-| `src/components/users/UserFilters.tsx` | rol y estado en el `FiltersSidebar` |
-| `src/components/users/UserTable.tsx` | `DataTable` con `RoleBadge`, estado y menú de acciones por fila según `userRules` |
-| `src/components/users/RoleBadge.tsx` | badge USER / ADMIN |
+| `src/components/users/UserFilters.tsx` | rol (Todos / Administrador / Usuario) y estado (Todos / Habilitados / Deshabilitados) en el `FiltersSidebar`; presentacional |
+| `src/components/filters/SearchField.tsx` | buscador genérico con `useDebouncedText` (`label` oculto, `placeholder`); lo usan usuarios («Buscar por email») y `CustomerSearch`, que pasa a ser un envoltorio |
+| `src/components/users/UserTable.tsx` | `DataTable` con email (la fila propia marcada con «Tú»), `RoleBadge`, estado (Habilitado / Deshabilitado) y alta, todas ordenables — E-02; enlace a la ficha (E-03) y acciones por fila según `userRules` (E-04) |
+| `src/components/users/RoleBadge.tsx` | badge con `ROLE_LABELS`: «Administrador» (ámbar claro) / «Usuario» (neutro) |
 | `src/components/users/UserForm.tsx` | presentacional; modo `create` / `edit` (password obligatoria u opcional) |
-| `src/pages/UsersPage.tsx` | `FiltersLayout` + buscador + tabla + paginación + `ConfirmDialog` (eliminar, degradar, deshabilitar) |
+| `src/pages/UsersPage.tsx` | `FiltersLayout` + buscador + tabla + paginación, con los mismos estados que clientes (carga, error con reintento, vacío solo por filtros o página fuera de rango) — E-02; "Nuevo usuario" (E-03) y `ConfirmDialog` para eliminar, degradar o deshabilitar (E-04) |
 | `src/pages/UserDetailPage.tsx` | ficha con acciones |
 | `src/pages/UserCreatePage.tsx`, `src/pages/UserEditPage.tsx` | formulario; edición con `key={user.id}`; confirmación si el cambio degrada a un ADMIN |
 

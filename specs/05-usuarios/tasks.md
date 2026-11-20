@@ -12,7 +12,7 @@ con A-09 (listado de usuarios) y A-10 (último admin) hechas.
   - Verificación: `npm run build && npm run lint`; los filtros de clientes siguen funcionando en el navegador
   - Commit: "Agrega esquemas, servicio y hooks de usuarios con filtros en la URL"
 
-- [ ] **E-02** Listado de usuarios con búsqueda y filtros
+- [x] **E-02** Listado de usuarios con búsqueda y filtros
   - Depende de: E-01, D-03, B-08
   - Cubre: RF-05-01, RF-05-02, RF-05-11
   - Archivos: `src/components/users/{UserFilters,UserTable,RoleBadge}.tsx`, `src/pages/UsersPage.tsx`, `src/App.tsx` (rutas ADMIN), `src/components/layout/Navbar.tsx`
