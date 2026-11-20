@@ -12,7 +12,7 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Verificación: `npm run build && npm run lint`; con `npm run dev` y el backend arriba, `curl -i localhost:5173/api/auth/csrf` → 200 con `Set-Cookie: XSRF-TOKEN`
   - Commit: "Genera el proyecto React y configura el proxy hacia la API"
 
-- [ ] **B-02** Cliente HTTP con cookies, CSRF y errores ProblemDetail
+- [x] **B-02** Cliente HTTP con cookies, CSRF y errores ProblemDetail
   - Depende de: B-01
   - Cubre: RF-02-03
   - Archivos: `src/lib/http.ts`, `src/schemas/common.ts`, `src/lib/query.ts`, `src/lib/queryClient.ts`
