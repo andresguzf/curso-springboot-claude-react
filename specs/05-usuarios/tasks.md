@@ -44,7 +44,7 @@ con A-09 (listado de usuarios) y A-10 (último admin) hechas.
   - Verificación: `npm run build && npm run lint`; en el navegador con un admin de prueba (no el admin inicial del `.env`)
   - Commit: "Mantiene la sesión al cambiar el propio email y cierra sesión al cambiar la propia contraseña"
 
-- [ ] **E-06** Documentar la fase E
+- [x] **E-06** Documentar la fase E
   - Depende de: E-05
   - Cubre: RF-05-12
   - Archivos: `README.md`, `CLAUDE.md`, `specs/05-usuarios/spec.md` (estado: Hecha), `specs/README.md` (estado)
