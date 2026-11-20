@@ -13,7 +13,21 @@ Situación actual: un solo chunk de JavaScript de **555,66 kB** (169,90 kB gzip)
 | Indicador de navegación | `useNavigation().state === 'loading'` en `AppLayout` (y `AuthLayout`): una barra fina en el borde superior, con `role="progressbar"` sin valor y `aria-label`, y sin animación con `prefers-reduced-motion`. La pantalla anterior se mantiene hasta que llega la nueva (comportamiento por defecto de `lazy`). |
 | Dependencias compartidas | Si tras la división el chunk inicial sigue cerca del límite, `build.rolldownOptions.output.codeSplitting` (o `manualChunks`) separa las librerías grandes (React, TanStack Query, Zod) en chunks de proveedor. Se decide midiendo. |
 
-Se documenta una tabla de tamaños antes / después (chunk inicial, chunk por página) en este plan al cerrar G-01.
+**Resultado (G-01)**, build de producción (sin gzip; entre paréntesis, gzip):
+
+| | Antes | Después |
+|---|---|---|
+| Chunks de JavaScript | 1 de 555,7 kB (169,9) | librerías con nombre + código de la app + un chunk por página |
+| Librerías (siempre, en caché entre despliegues) | — | `react` 218,7 (68,3) · `router` 95,8 (31,3) · `zod` 90,8 (25,6) · `query` 38,5 (11,2) |
+| Código de la app inicial (`index`) | — | 15,1 (5,4) |
+| Login (todo lo que descarga) | 555,7 | ~496 kB: lo anterior + `forms` 38 (React Hook Form) + `LoginPage` 2,3 y piezas mínimas |
+| Al entrar a clientes | — | + `CustomersPage` 8,8 + `useUrlFilters` 13 y piezas (~25 kB) |
+| Al entrar a usuarios | — | + `UsersPage` 5,1 + `useUserActions` 3,5 |
+| Advertencia de 500 kB | sí | no |
+
+- El grueso que se descarga siempre son las librerías (React DOM, el router, Zod —también lo usa `lib/http.ts` para validar respuestas— y TanStack Query). Por eso se separan en chunks de proveedor con `build.rolldownOptions.output.codeSplitting.groups` (`vite.config.ts`): un cambio en el código de la app no obliga a volver a descargarlas.
+- Verificado en `npm run preview` con contextos aislados de Chrome: el login no descarga clientes ni usuarios; cada sección descarga sus chunks la primera vez y no al volver; la barra de navegación aparece durante la descarga; abrir directo una ruta diferida (`/customers?active=true`) usa el `hydrateFallbackElement` sin advertencias en consola.
+- El router descarga el código de **todas** las rutas que coinciden antes de que `RequireRole` decida: un USER que abre `/users` descarga `UsersPage` y luego va a «Sin permiso». No es un problema de seguridad (el código del frontend es público y el backend responde 403); evitarlo exigiría mover la comprobación de rol a un `loader` (fuera de alcance).
 
 **Decisión**: `lazy` del router en vez de `React.lazy` + `Suspense`: el router descarga el código **antes** de cambiar de pantalla (sin `fallback` que parpadee), funciona con las rutas de datos que ya usamos y no obliga a envolver cada página.
 

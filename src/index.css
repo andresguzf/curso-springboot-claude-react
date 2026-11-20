@@ -41,6 +41,21 @@
       transform: translateY(0);
     }
   }
+
+  /* Barra de navegación mientras se descarga una pantalla: aparece tras 150 ms (sin parpadeo en
+     las rápidas) y avanza hasta el 85 % sin llegar al final hasta que la pantalla carga. */
+  --animate-navigation-progress: navigation-progress 2.5s cubic-bezier(0.1, 0.7, 0.3, 1) 150ms both;
+
+  @keyframes navigation-progress {
+    from {
+      opacity: 1;
+      transform: scaleX(0);
+    }
+    to {
+      opacity: 1;
+      transform: scaleX(0.85);
+    }
+  }
 }
 
 @layer base {

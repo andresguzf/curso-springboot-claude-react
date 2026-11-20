@@ -3,7 +3,7 @@
 Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" en la
 [constitución](../constitution.md#6-calidad-definición-de-hecho). Rama: `feature/dashboard`.
 
-- [ ] **G-01** Carga diferida por ruta e indicador de navegación
+- [x] **G-01** Carga diferida por ruta e indicador de navegación
   - Depende de: F-04
   - Cubre: RF-07-01, RNF-07-01
   - Archivos: `src/App.tsx`, `src/components/layout/{AppLayout,AuthLayout}.tsx` (indicador), `src/components/layout/NavigationProgress.tsx`, `vite.config.ts` (solo si hace falta separar librerías), `specs/07-rendimiento-interfaz/plan.md` (tabla de tamaños)
