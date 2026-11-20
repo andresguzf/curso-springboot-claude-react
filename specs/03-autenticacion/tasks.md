@@ -12,7 +12,7 @@ navegador necesitan el backend arriba.
   - Verificación: `npm run build && npm run lint`; sin sesión, `status` termina en `anonymous` (React DevTools o log temporal que se quita antes del commit)
   - Commit: "Agrega el estado de sesión y su inicialización al cargar la aplicación"
 
-- [ ] **C-02** Pantalla de login
+- [x] **C-02** Pantalla de login
   - Depende de: C-01, B-05
   - Cubre: RF-03-01, RNF-03-02
   - Archivos: `src/schemas/auth.ts`, `src/hooks/useAuth.ts` (`useAuth`, `useLogin`), `src/components/auth/LoginForm.tsx`, `src/pages/LoginPage.tsx`, `src/App.tsx` (ruta `/login` con `AuthLayout`)

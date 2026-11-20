@@ -44,12 +44,13 @@ Así no hay `useEffect` de arranque (patrón "inicializar la app una sola vez" d
 | Archivo | Contenido |
 |---|---|
 | `src/schemas/auth.ts` | `loginSchema = z.object({ email: z.email('…'), password: z.string().min(1, '…') })` |
-| `src/hooks/useAuth.ts` | `useAuth()` → `{ user, status, isAdmin }`; `useLogin()` (mutación: `queryClient.clear()`, `setUser`, `navigate(from ?? '/')`); `useLogout()` (mutación: en `onSettled` limpia store y cache, `navigate('/login')`, flash "Sesión cerrada") |
+| `src/hooks/useAuth.ts` | `useAuth()` → `{ user, status, isAdmin }`; `useLogin()` (mutación: `queryClient.clear()` y `setUser`; no navega: `LoginPage` redirige a `from ?? '/'` al ver `status === 'authenticated'`, el mismo camino que usa quien abre `/login` con sesión); `useLogout()` (mutación: en `onSettled` limpia store y cache, `navigate('/login')`, flash "Sesión cerrada") |
 | `src/components/auth/LoginForm.tsx` | presentacional: recibe `onSubmit`, `isPending` y `error` |
 | `src/components/auth/RequireAuth.tsx` | `checking` → spinner a pantalla completa; `anonymous` → `<Navigate to="/login" state={{ from: location }} replace />`; si no, `<Outlet />` |
 | `src/components/auth/RequireRole.tsx` | `role="ADMIN"`; si no corresponde → `<Navigate to="/forbidden" replace />` |
 | `src/components/layout/UserMenu.tsx` | email, `Badge` con el rol y botón "Cerrar sesión" (usa `useLogout`) |
-| `src/pages/LoginPage.tsx` | si ya hay sesión → `<Navigate to="/" replace />`; lee `location.state.from` |
+| `src/pages/LoginPage.tsx` | `checking` → spinner; con sesión → `<Navigate to={from ?? '/'} replace />`; lee `location.state.from` validado con `safeParse`; mensaje 401 "Email o contraseña incorrectos" |
+| `src/schemas/user.ts` | `ROLE_LABELS` («Administrador» / «Usuario») para el badge del header (C-02) y las tablas |
 | `src/pages/ForbiddenPage.tsx`, `src/pages/NotFoundPage.tsx` | mensajes y enlace al inicio |
 
 ## 4. Rutas (`src/App.tsx`)
