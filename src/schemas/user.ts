@@ -15,3 +15,9 @@ export const userSchema = z.object({
 
 export type Role = z.infer<typeof roleSchema>
 export type User = z.infer<typeof userSchema>
+
+// Nombre del rol en la interfaz (en minúscula de oración, ver specs/02-base-frontend/design.md).
+export const ROLE_LABELS: Record<Role, string> = {
+  ADMIN: 'Administrador',
+  USER: 'Usuario',
+}

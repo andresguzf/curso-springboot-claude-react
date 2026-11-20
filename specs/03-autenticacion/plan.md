@@ -33,7 +33,7 @@ export function initSession(): void  // authService.me() → setUser | clear (40
 
 `src/main.tsx` (orden, una sola vez al cargar el módulo):
 
-1. `setAuthHandlers({ onRefreshed: setUser, onSessionExpired })`, donde `onSessionExpired` hace `clear()`, `queryClient.clear()` y `flash.info('Tu sesión expiró, inicia sesión de nuevo')`.
+1. `setAuthHandlers({ onRefreshed: setUser, onSessionExpired })`, donde `onSessionExpired` hace `clear()`, `queryClient.clear()` y `flash.info('Tu sesión expiró, inicia sesión de nuevo')`. El flash se muestra solo si el estado anterior era `authenticated`: al abrir la app sin sesión, `/me` → 401 → refresh fallido también llama a `onSessionExpired` (con estado `checking`) y no hay nada que avisar.
 2. `initSession()`.
 3. `createRoot(...).render(...)`.
 
@@ -44,12 +44,15 @@ Así no hay `useEffect` de arranque (patrón "inicializar la app una sola vez" d
 | Archivo | Contenido |
 |---|---|
 | `src/schemas/auth.ts` | `loginSchema = z.object({ email: z.email('…'), password: z.string().min(1, '…') })` |
-| `src/hooks/useAuth.ts` | `useAuth()` → `{ user, status, isAdmin }`; `useLogin()` (mutación: `queryClient.clear()`, `setUser`, `navigate(from ?? '/')`); `useLogout()` (mutación: en `onSettled` limpia store y cache, `navigate('/login')`, flash "Sesión cerrada") |
+| `src/hooks/useAuth.ts` | `useAuth()` → `{ user, status, isAdmin }`; `useLogin()` (mutación: `queryClient.clear()` y `setUser`; no navega: `LoginPage` redirige a `from ?? '/'` al ver `status === 'authenticated'`, el mismo camino que usa quien abre `/login` con sesión); `useLogout()` (mutación: en `onSettled` hace `clear({ loggedOut: true })`, limpia la cache y muestra el flash "Sesión cerrada"; no navega: al quedar `anonymous`, `RequireAuth` lleva al login) |
 | `src/components/auth/LoginForm.tsx` | presentacional: recibe `onSubmit`, `isPending` y `error` |
-| `src/components/auth/RequireAuth.tsx` | `checking` → spinner a pantalla completa; `anonymous` → `<Navigate to="/login" state={{ from: location }} replace />`; si no, `<Outlet />` |
+| `src/components/auth/RequireAuth.tsx` | `checking` → spinner a pantalla completa; `anonymous` → `<Navigate to="/login" state={{ from: location }} replace />` (sin `from` si `loggedOut`); si no, `<Outlet />` |
 | `src/components/auth/RequireRole.tsx` | `role="ADMIN"`; si no corresponde → `<Navigate to="/forbidden" replace />` |
-| `src/components/layout/UserMenu.tsx` | email, `Badge` con el rol y botón "Cerrar sesión" (usa `useLogout`) |
-| `src/pages/LoginPage.tsx` | si ya hay sesión → `<Navigate to="/" replace />`; lee `location.state.from` |
+| `src/components/layout/UserMenu.tsx` | email, `Badge` con el rol y botón "Cerrar sesión" (usa `useLogout`), en línea en el header, sin desplegable |
+| `src/components/layout/AuthLayout.tsx` | incluye `FlashMessages`: "Sesión cerrada" y "Tu sesión expiró…" se ven en el login |
+| `src/pages/RouteErrorPage.tsx` | `errorElement` de ambas ramas del router: "Algo salió mal", sin layout, con enlace al inicio |
+| `src/pages/LoginPage.tsx` | `checking` → spinner; con sesión → `<Navigate to={from ?? '/'} replace />`; lee `location.state.from` validado con `safeParse`; mensaje 401 "Email o contraseña incorrectos" |
+| `src/schemas/user.ts` | `ROLE_LABELS` («Administrador» / «Usuario») para el badge del header (C-02) y las tablas |
 | `src/pages/ForbiddenPage.tsx`, `src/pages/NotFoundPage.tsx` | mensajes y enlace al inicio |
 
 ## 4. Rutas (`src/App.tsx`)
@@ -84,6 +87,8 @@ createBrowserRouter([
 | `queryClient.clear()` en login, logout y sesión expirada | Evita mostrar datos cacheados de otro usuario o de otro rol. |
 | `onRefreshed` actualiza el usuario | Si un ADMIN fue degradado, el refresh trae el rol nuevo y la UI oculta lo que ya no puede usar. |
 | `from` en `location.state` | Volver a la ruta original tras el login sin poner datos en la URL. |
+| `loggedOut` en `authStore` y una sola redirección (la de `RequireAuth`) | Si `useLogout` navegaba además de limpiar el store, la redirección de `RequireAuth` (con `from`) le ganaba y el siguiente usuario entraba donde estaba el anterior. Tras "Cerrar sesión" el login empieza en el inicio; tras una sesión expirada sí vuelve a la ruta original. |
+| Zona de usuario en línea, sin desplegable | Son tres elementos (email, rol, salir): un menú desplegable obligaría a manejar foco, Esc y clics fuera sin aportar nada. En móvil pasa a una segunda fila del header. |
 
 ## 6. Riesgos
 

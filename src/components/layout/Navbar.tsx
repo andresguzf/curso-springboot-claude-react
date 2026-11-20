@@ -19,7 +19,7 @@ function linkClassName({ isActive }: { isActive: boolean }) {
 }
 
 type NavbarProps = {
-  /** Rol del usuario en sesión; mientras no hay sesión (spec 03) se muestran todos los enlaces. */
+  /** Rol del usuario en sesión: los enlaces con `roles` solo se muestran a esos roles. */
   role?: Role
 }
 
