@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import { formatDate, formatDateTime } from '../../lib/format.ts'
 import type { Customer } from '../../schemas/customer.ts'
 import { Badge } from '../ui/Badge.tsx'
 import { DataTable, type DataTableColumn } from '../ui/DataTable.tsx'
+import { IconButton, IconLink } from '../ui/IconButton.tsx'
 
 type CustomerTableProps = {
   customers: Customer[]
@@ -70,24 +72,20 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, 
       header: 'Acciones',
       className: 'text-right',
       cell: (customer) => (
-        <div className="flex items-center justify-end gap-4">
-          <Link
+        <div className="flex items-center justify-end gap-1">
+          <IconLink
             to={`/customers/${customer.id}/edit`}
             state={listState}
-            aria-label={`Editar a ${customer.name} ${customer.lastName}`}
-            className="text-sm font-medium text-accent-strong underline-offset-2 hover:underline"
-          >
-            Editar
-          </Link>
+            label={`Editar a ${customer.name} ${customer.lastName}`}
+            icon={Pencil}
+          />
           {onDelete && (
-            <button
-              type="button"
+            <IconButton
+              label={`Eliminar a ${customer.name} ${customer.lastName}`}
+              icon={Trash2}
+              tone="danger"
               onClick={() => onDelete(customer)}
-              aria-label={`Eliminar a ${customer.name} ${customer.lastName}`}
-              className="rounded-control text-sm font-medium text-danger underline-offset-2 hover:underline"
-            >
-              Eliminar
-            </button>
+            />
           )}
         </div>
       ),

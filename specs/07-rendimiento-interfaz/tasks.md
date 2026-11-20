@@ -11,7 +11,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador, pestaña de red al abrir el login y al navegar a clientes y usuarios (como ADMIN y como USER)
   - Commit: "Divide el bundle por ruta con carga diferida de las páginas"
 
-- [ ] **G-02** Botones de icono en las acciones y en exportar
+- [x] **G-02** Botones de icono en las acciones y en exportar
   - Depende de: G-01
   - Cubre: RF-07-02, RF-07-03, RF-07-08
   - Archivos: `package.json` (`lucide-react`), `specs/constitution.md` (§1, stack), `src/components/ui/IconButton.tsx`, `src/components/customers/{CustomerTable,ExportMenu}.tsx`, `src/components/users/{UserTable,UserActions}.tsx`, `src/pages/UserDetailPage.tsx`

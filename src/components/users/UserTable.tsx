@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
+import { Pencil } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import { formatDateTime } from '../../lib/format.ts'
 import type { UserAction } from '../../hooks/useUserActions.ts'
 import type { User } from '../../schemas/user.ts'
 import { Badge } from '../ui/Badge.tsx'
 import { DataTable, type DataTableColumn } from '../ui/DataTable.tsx'
+import { IconLink } from '../ui/IconButton.tsx'
 import { RoleBadge } from './RoleBadge.tsx'
 import { UserActions } from './UserActions.tsx'
 
@@ -62,17 +64,14 @@ export function UserTable({ users, me, activeAdmins, onAction, busyUserId, sort,
       header: 'Acciones',
       className: 'text-right',
       cell: (user) => (
-        <div className="flex items-start justify-end gap-4">
-          <Link
-            to={`/users/${user.id}/edit`}
-            state={listState}
-            aria-label={`Editar a ${user.email}`}
-            className="text-sm font-medium text-accent-strong underline-offset-2 hover:underline"
-          >
-            Editar
-          </Link>
-          <UserActions user={user} me={me} activeAdmins={activeAdmins} onAction={onAction} busy={busyUserId === user.id} />
-        </div>
+        <UserActions
+          user={user}
+          me={me}
+          activeAdmins={activeAdmins}
+          onAction={onAction}
+          busy={busyUserId === user.id}
+          leading={<IconLink to={`/users/${user.id}/edit`} state={listState} label={`Editar a ${user.email}`} icon={Pencil} />}
+        />
       ),
     },
   ]
