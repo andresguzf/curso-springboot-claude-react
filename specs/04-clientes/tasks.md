@@ -68,7 +68,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; el CSV filtrado tiene tantas filas como `totalElements`
   - Commit: "Agrega exportación del listado filtrado de clientes a CSV, Excel, PDF y XML"
 
-- [ ] **D-09** Documentar la fase D
+- [x] **D-09** Documentar la fase D
   - Depende de: D-07, D-08
   - Cubre: RF-04-13
   - Archivos: `README.md`, `CLAUDE.md` (actualizar `GET /api/customers` al contrato paginado), `specs/04-clientes/spec.md` (estado: Hecha), `specs/README.md` (estado)

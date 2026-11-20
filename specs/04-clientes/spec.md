@@ -4,7 +4,7 @@
 |---|---|
 | Fase | D |
 | Repo | `4-react` |
-| Estado | En curso |
+| Estado | Hecha |
 | Depende de | Spec 03 y spec 01 del backend (A-06: listado paginado y filtros) |
 | La necesitan | Spec 06 |
 | Constitución | [`../constitution.md`](../constitution.md) |

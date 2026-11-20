@@ -99,7 +99,7 @@ Endpoints usados (detalle completo, roles y ejemplos en el README del backend):
 | Recurso | Endpoints |
 |---|---|
 | Autenticación | `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`, `GET /api/auth/csrf` |
-| Clientes | `GET /api/customers` (paginado, con filtros y orden; `?format=` para exportar), `GET`/`PUT`/`DELETE /api/customers/{id}`, `POST /api/customers` |
+| Clientes | `GET /api/customers?search&active&city&birthFrom&birthTo&createdFrom&createdTo&page&size&sort` (JSON paginado: `{content, page}`), el mismo con `&format=csv\|xlsx\|pdf\|xml` para exportar todo el resultado (sin `page` ni `size`), `GET`/`PUT`/`DELETE /api/customers/{id}`, `POST /api/customers` |
 | Usuarios (solo `ADMIN`) | `GET /api/users` (paginado, con filtros), `GET`/`PUT`/`DELETE /api/users/{id}`, `POST /api/users` |
 
 ### Flujo de sesión
@@ -128,10 +128,20 @@ Con la pestaña Network abierta: pasados 20 s, recargar muestra `/me` 401 → un
 Según lo que ofrece la API:
 
 - **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (hecho, spec 03).
-- **Clientes** (roles `USER` y `ADMIN`): listado con buscador por texto y filtro por estado activo/inactivo.
-- **Crear, editar y eliminar clientes** (solo `ADMIN`): formulario validado y errores del servidor (p. ej. email duplicado, 409) mostrados en el campo correspondiente. Las acciones de escritura se ocultan para el rol `USER`.
+- **Clientes** (hecho, spec 04), ver «Pantallas de clientes».
 - **Administración de usuarios** (solo `ADMIN`).
 - Páginas «Sin permiso» (`/forbidden`), 404 para rutas inexistentes y «Algo salió mal» para errores inesperados (hecho, spec 03).
+
+### Pantallas de clientes
+
+| Ruta | Quién | Qué hace |
+|---|---|---|
+| `/customers` | `USER` y `ADMIN` | Tabla paginada (10 / 25 / 50 por página, «Mostrando a–b de N») con orden por columna, buscador por nombre, apellido, email y ciudad (espera una pausa al escribir) y filtros en el sidebar: estado, ciudad, rango de nacimiento y rango de alta (valida «desde ≤ hasta»). Al paginar, los datos anteriores se ven atenuados hasta que llegan los nuevos. Estados de carga, vacío (limpiar filtros o ir a la primera página) y error con «Reintentar». **Exportar** a CSV, Excel, PDF o XML descarga todos los clientes que cumplen los filtros y el orden, no solo la página visible. |
+| `/customers/:id` | `USER` y `ADMIN` | Ficha con todos los datos, fecha de alta y última modificación («Sin cambios» si nunca se editó). «Volver a clientes» regresa con los mismos filtros. |
+| `/customers/new`, `/customers/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con las mismas validaciones que el backend; los errores del servidor (400 por campo, email duplicado 409) aparecen bajo su campo. Al guardar vuelve al listado con el flash «Cliente «Nombre Apellido» creado / actualizado». |
+| Eliminar (en la tabla) | `ADMIN` | Modal «¿Eliminar a «Nombre Apellido»?»; el error se muestra dentro; si era la última fila de la página, pasa a la anterior; flash «Cliente eliminado». |
+
+**La URL es el estado del listado**: filtros, orden, tamaño y página viven en el query string (`/customers?search=perez&active=true&page=2&sort=lastName,desc`), así un enlace copiado reproduce el resultado y el botón atrás restaura el anterior. La página empieza en 1 en la URL y en 0 en la API; los valores por defecto (página 1, 10 por página, orden `id,asc`) no se escriben y un parámetro inválido se ignora.
 
 ## Estructura
 
@@ -143,16 +153,22 @@ src/
 ├── components/
 │   ├── auth/             # LoginForm, RequireAuth (sesión) y RequireRole (rol)
 │   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), UserMenu, Footer
-│   ├── ui/               # Button, Input, Select, FormField, Badge, Spinner, EmptyState, PageHeader,
-│   │                     # FlashMessages / FlashMessage y ConfirmDialog
-│   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio) y FiltersDrawer (móvil)
-│   └── {recurso}/        # componentes de un recurso (clientes, usuarios) — specs 04 y 05
-├── pages/                # una página por ruta (Home, Login, Forbidden, NotFound, RouteError, DevUi)
-├── hooks/                # useAuth / useLogin / useLogout, useMediaQuery, useModalDialog
+│   ├── ui/               # Button (+ buttonStyles), Input, Select, FormField, Badge, Spinner, EmptyState,
+│   │                     # PageHeader, FlashMessages / FlashMessage, ConfirmDialog, DataTable y Pagination
+│   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil) y DateRangeField
+│   ├── customers/        # CustomerTable, CustomerSearch, CustomerFilters, CustomerForm, ExportMenu
+│   └── {recurso}/        # componentes de otro recurso (usuarios, spec 05)
+├── pages/                # una página por ruta (Home, Login, Customers, CustomerDetail / Create / Edit,
+│                         # Forbidden, NotFound, RouteError, DevUi)
+├── hooks/                # useAuth, useCustomers (consultas y mutaciones), useCustomerFilters (URL),
+│                         # useExportCustomers, useCustomersListPath, useDebouncedCallback / useDebouncedText,
+│                         # useMediaQuery, useModalDialog
 ├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar, persistido)
-├── schemas/              # Zod: common (página, ProblemDetail), user (+ ROLE_LABELS) y auth (login)
-├── services/             # authService (login, refresh, logout, me, csrf)
-└── lib/                  # http.ts (cliente HTTP), session.ts (initSession), query.ts (toQuery), queryClient.ts
+├── schemas/              # Zod: common (página, ProblemDetail), user (+ ROLE_LABELS), auth (login) y customer
+│                         # (respuesta, filtros de la URL, formulario, formatos de exportación)
+├── services/             # authService y customerService (page, get, create, update, remove, exportFile)
+└── lib/                  # http.ts (cliente HTTP), session.ts, query.ts (toQuery), queryClient.ts, format.ts
+                          # (fechas es-CL), errors.ts, serverErrors.ts (errores por campo), saveFile.ts
 ```
 
 El layout usa HTML semántico: `header` (banda grafito con la marca y la navegación `nav`), región de mensajes flash, `main` y `footer`.
@@ -168,6 +184,8 @@ Piezas compartidas que usan todas las pantallas:
 | Mensajes flash | Arriba de la app, se cierran solos a los 5 s (se pausan con el puntero o el foco) y con la X; máximo 3. Se publican con `flash.success(…)`, `flash.error(…)` o `flash.info(…)` |
 | `ConfirmDialog` | Modal de confirmación con `<dialog>` nativo: foco inicial en Cancelar, Esc cancela, bloquea el doble envío y muestra el error dentro. Reemplaza a `confirm()` |
 | `FiltersLayout` | Filtros en un sidebar izquierdo colapsable (recuerda su estado al recargar) o, en pantallas chicas, en un cajón lateral |
+| `DataTable` | Tabla genérica con encabezado fijo, orden por columna (`aria-sort`), filas de 44 px, datos atenuados mientras carga y scroll propio (a 375 px se desplaza dentro de su recuadro) |
+| `Pagination` | «Mostrando a–b de N», anterior / siguiente, números con elipsis y selector de tamaño |
 
 Con `npm run dev`, la página **`/dev/ui`** muestra el catálogo de componentes para revisarlos (no existe en el build de producción).
 
