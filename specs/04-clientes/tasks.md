@@ -52,7 +52,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; en el navegador: crear, editar, email duplicado, campo vacío forzado
   - Commit: "Agrega alta y edición de clientes con validación y mensajes flash"
 
-- [ ] **D-07** Eliminación de clientes con modal de confirmación
+- [x] **D-07** Eliminación de clientes con modal de confirmación
   - Depende de: D-06, B-07
   - Cubre: RF-04-09, RF-04-10, RF-04-11
   - Archivos: `src/services/customerService.ts` (`remove`), `src/hooks/useCustomers.ts` (`useDeleteCustomer`), `src/pages/CustomersPage.tsx`

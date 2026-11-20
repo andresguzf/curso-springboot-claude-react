@@ -55,3 +55,18 @@ export function useUpdateCustomer(id: number) {
     },
   })
 }
+
+// Eliminación. El modal de confirmación usa isPending y error de esta mutación; la página cierra
+// el modal y ajusta la página en el onSuccess de mutate.
+export function useDeleteCustomer() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => customerService.remove(id),
+    onSuccess: async (_, id) => {
+      flash.success('Cliente eliminado')
+      // El detalle ya no existe: se quita del cache en vez de refrescarlo (daría 404).
+      queryClient.removeQueries({ queryKey: customerKeys.detail(id) })
+      await queryClient.invalidateQueries({ queryKey: customerKeys.all })
+    },
+  })
+}

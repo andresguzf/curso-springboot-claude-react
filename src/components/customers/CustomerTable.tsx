@@ -13,11 +13,13 @@ type CustomerTableProps = {
   empty?: ReactNode
   /** ADMIN: muestra las acciones de escritura por fila. */
   canEdit?: boolean
+  /** Pide eliminar un cliente; el padre abre el modal de confirmación. */
+  onDelete?: (customer: Customer) => void
 }
 
 // Tabla de clientes. El nombre enlaza al detalle y lleva el query string actual en el state,
 // para que "Volver a clientes" regrese con los mismos filtros y en la misma página.
-export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, canEdit = false }: CustomerTableProps) {
+export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, canEdit = false, onDelete }: CustomerTableProps) {
   const location = useLocation()
   const listState = { listSearch: location.search }
 
@@ -61,21 +63,33 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, 
     },
   ]
 
-  // Acciones de escritura: solo ADMIN (un USER ni las ve). Eliminar se agrega en D-07.
+  // Acciones de escritura: solo ADMIN (un USER ni las ve).
   if (canEdit) {
     columns.push({
       key: 'actions',
       header: 'Acciones',
       className: 'text-right',
       cell: (customer) => (
-        <Link
-          to={`/customers/${customer.id}/edit`}
-          state={listState}
-          aria-label={`Editar a ${customer.name} ${customer.lastName}`}
-          className="text-sm font-medium text-accent-strong underline-offset-2 hover:underline"
-        >
-          Editar
-        </Link>
+        <div className="flex items-center justify-end gap-4">
+          <Link
+            to={`/customers/${customer.id}/edit`}
+            state={listState}
+            aria-label={`Editar a ${customer.name} ${customer.lastName}`}
+            className="text-sm font-medium text-accent-strong underline-offset-2 hover:underline"
+          >
+            Editar
+          </Link>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(customer)}
+              aria-label={`Eliminar a ${customer.name} ${customer.lastName}`}
+              className="rounded-control text-sm font-medium text-danger underline-offset-2 hover:underline"
+            >
+              Eliminar
+            </button>
+          )}
+        </div>
       ),
     })
   }

@@ -7,7 +7,7 @@ import {
   type CustomerFormValues,
 } from '../schemas/customer.ts'
 
-// Endpoints de /api/customers. La eliminación y la exportación se agregan en D-07 y D-08.
+// Endpoints de /api/customers. La exportación se agrega en D-08.
 export const customerService = {
   // Listado paginado. La URL del frontend cuenta las páginas desde 1 y la API desde 0:
   // la conversión vive solo aquí. toQuery omite los filtros vacíos.
@@ -20,4 +20,7 @@ export const customerService = {
   create: (values: CustomerFormValues) => http.post('/api/customers', values, customerSchema),
 
   update: (id: number, values: CustomerFormValues) => http.put(`/api/customers/${id}`, values, customerSchema),
+
+  // 204 sin cuerpo.
+  remove: (id: number) => http.delete(`/api/customers/${id}`),
 }

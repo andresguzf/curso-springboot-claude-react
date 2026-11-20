@@ -2,18 +2,20 @@ import { CustomerFilters } from '../components/customers/CustomerFilters.tsx'
 import { CustomerSearch } from '../components/customers/CustomerSearch.tsx'
 import { CustomerTable } from '../components/customers/CustomerTable.tsx'
 import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Button } from '../components/ui/Button.tsx'
 import { buttonClassName } from '../components/ui/buttonStyles.ts'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog.tsx'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Pagination } from '../components/ui/Pagination.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useCustomerFilters } from '../hooks/useCustomerFilters.ts'
-import { useCustomersPage } from '../hooks/useCustomers.ts'
+import { useCustomersPage, useDeleteCustomer } from '../hooks/useCustomers.ts'
 import { errorMessage } from '../lib/errors.ts'
-import { PAGE_SIZES } from '../schemas/customer.ts'
+import { PAGE_SIZES, type Customer } from '../schemas/customer.ts'
 
 // Listado de clientes: orquesta los filtros (en la URL), la consulta a la API y los componentes.
 // Sin useEffect: los datos vienen de TanStack Query y cada cambio sale de un handler.
@@ -23,6 +25,28 @@ export function CustomersPage() {
   const { isAdmin } = useAuth()
   const location = useLocation()
   const data = customers.data
+
+  // Cliente que se está por eliminar (modal abierto) o null. Estado local: solo le importa a esta página.
+  const [toDelete, setToDelete] = useState<Customer | null>(null)
+  const deleteCustomer = useDeleteCustomer()
+
+  function openDelete(customer: Customer) {
+    deleteCustomer.reset() // sin el error de un intento anterior
+    setToDelete(customer)
+  }
+
+  function confirmDelete() {
+    if (!toDelete) return
+    // Se decide antes de borrar: si era la única fila de una página que no es la primera,
+    // esa página quedará vacía y se pasa a la anterior (en el handler, no en un effect).
+    const leavesPageEmpty = data?.content.length === 1 && filters.page > 1
+    deleteCustomer.mutate(toDelete.id, {
+      onSuccess: () => {
+        setToDelete(null)
+        if (leavesPageEmpty) setFilters({ page: filters.page - 1 })
+      },
+    })
+  }
 
   // Página fuera de rango (?page=99 o tras borrar el último registro de la última página).
   const isPageOutOfRange = data !== undefined && data.content.length === 0 && filters.page > 1
@@ -100,6 +124,7 @@ export function CustomersPage() {
                 onSortChange={(sort) => setFilters({ sort })}
                 isDimmed={customers.isPlaceholderData}
                 canEdit={isAdmin}
+                onDelete={isAdmin ? openDelete : undefined}
                 empty={emptyState}
               />
               {!isPageOutOfRange && (
@@ -117,6 +142,22 @@ export function CustomersPage() {
           )}
         </div>
       </FiltersLayout>
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        title={toDelete ? `¿Eliminar a «${toDelete.name} ${toDelete.lastName}»?` : ''}
+        description="Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        tone="danger"
+        isPending={deleteCustomer.isPending}
+        error={
+          deleteCustomer.isError
+            ? errorMessage(deleteCustomer.error, 'No se pudo eliminar el cliente. Inténtalo de nuevo.')
+            : null
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </>
   )
 }

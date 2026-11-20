@@ -68,7 +68,8 @@ Rutas: `customers`, `customers/:id` (todos; en `Navbar`, "Clientes" y `end` solo
 | Filtros en la URL, no en Zustand | Enlaces compartibles y botón atrás gratis; una sola fuente de verdad. |
 | `keepPreviousData` + atenuado | Sin parpadeo al paginar; `isPlaceholderData` indica que hay datos viejos. |
 | Exportación con `http.download`, no `<a href>` | Un enlace directo con el access token vencido descargaría un `ProblemDetail`; así pasa por el refresh. El PDF también se descarga (abrir una ventana tras un `await` lo bloquea el navegador). |
-| Retroceder de página en `onSuccess` del borrado | Evita una página vacía sin usar effects. |
+| Retroceder de página en `onSuccess` del borrado | Evita una página vacía sin usar effects. Se decide en el handler antes de borrar (`content.length === 1 && page > 1`). La invalidación refresca una vez la página vacía antes de cambiar la URL: una petición de más, aceptada. |
+| Eliminar desde la tabla con estado local `toDelete` | `CustomerTable` recibe `onDelete`; la página abre `ConfirmDialog` («¿Eliminar a «Nombre Apellido»?», botón «Eliminar» en granate), limpia el error anterior con `reset()` al abrir y muestra el error de la mutación dentro del modal. `useDeleteCustomer` quita el detalle del cache (`removeQueries`) e invalida el resto. |
 | Página 1 en la URL, 0 en la API | Mejor para el usuario; la conversión vive solo en el servicio. |
 
 ## 6. Riesgos
