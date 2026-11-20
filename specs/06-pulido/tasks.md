@@ -27,7 +27,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; Lighthouse / axe y recorrido completo como USER y ADMIN en móvil y escritorio
   - Commit: "Mejora el diseño responsive y la accesibilidad del dashboard"
 
-- [ ] **F-04** Limpieza y documentación final
+- [x] **F-04** Limpieza y documentación final
   - Depende de: F-03
   - Cubre: RF-06-06
   - Archivos: `src/pages/DevUiPage.tsx` (eliminar) y su ruta, `README.md`, `CLAUDE.md`, `../3-spring-api/README.md` (enlace al frontend, commit en ese repo), `specs/06-pulido/spec.md` (estado: Hecha), `specs/README.md` (todas las fases en "Hecha")

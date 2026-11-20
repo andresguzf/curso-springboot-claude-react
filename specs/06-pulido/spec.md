@@ -4,7 +4,7 @@
 |---|---|
 | Fase | F |
 | Repo | `4-react` (y un enlace en `3-spring-api/README.md`) |
-| Estado | En curso |
+| Estado | Hecha |
 | Depende de | Specs 04 y 05 |
 | La necesitan | — |
 | Constitución | [`../constitution.md`](../constitution.md) |

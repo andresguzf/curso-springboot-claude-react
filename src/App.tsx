@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router'
+import { createBrowserRouter, RouterProvider } from 'react-router'
 import { RequireAuth } from './components/auth/RequireAuth.tsx'
 import { RequireRole } from './components/auth/RequireRole.tsx'
 import { AppLayout } from './components/layout/AppLayout.tsx'
@@ -7,7 +7,6 @@ import { CustomerCreatePage } from './pages/CustomerCreatePage.tsx'
 import { CustomerDetailPage } from './pages/CustomerDetailPage.tsx'
 import { CustomerEditPage } from './pages/CustomerEditPage.tsx'
 import { CustomersPage } from './pages/CustomersPage.tsx'
-import { DevUiPage } from './pages/DevUiPage.tsx'
 import { ForbiddenPage } from './pages/ForbiddenPage.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
@@ -17,9 +16,6 @@ import { UserCreatePage } from './pages/UserCreatePage.tsx'
 import { UserDetailPage } from './pages/UserDetailPage.tsx'
 import { UserEditPage } from './pages/UserEditPage.tsx'
 import { UsersPage } from './pages/UsersPage.tsx'
-
-// Rutas que solo existen con `npm run dev` (catálogo de componentes; se elimina en F-04).
-const devRoutes: RouteObject[] = import.meta.env.DEV ? [{ path: 'dev/ui', element: <DevUiPage /> }] : []
 
 // El router se crea una sola vez, fuera del componente: así no se recrea en cada render.
 const router = createBrowserRouter([
@@ -56,7 +52,6 @@ const router = createBrowserRouter([
               { path: 'users/:id/edit', element: <UserEditPage /> },
             ],
           },
-          ...devRoutes,
           { path: 'forbidden', element: <ForbiddenPage /> },
           { path: '*', element: <NotFoundPage /> },
         ],
