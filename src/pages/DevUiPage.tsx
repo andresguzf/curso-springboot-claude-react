@@ -13,6 +13,7 @@ import { Select } from '../components/ui/Select.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
 import { formatDate } from '../lib/format.ts'
 import { flash } from '../stores/flashStore.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 // Catálogo de componentes para revisarlos durante el desarrollo. La ruta /dev/ui solo existe
 // con `npm run dev` (import.meta.env.DEV) y se elimina en la tarea F-04.
@@ -216,6 +217,7 @@ function FiltersDemo() {
 }
 
 export function DevUiPage() {
+  useDocumentTitle('Componentes')
   return (
     <>
       <PageHeader

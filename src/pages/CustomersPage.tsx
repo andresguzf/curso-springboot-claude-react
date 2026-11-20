@@ -11,7 +11,7 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog.tsx'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Pagination } from '../components/ui/Pagination.tsx'
-import { Spinner } from '../components/ui/Spinner.tsx'
+import { TableSkeleton } from '../components/ui/TableSkeleton.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useCustomerFilters } from '../hooks/useCustomerFilters.ts'
 import { useCustomersPage, useDeleteCustomer } from '../hooks/useCustomers.ts'
@@ -19,10 +19,12 @@ import { useExportCustomers } from '../hooks/useExportCustomers.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { PAGE_SIZES } from '../schemas/common.ts'
 import type { Customer } from '../schemas/customer.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 // Listado de clientes: orquesta los filtros (en la URL), la consulta a la API y los componentes.
 // Sin useEffect: los datos vienen de TanStack Query y cada cambio sale de un handler.
 export function CustomersPage() {
+  useDocumentTitle('Clientes')
   const { filters, setFilters, clearFilters, activeCount, hasFilters, resetKey } = useCustomerFilters()
   const customers = useCustomersPage(filters)
   const { isAdmin } = useAuth()
@@ -72,7 +74,17 @@ export function CustomersPage() {
       }
     />
   ) : (
-    <EmptyState title="Todavía no hay clientes" description="Cuando se registre el primero, aparecerá aquí." />
+    <EmptyState
+      title="Todavía no hay clientes"
+      description={isAdmin ? 'Registra el primero para empezar la cartera.' : 'Cuando se registre el primero, aparecerá aquí.'}
+      action={
+        isAdmin && (
+          <Link to="/customers/new" className={buttonClassName({ variant: 'primary' })}>
+            Nuevo cliente
+          </Link>
+        )
+      }
+    />
   )
 
   return (
@@ -121,11 +133,7 @@ export function CustomersPage() {
             </div>
           )}
 
-          {customers.isPending && (
-            <div className="flex items-center justify-center gap-3 rounded-panel border border-line bg-surface py-16 text-sm text-ink-muted">
-              <Spinner className="size-5" /> Cargando clientes…
-            </div>
-          )}
+          {customers.isPending && <TableSkeleton label="Cargando clientes" columns={isAdmin ? 8 : 7} />}
 
           {data && (
             <>

@@ -16,6 +16,7 @@ import { useActiveAdminCount, useUser } from '../hooks/useUsers.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { formatDateTime } from '../lib/format.ts'
 import { HttpError } from '../lib/http.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -31,6 +32,7 @@ export function UserDetailPage() {
   const params = useParams()
   const id = Number(params.id)
   const user = useUser(id)
+  useDocumentTitle(user.data?.email ?? 'Usuario')
   const { user: me } = useAuth()
   const { listPath, listState } = useListPath('/users')
   const navigate = useNavigate()
@@ -48,6 +50,7 @@ export function UserDetailPage() {
   if (isNotFound) {
     return (
       <EmptyState
+        titleAs="h1"
         title="Usuario no encontrado"
         description="Puede que se haya eliminado o que el enlace no sea correcto."
         action={backLink}
@@ -58,6 +61,7 @@ export function UserDetailPage() {
   if (user.isError) {
     return (
       <EmptyState
+        titleAs="h1"
         title="No se pudo cargar el usuario"
         description={errorMessage(user.error, 'Inténtalo de nuevo en unos minutos.')}
         action={

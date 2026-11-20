@@ -27,10 +27,10 @@ filtrado, con el mismo hover neutro que las filas de la tabla. Si alguna cifra f
 
 | Archivo | Contenido |
 |---|---|
-| `src/components/ui/TableSkeleton.tsx` | filas de esqueleto con `aria-busy` en la tabla |
-| `src/components/ui/EmptyState.tsx` | revisar textos y acciones en cada uso |
-| `src/hooks/useDocumentTitle.ts` | `useEffect` que sincroniza `document.title` (sistema externo) |
-| `src/components/ui/PageHeader.tsx` | `h1` con `tabIndex={-1}` y foco al cambiar de ruta (efecto que depende de `location.pathname`) |
+| `src/components/ui/TableSkeleton.tsx` | caja, cabecera y filas de 44 px como `DataTable` (la página no salta), `aria-busy`, texto «Cargando…» en `role="status"` y pulso con `motion-reduce:animate-none`; reemplaza al spinner en la primera carga de clientes y usuarios |
+| `src/components/ui/EmptyState.tsx` | revisados todos los usos: el único sin acción («Todavía no hay clientes») ofrece «Nuevo cliente» al ADMIN; prop `titleAs="h1"` para los estados que son toda la página (no encontrado, error al cargar) |
+| `src/hooks/useDocumentTitle.ts` | `useEffect` que sincroniza `document.title` (sistema externo) con «Página · Cartera»; lo llama cada página arriba (incluidas login, errores y fichas mientras cargan) |
+| `src/components/ui/PageHeader.tsx` | `h1` con `tabIndex={-1}` y foco al llegar a una pantalla: un contador de pedidos de foco en estado (1 al montar tras navegar, 0 en la carga inicial con `location.key === 'default'`) que se ajusta en el render cuando cambia `pathname`; el effect depende de ese contador. Cambiar solo el query string (filtros, orden, página) no mueve el foco |
 
 ## 3. Responsive y accesibilidad
 

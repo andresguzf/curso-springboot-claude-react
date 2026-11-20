@@ -11,7 +11,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador como ADMIN y como USER
   - Commit: "Agrega la página de inicio con el resumen de clientes y usuarios"
 
-- [ ] **F-02** Esqueletos, estados vacíos, títulos y foco al navegar
+- [x] **F-02** Esqueletos, estados vacíos, títulos y foco al navegar
   - Depende de: F-01
   - Cubre: RF-06-02, RF-06-03
   - Archivos: `src/components/ui/TableSkeleton.tsx`, `src/components/ui/EmptyState.tsx`, `src/hooks/useDocumentTitle.ts`, `src/components/ui/PageHeader.tsx`, páginas de clientes y usuarios

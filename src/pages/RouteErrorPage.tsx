@@ -1,8 +1,10 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 // errorElement del router: un error inesperado al renderizar una ruta. Se muestra sin layout
 // (el error pudo venir del propio layout) y con una salida clara.
 export function RouteErrorPage() {
+  useDocumentTitle('Algo salió mal')
   const error = useRouteError()
   const detail = isRouteErrorResponse(error)
     ? `${error.status} ${error.statusText}`

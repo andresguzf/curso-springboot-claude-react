@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useDashboardStats } from '../hooks/useDashboardStats.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 const numberFormat = new Intl.NumberFormat('es-CL')
 
@@ -41,6 +42,7 @@ function StatRow({ to, label, detail, stat }: StatRowProps) {
 
 // Página de inicio: la cartera en cuatro cifras, cada una como puerta al listado filtrado.
 export function DashboardPage() {
+  useDocumentTitle('Resumen')
   const { isAdmin } = useAuth()
   const { month, customers, active, newThisMonth, users } = useDashboardStats({ includeUsers: isAdmin })
   const rows = [customers, active, newThisMonth, ...(isAdmin ? [users] : [])]
