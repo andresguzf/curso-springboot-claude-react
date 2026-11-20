@@ -7,6 +7,7 @@ import { Input } from '../components/ui/Input.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Select } from '../components/ui/Select.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
+import { flash } from '../stores/flashStore.ts'
 
 // Catálogo de componentes para revisarlos durante el desarrollo. La ruta /dev/ui solo existe
 // con `npm run dev` (import.meta.env.DEV) y se elimina en la tarea F-04.
@@ -86,6 +87,26 @@ export function DevUiPage() {
           <p className="text-sm text-ink-muted tabular-nums">
             Cifras tabulares: 1.111 · 8.888 · +56 9 1000 0001 · 2026-11-20
           </p>
+        </Group>
+
+        <Group title="Mensajes flash">
+          <p className="text-sm text-ink-muted">
+            Aparecen arriba, se cierran solos a los 5 segundos (se pausan con el puntero o el foco) y con la X.
+            Como máximo se muestran 3.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => flash.success('Cliente «Ana Pérez» creado')}>Éxito</Button>
+            <Button onClick={() => flash.error('No se pudo eliminar el cliente. Inténtalo de nuevo.')}>Error</Button>
+            <Button onClick={() => flash.info('Tu sesión expiró, inicia sesión de nuevo')}>Información</Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                for (const n of [1, 2, 3, 4]) flash.info(`Mensaje ${n} de 4`)
+              }}
+            >
+              Cuatro seguidos
+            </Button>
+          </div>
         </Group>
 
         <Group title="Estado vacío">

@@ -47,10 +47,11 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Verificación: `npm run build && npm run lint`; revisar `/dev/ui` en escritorio y a 375 px, foco visible con Tab
   - Commit: "Agrega el layout del dashboard y los componentes base de UI"
 
-- [ ] **B-06** Mensajes flash
+- [x] **B-06** Mensajes flash
   - Depende de: B-05
   - Cubre: RF-02-08, RNF-02-01
-  - Archivos: `src/stores/flashStore.ts`, `src/components/ui/FlashMessages.tsx`, `src/components/ui/FlashMessage.tsx`, `src/components/layout/AppLayout.tsx`, `src/pages/DevUiPage.tsx` (botones de prueba)
+  - Archivos: `src/stores/flashStore.ts`, `src/components/ui/FlashMessages.tsx`, `src/components/ui/FlashMessage.tsx`, `src/components/layout/AppLayout.tsx`, `src/pages/DevUiPage.tsx` (botones de prueba), `src/index.css` (animación `flash-in`)
+  - Nota: la región es `sticky` con altura 0 (debajo del header y visible al hacer scroll, sin empujar el contenido); la pausa conserva el tiempo restante. Un mensaje que aparece bajo un puntero quieto no se pausa hasta que el puntero se mueve (el navegador no dispara `mouseenter` sin movimiento)
   - Hecho cuando: el mensaje aparece arriba, se cierra solo a los ~5 s y con la X; se pausa con hover o foco; máximo 3; `role="status"` / `"alert"`; animación desactivada con `prefers-reduced-motion`
   - Verificación: `npm run build && npm run lint`; en `/dev/ui` medir el cierre automático, cerrar con X y con teclado, probar 4 mensajes seguidos
   - Commit: "Agrega mensajes flash con cierre automático y manual"
