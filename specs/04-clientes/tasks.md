@@ -12,7 +12,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; llamada de prueba desde la página (temporal) con el backend arriba
   - Commit: "Agrega esquemas, servicio y formateo de fechas de clientes"
 
-- [ ] **D-02** Filtros sincronizados con la URL y búsqueda con debounce
+- [x] **D-02** Filtros sincronizados con la URL y búsqueda con debounce
   - Depende de: D-01
   - Cubre: RF-04-03, RF-04-05, RNF-04-01
   - Archivos: `src/hooks/useCustomerFilters.ts`, `src/hooks/useDebouncedCallback.ts`
