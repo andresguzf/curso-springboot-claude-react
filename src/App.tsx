@@ -2,6 +2,8 @@ import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-rou
 import { RequireAuth } from './components/auth/RequireAuth.tsx'
 import { AppLayout } from './components/layout/AppLayout.tsx'
 import { AuthLayout } from './components/layout/AuthLayout.tsx'
+import { CustomerDetailPage } from './pages/CustomerDetailPage.tsx'
+import { CustomersPage } from './pages/CustomersPage.tsx'
 import { DevUiPage } from './pages/DevUiPage.tsx'
 import { ForbiddenPage } from './pages/ForbiddenPage.tsx'
 import { HomePage } from './pages/HomePage.tsx'
@@ -31,6 +33,9 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <HomePage /> },
+          // Lectura de clientes: USER y ADMIN. Alta y edición (D-06) irán dentro de <RequireRole role="ADMIN" />.
+          { path: 'customers', element: <CustomersPage /> },
+          { path: 'customers/:id', element: <CustomerDetailPage /> },
           ...devRoutes,
           { path: 'forbidden', element: <ForbiddenPage /> },
           { path: '*', element: <NotFoundPage /> },

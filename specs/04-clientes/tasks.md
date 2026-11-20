@@ -36,7 +36,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`
   - Commit: "Agrega los filtros de clientes en el sidebar lateral"
 
-- [ ] **D-05** Página de listado y detalle de clientes
+- [x] **D-05** Página de listado y detalle de clientes
   - Depende de: D-03, D-04
   - Cubre: RF-04-01, RF-04-02, RF-04-03, RF-04-06, RF-04-07, RF-04-11, RNF-04-01
   - Archivos: `src/hooks/useCustomers.ts` (`customerKeys`, `useCustomersPage`, `useCustomer`), `src/components/customers/{CustomerSearch,CustomerTable}.tsx`, `src/pages/{CustomersPage,CustomerDetailPage}.tsx`, `src/App.tsx`, `src/components/layout/Navbar.tsx`

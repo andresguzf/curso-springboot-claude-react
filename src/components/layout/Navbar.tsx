@@ -8,8 +8,11 @@ type NavItem = {
   roles?: Role[]
 }
 
-// Agrega aquí una entrada por cada página del menú (Clientes en D-05, Usuarios en E-02 con roles: ['ADMIN']).
-const NAV_ITEMS: NavItem[] = [{ to: '/', label: 'Resumen' }]
+// Agrega aquí una entrada por cada página del menú (Usuarios en E-02 con roles: ['ADMIN']).
+const NAV_ITEMS: NavItem[] = [
+  { to: '/', label: 'Resumen' },
+  { to: '/customers', label: 'Clientes' },
+]
 
 function linkClassName({ isActive }: { isActive: boolean }) {
   const base = 'block border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors'
@@ -31,7 +34,8 @@ export function Navbar({ role }: NavbarProps) {
       <ul className="flex items-center gap-5">
         {items.map((item) => (
           <li key={item.to}>
-            <NavLink to={item.to} end className={linkClassName}>
+            {/* `end` solo en el inicio: "Clientes" sigue marcado en /customers/5. */}
+            <NavLink to={item.to} end={item.to === '/'} className={linkClassName}>
               {item.label}
             </NavLink>
           </li>
