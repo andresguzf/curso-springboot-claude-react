@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** el proyecto aún no está generado. Este README describe el stack, la estructura y la puesta en marcha **tal como quedarán** al generarlo con la skill `react-rules` (ver [Generar el proyecto](#generar-el-proyecto)). Actualízalo cuando la app exista.
+> **Estado:** el proyecto ya está generado (React 19.3.1, Vite 8, Tailwind 4) y tiene el proxy hacia la API configurado. Las pantallas se construyen por fases según las [especificaciones](specs/README.md): las secciones "Funcionalidades previstas" y "Conexión con el backend" describen el resultado esperado al terminar todas las fases.
 
 ## Stack
 
@@ -25,12 +25,12 @@ Todas las dependencias se instalan en su última versión publicada al generar e
 
 ## Requisitos
 
-- Node.js 22.22 o superior (lo pide React Router 8), o Node 24 LTS
+- Node.js 22.22 o superior (lo pide React Router 8); se recomienda la LTS más reciente
 - El [backend de Spring Boot](https://github.com/andresguzf/curso-springboot-claude-api) corriendo en `http://localhost:8080` (con PostgreSQL), para usar la app con datos reales
 
-## Generar el proyecto
+## Cómo se generó el proyecto
 
-El proyecto se crea con el script de la skill `react-rules`, que parte de la plantilla oficial de Vite (`react-ts`), agrega la estructura y el layout base, instala las dependencias y verifica que compile. No sobrescribe archivos existentes como este README o `CLAUDE.md`:
+El proyecto se creó con el script de la skill `react-rules`, que parte de la plantilla oficial de Vite (`react-ts`), agrega la estructura y el layout base, instala las dependencias en su última versión y verifica que compile. No sobrescribe archivos existentes como este README o `CLAUDE.md`, y se niega a correr si ya hay un `package.json` (no hace falta volver a ejecutarlo):
 
 ```bash
 bash .claude/skills/react-rules/scripts/create_project.sh .

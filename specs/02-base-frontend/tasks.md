@@ -4,10 +4,10 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Cada tarea: implementar 
 verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Definición de
 "hecho" en la [constitución](../constitution.md#6-calidad-definición-de-hecho).
 
-- [ ] **B-01** Crear la rama, generar el proyecto y configurar el proxy
+- [x] **B-01** Crear la rama, generar el proyecto y configurar el proxy
   - Depende de: — (prerrequisito: Node ≥ 22.22)
   - Cubre: RF-02-01, RF-02-02, RF-02-12
-  - Archivos: proyecto generado por `create_project.sh`, `vite.config.ts`, `.env.example`, `README.md` (quitar el aviso "aún no está generado")
+  - Archivos: proyecto generado por `create_project.sh`, `vite.config.ts`, `.env.example`, `README.md` (quitar el aviso "aún no está generado"), `CLAUDE.md` (sección Proyecto: ya hay `package.json`)
   - Hecho cuando: existe la rama `feature/dashboard`; `react` ≥ 19.3.1; el proxy reenvía `/api` al backend
   - Verificación: `npm run build && npm run lint`; con `npm run dev` y el backend arriba, `curl -i localhost:5173/api/auth/csrf` → 200 con `Set-Cookie: XSRF-TOKEN`
   - Commit: "Genera el proyecto React y configura el proxy hacia la API"

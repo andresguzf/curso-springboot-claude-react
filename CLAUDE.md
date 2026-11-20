@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Frontend React + TypeScript del curso. Es parte de un curso: el código se muestra en pantalla y se publica en GitHub.
 
-Todavía no hay `package.json`: el proyecto se genera con la skill `react-rules` (ver abajo).
+Proyecto generado con el script de la skill `react-rules` (Vite + React 19.3.1 + TypeScript 7 + Tailwind 4); no lo vuelvas a ejecutar. `vite.config.ts` reenvía `/api` a `http://localhost:8080`. Las pantallas se construyen por fases según `specs/` (ver abajo).
 
 ## Recursos: documentación del backend
 
