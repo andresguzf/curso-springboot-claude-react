@@ -11,9 +11,17 @@ Cómo se implementa [`spec.md`](spec.md) respetando la [constitución](../consti
 | Nuevos este mes | `?createdFrom=<día 1 del mes>&size=1` | `/customers?createdFrom=…` |
 | Usuarios (ADMIN) | `GET /api/users?size=1` | `/users` |
 
-Hook `useDashboardStats()` con `useQueries` (una query por cifra, reutilizando los
-servicios). La fecha del día 1 se calcula en el hook (no en el render de un componente
-que deba ser puro sin necesidad). Diseño según `specs/02-base-frontend/design.md`.
+Hook `useDashboardStats({ includeUsers })` con `useQueries` (una query por cifra, `size=1` y
+`select` → `totalElements`). Reutiliza `customerKeys.list` / `userKeys.list`: las mutaciones ya
+invalidan esas claves y el resumen se actualiza solo. El mes (día 1 y nombre) se fija al montar
+con el inicializador de `useState`, así la clave de la consulta queda estable. La consulta de
+usuarios solo corre para ADMIN (`enabled`).
+
+Diseño según `specs/02-base-frontend/design.md` («el fichero», sin número grande + gradiente ni
+tarjetas iguales): un solo panel con una fila por cifra (frase, dato de contexto como «De 22
+clientes» y el total en cifras tabulares a la derecha); toda la fila es un enlace al listado
+filtrado, con el mismo hover neutro que las filas de la tabla. Si alguna cifra falla: «—» y
+«Reintentar». `DashboardPage` reemplaza a `HomePage` en la ruta índice.
 
 ## 2. Estados y navegación
 

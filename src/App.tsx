@@ -9,7 +9,7 @@ import { CustomerEditPage } from './pages/CustomerEditPage.tsx'
 import { CustomersPage } from './pages/CustomersPage.tsx'
 import { DevUiPage } from './pages/DevUiPage.tsx'
 import { ForbiddenPage } from './pages/ForbiddenPage.tsx'
-import { HomePage } from './pages/HomePage.tsx'
+import { DashboardPage } from './pages/DashboardPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
 import { NotFoundPage } from './pages/NotFoundPage.tsx'
 import { RouteErrorPage } from './pages/RouteErrorPage.tsx'
@@ -39,7 +39,7 @@ const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          { index: true, element: <HomePage /> },
+          { index: true, element: <DashboardPage /> },
           // Lectura de clientes: USER y ADMIN.
           { path: 'customers', element: <CustomersPage /> },
           { path: 'customers/:id', element: <CustomerDetailPage /> },

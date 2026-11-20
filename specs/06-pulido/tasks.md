@@ -3,7 +3,7 @@
 Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" en la
 [constitución](../constitution.md#6-calidad-definición-de-hecho).
 
-- [ ] **F-01** Página de inicio con resumen
+- [x] **F-01** Página de inicio con resumen
   - Depende de: D-05, E-02
   - Cubre: RF-06-01, RNF-06-01
   - Archivos: `src/hooks/useDashboardStats.ts`, `src/pages/DashboardPage.tsx`, `src/App.tsx` (ruta índice)
