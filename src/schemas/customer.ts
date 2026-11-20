@@ -125,3 +125,13 @@ export const EMPTY_CUSTOMER_FORM: CustomerFormValues = {
   birthDate: '',
   active: true,
 }
+
+// Formatos de exportación del listado (content negotiation del backend con ?format=).
+export const EXPORT_FORMATS = {
+  csv: { label: 'CSV', accept: 'text/csv', extension: 'csv' },
+  xlsx: { label: 'Excel', accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', extension: 'xlsx' },
+  pdf: { label: 'PDF', accept: 'application/pdf', extension: 'pdf' },
+  xml: { label: 'XML', accept: 'application/xml', extension: 'xml' },
+} as const
+
+export type ExportFormat = keyof typeof EXPORT_FORMATS

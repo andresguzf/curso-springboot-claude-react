@@ -1,6 +1,7 @@
 import { CustomerFilters } from '../components/customers/CustomerFilters.tsx'
 import { CustomerSearch } from '../components/customers/CustomerSearch.tsx'
 import { CustomerTable } from '../components/customers/CustomerTable.tsx'
+import { ExportMenu } from '../components/customers/ExportMenu.tsx'
 import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
@@ -14,6 +15,7 @@ import { Spinner } from '../components/ui/Spinner.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useCustomerFilters } from '../hooks/useCustomerFilters.ts'
 import { useCustomersPage, useDeleteCustomer } from '../hooks/useCustomers.ts'
+import { useExportCustomers } from '../hooks/useExportCustomers.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { PAGE_SIZES, type Customer } from '../schemas/customer.ts'
 
@@ -29,6 +31,7 @@ export function CustomersPage() {
   // Cliente que se está por eliminar (modal abierto) o null. Estado local: solo le importa a esta página.
   const [toDelete, setToDelete] = useState<Customer | null>(null)
   const deleteCustomer = useDeleteCustomer()
+  const exportCustomers = useExportCustomers()
 
   function openDelete(customer: Customer) {
     deleteCustomer.reset() // sin el error de un intento anterior
@@ -77,15 +80,22 @@ export function CustomersPage() {
         title="Clientes"
         description="Busca, filtra y ordena la cartera de clientes."
         actions={
-          isAdmin && (
-            <Link
-              to="/customers/new"
-              state={{ listSearch: location.search }}
-              className={buttonClassName({ variant: 'primary' })}
-            >
-              Nuevo cliente
-            </Link>
-          )
+          <>
+            {/* Exporta todo el resultado filtrado y ordenado, no solo la página visible (USER y ADMIN). */}
+            <ExportMenu
+              onExport={(format) => exportCustomers.mutate({ filters, format })}
+              pendingFormat={exportCustomers.isPending ? exportCustomers.variables.format : undefined}
+            />
+            {isAdmin && (
+              <Link
+                to="/customers/new"
+                state={{ listSearch: location.search }}
+                className={buttonClassName({ variant: 'primary' })}
+              >
+                Nuevo cliente
+              </Link>
+            )}
+          </>
         }
       />
 

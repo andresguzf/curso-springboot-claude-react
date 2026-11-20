@@ -224,11 +224,16 @@ export const http = {
   /**
    * Descarga un archivo (exportaciones CSV, Excel, PDF, XML) pasando por la misma renovación de
    * sesión que el resto de peticiones. Un `<a href>` directo con el token vencido descargaría
-   * un ProblemDetail en vez del archivo.
+   * un ProblemDetail en vez del archivo. `fallbackName` se usa si la respuesta no trae
+   * Content-Disposition (p. ej. el XML).
    */
-  download: async (path: string, accept: string): Promise<{ blob: Blob; filename: string }> => {
+  download: async (
+    path: string,
+    accept: string,
+    fallbackName = 'descarga',
+  ): Promise<{ blob: Blob; filename: string }> => {
     const response = await send(path, {}, { accept, retry: true })
     if (!response.ok) throw await toHttpError(response)
-    return { blob: await response.blob(), filename: filenameFrom(response, 'descarga') }
+    return { blob: await response.blob(), filename: filenameFrom(response, fallbackName) }
   },
 }

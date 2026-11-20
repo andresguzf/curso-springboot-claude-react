@@ -60,7 +60,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; en el navegador: cancelar, Esc, confirmar, borrar el último de una página
   - Commit: "Agrega la eliminación de clientes con modal de confirmación"
 
-- [ ] **D-08** Exportación del resultado filtrado
+- [x] **D-08** Exportación del resultado filtrado
   - Depende de: D-05, B-03
   - Cubre: RF-04-12
   - Archivos: `src/services/customerService.ts` (`exportFile`), `src/hooks/useExportCustomers.ts`, `src/components/customers/ExportMenu.tsx`, `src/pages/CustomersPage.tsx`
