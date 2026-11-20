@@ -19,7 +19,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador con red lenta (DevTools) y con teclado
   - Commit: "Agrega estados de carga, vacíos, títulos de página y foco al navegar"
 
-- [ ] **F-03** Revisión responsive y auditoría de accesibilidad
+- [x] **F-03** Revisión responsive y auditoría de accesibilidad
   - Depende de: F-02, E-05
   - Cubre: RF-06-04, RF-06-05
   - Archivos: los componentes que la auditoría señale

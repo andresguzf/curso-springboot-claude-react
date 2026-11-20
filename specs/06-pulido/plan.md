@@ -38,6 +38,21 @@ filtrado, con el mismo hover neutro que las filas de la tabla. Si alguna cifra f
 - Auditoría con Lighthouse / axe (skill `chrome-devtools-mcp:a11y-debugging` si está disponible): contraste, nombres accesibles, foco, `aria-*`, orden de tabulación.
 - Confirmar `prefers-reduced-motion` en flash, modal y drawer.
 
+**Resultado (F-03).** Lighthouse con Chrome DevTools MCP, en un contexto aislado y con un ADMIN de prueba:
+
+| Pantalla | Accesibilidad antes | Después |
+|---|---|---|
+| Login (escritorio y móvil) | 95 | 100 |
+| Clientes (escritorio y móvil) | 96 | 100 |
+| Usuarios | 96 | 100 |
+| Modal de eliminar abierto (snapshot) | — | 100 |
+| Cajón de filtros a 375 px (snapshot) | — | 100 |
+
+- Único problema de accesibilidad: la región de mensajes flash tenía `aria-label` en un `div` sin rol → pasa a `<section aria-label="Notificaciones">` (landmark de región).
+- 375 px: sin desborde de página en resumen, clientes, usuarios, formularios, ficha y edición; las tablas se desplazan dentro de su recuadro; los filtros, en el cajón (foco inicial en «Cerrar filtros»).
+- `prefers-reduced-motion`: el flash entra con `motion-safe:animate-flash-in`; spinner y esqueleto con `motion-reduce:animate-none`; modal y cajón no tienen animación de entrada.
+- Fuera de accesibilidad: se agrega `<meta name="description">` y `public/robots.txt` con `Disallow: /` (panel privado; Lighthouse SEO lo marca como «bloqueado para indexar», es lo buscado). Los errores de consola del login son los 401 esperados de `/me` y `/refresh` sin sesión.
+
 ## 4. Cierre
 
 - Quitar `src/pages/DevUiPage.tsx` y su ruta.
