@@ -2,13 +2,16 @@ import { useState, type ReactNode } from 'react'
 import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
 import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
+import { DataTable, type DataTableColumn } from '../components/ui/DataTable.tsx'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog.tsx'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { FormField } from '../components/ui/FormField.tsx'
 import { Input } from '../components/ui/Input.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
+import { Pagination } from '../components/ui/Pagination.tsx'
 import { Select } from '../components/ui/Select.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
+import { formatDate } from '../lib/format.ts'
 import { flash } from '../stores/flashStore.ts'
 
 // Catálogo de componentes para revisarlos durante el desarrollo. La ruta /dev/ui solo existe
@@ -73,6 +76,102 @@ function ConfirmDialogDemo() {
   )
 }
 
+// Datos ficticios para la tabla de ejemplo (37 filas: 4 páginas de 10).
+type DemoCustomer = {
+  id: number
+  name: string
+  lastName: string
+  email: string
+  phone: string
+  city: string
+  birthDate: string
+  active: boolean
+}
+
+const DEMO_NAMES = ['Ana', 'Bruno', 'Carla', 'Diego', 'Elena', 'Felipe', 'Gabriela', 'Hugo', 'Isabel', 'Javier']
+const DEMO_LAST_NAMES = ['Pérez', 'Soto', 'Muñoz', 'Rojas', 'Díaz', 'Vargas', 'Castro', 'Fuentes']
+const DEMO_CITIES = ['Santiago', 'Valparaíso', 'Concepción', 'La Serena', 'Temuco', 'Antofagasta']
+
+const DEMO_CUSTOMERS: DemoCustomer[] = Array.from({ length: 37 }, (_, index) => {
+  const id = index + 1
+  return {
+    id,
+    name: DEMO_NAMES[index % DEMO_NAMES.length],
+    lastName: DEMO_LAST_NAMES[(index * 3) % DEMO_LAST_NAMES.length],
+    email: `cliente${id}@ejemplo.com`,
+    phone: `+56 9 1000 ${String(id).padStart(4, '0')}`,
+    city: DEMO_CITIES[(index * 5) % DEMO_CITIES.length],
+    birthDate: `${1960 + ((index * 7) % 40)}-${String((index % 12) + 1).padStart(2, '0')}-${String((index % 27) + 1).padStart(2, '0')}`,
+    active: index % 4 !== 0,
+  }
+})
+
+const DEMO_COLUMNS: DataTableColumn<DemoCustomer>[] = [
+  { key: 'id', header: 'ID', sortField: 'id', cell: (row) => row.id, className: 'tabular-nums w-px' },
+  { key: 'name', header: 'Nombre', sortField: 'lastName', cell: (row) => `${row.name} ${row.lastName}` },
+  { key: 'email', header: 'Email', sortField: 'email', cell: (row) => row.email },
+  { key: 'phone', header: 'Teléfono', cell: (row) => row.phone, className: 'tabular-nums' },
+  { key: 'city', header: 'Ciudad', sortField: 'city', cell: (row) => row.city },
+  {
+    key: 'birthDate',
+    header: 'Nacimiento',
+    sortField: 'birthDate',
+    cell: (row) => formatDate(row.birthDate),
+    className: 'tabular-nums',
+  },
+  {
+    key: 'active',
+    header: 'Estado',
+    sortField: 'active',
+    cell: (row) => (row.active ? <Badge tone="success">Activo</Badge> : <Badge>Inactivo</Badge>),
+  },
+]
+
+const DEMO_SIZES = [10, 25, 50] as const
+
+// Orden y paginación en memoria, solo para el catálogo; en /customers los hace la API.
+function TableDemo() {
+  const [sort, setSort] = useState('id,asc')
+  const [page, setPage] = useState(1)
+  const [size, setSize] = useState<number>(10)
+
+  const [field, direction] = sort.split(',') as [keyof DemoCustomer, string]
+  const sorted = DEMO_CUSTOMERS.toSorted((a, b) => {
+    const order = String(a[field]).localeCompare(String(b[field]), 'es', { numeric: true })
+    return direction === 'desc' ? -order : order
+  })
+  const totalPages = Math.ceil(sorted.length / size)
+  const rows = sorted.slice((page - 1) * size, page * size)
+
+  return (
+    <div className="space-y-3">
+      <DataTable
+        caption="Clientes de ejemplo"
+        columns={DEMO_COLUMNS}
+        rows={rows}
+        getRowId={(row) => row.id}
+        sort={sort}
+        onSortChange={(next) => {
+          setSort(next)
+          setPage(1)
+        }}
+      />
+      <Pagination
+        page={page}
+        size={size}
+        totalElements={sorted.length}
+        totalPages={totalPages}
+        sizes={DEMO_SIZES}
+        onPageChange={setPage}
+        onSizeChange={(next) => {
+          setSize(next)
+          setPage(1)
+        }}
+      />
+    </div>
+  )
+}
+
 // Filtros de ejemplo con estado local; en las páginas reales vendrán de la URL (spec 04).
 function FiltersDemo() {
   const [status, setStatus] = useState('')
@@ -104,9 +203,13 @@ function FiltersDemo() {
         </>
       }
     >
-      <div className="rounded-panel border border-line bg-surface p-5 text-sm text-ink-muted">
-        Aquí irá la tabla. Colapsa el sidebar con el botón de la izquierda y recarga la página: conserva su estado.
-        En pantallas chicas, los filtros se abren con el botón «Filtros».
+      <div className="space-y-3">
+        <p className="text-sm text-ink-muted">
+          Colapsa el sidebar con el botón de la izquierda y recarga la página: conserva su estado. En pantallas chicas,
+          los filtros se abren con el botón «Filtros». La tabla ordena por columna (clic en el encabezado) y, a 375 px,
+          se desplaza en horizontal dentro de su recuadro.
+        </p>
+        <TableDemo />
       </div>
     </FiltersLayout>
   )
@@ -218,7 +321,7 @@ export function DevUiPage() {
       </div>
 
       <section className="mt-6 space-y-3">
-        <h2 className="text-xl font-semibold">Sidebar de filtros</h2>
+        <h2 className="text-xl font-semibold">Sidebar de filtros, tabla y paginación</h2>
         <FiltersDemo />
       </section>
     </>

@@ -1,7 +1,12 @@
 import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router'
 import { RequireAuth } from './components/auth/RequireAuth.tsx'
+import { RequireRole } from './components/auth/RequireRole.tsx'
 import { AppLayout } from './components/layout/AppLayout.tsx'
 import { AuthLayout } from './components/layout/AuthLayout.tsx'
+import { CustomerCreatePage } from './pages/CustomerCreatePage.tsx'
+import { CustomerDetailPage } from './pages/CustomerDetailPage.tsx'
+import { CustomerEditPage } from './pages/CustomerEditPage.tsx'
+import { CustomersPage } from './pages/CustomersPage.tsx'
 import { DevUiPage } from './pages/DevUiPage.tsx'
 import { ForbiddenPage } from './pages/ForbiddenPage.tsx'
 import { HomePage } from './pages/HomePage.tsx'
@@ -31,6 +36,18 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <HomePage /> },
+          // Lectura de clientes: USER y ADMIN.
+          { path: 'customers', element: <CustomersPage /> },
+          { path: 'customers/:id', element: <CustomerDetailPage /> },
+          // Escritura de clientes: solo ADMIN (un USER va a /forbidden). 'customers/new' gana a
+          // 'customers/:id' porque React Router prioriza los segmentos fijos.
+          {
+            element: <RequireRole role="ADMIN" />,
+            children: [
+              { path: 'customers/new', element: <CustomerCreatePage /> },
+              { path: 'customers/:id/edit', element: <CustomerEditPage /> },
+            ],
+          },
           ...devRoutes,
           { path: 'forbidden', element: <ForbiddenPage /> },
           { path: '*', element: <NotFoundPage /> },

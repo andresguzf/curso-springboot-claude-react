@@ -23,7 +23,7 @@ La página de la API empieza en 0; en la URL del frontend empieza en 1 (más nat
 | `customerSchema` | `birthDate: z.iso.date()`, `createdAt: z.iso.datetime({ local: true })`, `updatedAt: … .nullable()` |
 | `customerPageSchema` | `pagedSchema(customerSchema)` |
 | `customerFiltersSchema` | filtros de la URL con `.catch()` en cada campo: `search`, `active` (`'true' | 'false'`), `city`, `birthFrom`, `birthTo`, `createdFrom`, `createdTo`, `page` (≥ 1, por defecto 1), `size` (10 / 25 / 50), `sort` (regex sobre la lista blanca, por defecto `id,asc`) |
-| `customerFormSchema` | máximos 80 / 80 / 150 / 30 / 200 / 80, `z.email()`, `birthDate` pasada, `active: z.boolean()` |
+| `customerFormSchema` | mismos mensajes que el `CustomerDto`: obligatorios con `trim`, máximos 80 / 80 / 150 / 30 / 200 / 80, `z.email()`, `birthDate` obligatoria, ISO y anterior a hoy (fecha local calculada al validar), `active: z.boolean()`; `CUSTOMER_FORM_FIELDS` (campos para `applyServerErrors`) y `EMPTY_CUSTOMER_FORM` (alta: activo por defecto) |
 
 `type CustomerFilters = z.infer<typeof customerFiltersSchema>`; los tipos de datos con `z.infer`.
 
@@ -31,31 +31,36 @@ La página de la API empieza en 0; en la URL del frontend empieza en 1 (más nat
 
 | Archivo | Contenido |
 |---|---|
-| `src/services/customerService.ts` | `page(filters)` (convierte `page - 1` y arma el query con `toQuery`), `get(id)`, `create`, `update`, `remove`, `exportFile(filters, format)` (con `http.download`) |
-| `src/hooks/useCustomerFilters.ts` | `useSearchParams` + `customerFiltersSchema.safeParse`; `setFilters(patch)` (vuelve a `page: 1` si cambia un filtro; `replace` para texto, push para página/orden/tamaño); `clearFilters()`; `activeCount` |
-| `src/hooks/useDebouncedCallback.ts` | debounce dentro del handler, timer en `useRef`, limpieza al desmontar (no un effect que observa el texto) |
+| `src/services/customerService.ts` | `page(filters)` (convierte `page - 1` y arma el query con `toQuery`), `get(id)`, `create`, `update`, `remove`, `exportFile(filters, format)` (con `http.download`; sin `page` ni `size`, así el backend devuelve todo el resultado filtrado y ordenado). `EXPORT_FORMATS` (en `schemas/customer.ts`) define etiqueta, `Accept` y extensión; `http.download` recibe un nombre de respaldo (`clientes.xml`) para las respuestas sin `Content-Disposition` |
+| `src/hooks/useCustomerFilters.ts` | `useSearchParams` + `customerFiltersSchema.parse` (cada campo con `.catch()`, nunca falla); `setFilters(patch)` (cualquier cambio que no sea de página vuelve a `page: 1`; texto: el primer cambio agrega una entrada al historial marcada con `state.textEdit` y los siguientes la reemplazan, así atrás vuelve a lo que había antes de escribir; filtros, página, orden y tamaño agregan una entrada); los valores por defecto no se escriben en la URL; `clearFilters()` (búsqueda y sidebar; conserva tamaño y orden) y `resetKey`, que aumenta en cada limpieza y la página usa como `key` de los campos de filtro y del buscador (al remontarse descartan el texto sin aplicar y su debounce pendiente); `activeCount` (estado, ciudad, rango de nacimiento y rango de alta; la búsqueda no cuenta) y `hasFilters` |
+| `src/hooks/useDebouncedCallback.ts` | devuelve `{ run, cancel }`: debounce dentro del handler, timer en `useRef`, siempre ejecuta el callback más reciente (ref actualizado en `useLayoutEffect`), limpieza al desmontar (no un effect que observa el texto); `cancel` evita que una búsqueda pendiente se aplique tras "Limpiar filtros" |
+| `src/hooks/useDebouncedText.ts` | campo de texto con debounce (ciudad en D-04, buscador en D-05): `text` local que se ajusta en el render si cambia el valor aplicado (patrón `prevValue`, respetando espacios en los extremos mientras se escribe) y que al vencer el timer aplica el texto más reciente |
 | `src/hooks/useCustomers.ts` | `customerKeys` (`all`, `list(filters)`, `detail(id)`), `useCustomersPage(filters)` con `placeholderData: keepPreviousData`, `useCustomer(id)`, `useCreateCustomer`, `useUpdateCustomer`, `useDeleteCustomer` (invalidan `customerKeys.all` y publican el flash en `onSuccess`) |
-| `src/hooks/useExportCustomers.ts` | mutación que descarga con un object URL temporal y `<a download>`; flash de error en `onError` |
+| `src/hooks/useExportCustomers.ts` | mutación (`{ filters, format }`) que descarga con `saveFile` en `onSuccess`; flash de error en `onError`; `variables.format` indica qué botón está en curso |
+| `src/lib/saveFile.ts` | `saveFile(blob, filename)`: object URL temporal + `<a download>` y `revokeObjectURL` |
 | `src/lib/format.ts` | `formatDate('1990-05-20')` separando el string (sin `new Date`, que interpreta UTC y en Chile mostraría el día anterior); `formatDateTime` con `Intl.DateTimeFormat('es-CL')` |
-| `src/lib/serverErrors.ts` | `applyServerErrors(error, setError)`: 400 con `fieldErrors` → `setError` por campo; 409 "Recurso duplicado" → `setError('email')`; devuelve `false` si no aplicó nada |
+| `src/lib/errors.ts` | `errorMessage(error, fallback)`: `detail` del ProblemDetail o `fallback`; sin respuesta, "No se pudo conectar con el servidor…" (listado y detalle) |
+| `src/lib/serverErrors.ts` | `applyServerErrors(error, setError, { fields, conflict })`: 400 con `fieldErrors` → `setError` en los campos conocidos (foco en el primero); 409 → `setError(conflict.field, conflict.message)` ("Ya existe un cliente con este email"); devuelve `false` si no aplicó nada y la página publica un flash de error |
 
 ## 4. Componentes y páginas
 
 | Archivo | Contenido |
 |---|---|
-| `src/components/ui/DataTable.tsx` | genérico: `columns: { key, header, sortField?, cell, className? }[]`, `rows`, `getRowId`, `sort`, `onSortChange`, `isDimmed`; `caption` oculto; botón en el encabezado con `aria-sort`; scroll horizontal propio |
-| `src/components/ui/Pagination.tsx` | "Mostrando a–b de N", anterior / siguiente / números con elipsis, selector de tamaño; `nav aria-label="Paginación"` |
-| `src/components/filters/DateRangeField.tsx` | dos `input type="date"` con validación `desde <= hasta` |
-| `src/components/customers/CustomerFilters.tsx` | contenido del `FiltersSidebar` (estado, ciudad, rangos) |
-| `src/components/customers/CustomerSearch.tsx` | buscador de la barra superior; estado local que se ajusta en el render si cambia la URL (patrón `prevSearch`), debounce en el `onChange` |
-| `src/components/customers/CustomerTable.tsx` | columnas y acciones por fila (ver, editar, eliminar) según `isAdmin` |
-| `src/components/customers/CustomerForm.tsx` | presentacional: `defaultValues`, `onSubmit`, `isPending`; recibe `setError` vía callback o expone el form para `applyServerErrors` |
-| `src/components/customers/ExportMenu.tsx` | menú con CSV, Excel, PDF y XML |
-| `src/pages/CustomersPage.tsx` | `FiltersLayout` + `PageHeader` (Nuevo cliente, Exportar) + tabla + paginación + `ConfirmDialog` de eliminación |
-| `src/pages/CustomerDetailPage.tsx` | ficha con fechas de auditoría |
-| `src/pages/CustomerCreatePage.tsx`, `src/pages/CustomerEditPage.tsx` | formulario; edición con `key={customer.id}`; navegan en `onSuccess` |
+| `src/components/ui/DataTable.tsx` | genérico: `columns: { key, header, sortField?, cell, className? }[]`, `rows`, `getRowId`, `sort`, `onSortChange`, `isDimmed`, `empty` (contenido si no hay filas); `caption` oculto; botón en el encabezado con `aria-sort` (primer clic asc, luego alterna); encabezado fijo y scroll propio (`max-h-[70vh] overflow-auto`, horizontal a 375 px) |
+| `src/components/ui/Pagination.tsx` | "Mostrando a–b de N" ("Sin resultados" si no hay), anterior / siguiente / números con elipsis (máx. 7: `1 … 5 6 7 … 12`), página actual con `aria-current`; selector de tamaño con las opciones de la prop `sizes`; `nav aria-label="Paginación"` |
+| `src/components/filters/DateRangeField.tsx` | `fieldset` con «Desde» / «Hasta» (`input type="date"`, `min`/`max` cruzados); borrador local ajustado en el render si cambia el rango aplicado; si `desde > hasta` muestra el error (`aria-invalid` + `aria-describedby`) y no lo aplica; aplica con debounce de 400 ms (en Chrome cada dígito del año dispara un cambio) |
+| `src/components/customers/CustomerFilters.tsx` | contenido del `FiltersSidebar`, presentacional (`filters`, `onChange(patch)`): estado (Todos / Activos / Inactivos), ciudad (`useDebouncedText`), rango de nacimiento y rango de alta |
+| `src/components/customers/CustomerSearch.tsx` | buscador de la barra superior (`input type="search"` con etiqueta oculta) sobre `useDebouncedText`; la página le pone `key={resetKey}` |
+| `src/components/customers/CustomerTable.tsx` | columnas (nombre → orden por `lastName`, email, teléfono, ciudad, nacimiento, estado, alta); el nombre enlaza al detalle con `state.listSearch` (query string actual) para volver con los mismos filtros; editar y eliminar por fila llegan en D-06 / D-07 |
+| `src/components/customers/CustomerForm.tsx` | presentacional: `defaultValues`, `submitLabel`, `isPending`, `cancelTo`; `onSubmit(values, setError)` entrega los valores validados y `setError` para `applyServerErrors` |
+| `src/hooks/useCustomersListPath.ts` | lee `state.listSearch` (validado con Zod) y devuelve `listPath` (volver al listado con sus filtros) y `listState` (reenviarlo: detalle → editar); lo usan detalle, alta y edición |
+| `src/components/ui/buttonStyles.ts` | `buttonClassName({ variant, size })`, compartido por `Button` y los `Link` con aspecto de botón ("Nuevo cliente", "Editar", "Cancelar") |
+| `src/components/customers/ExportMenu.tsx` | grupo (`role="group"`, etiqueta «Exportar») con un botón por formato: CSV, Excel, PDF y XML; el que está en curso muestra el spinner y los demás quedan bloqueados. Sin menú desplegable: cuatro opciones no justifican manejar foco, Esc y clics fuera |
+| `src/pages/CustomersPage.tsx` | `FiltersLayout` + `PageHeader` + buscador + tabla + paginación (Nuevo cliente, Exportar y `ConfirmDialog` llegan en D-06 a D-08). Estados: carga inicial (spinner), error con "Reintentar" (`refetch`; con `keepPreviousData` el error descarta los datos previos), vacío según el caso (página fuera de rango → "Ir a la primera página" sin paginación; con filtros → "Limpiar filtros"; sin clientes) y datos previos atenuados al paginar |
+| `src/pages/CustomerDetailPage.tsx` | ficha (`dl`) con todos los campos y fechas de auditoría ("Sin cambios" si `updatedAt` es null); "Volver a clientes" con el query string de `state.listSearch`; id inválido o 404 → "Cliente no encontrado"; otro error → "Reintentar" |
+| `src/pages/CustomerCreatePage.tsx`, `src/pages/CustomerEditPage.tsx` | formulario; edición con `key={customer.id}` (estados de carga, 404 y error como el detalle); el flash lo publica el hook en `onSuccess` y la página navega al listado (`listPath`) en el `onSuccess` de `mutate`; `onError` → `applyServerErrors` o flash de error. "Nuevo cliente" (cabecera del listado), "Editar" (columna de acciones y detalle) solo para ADMIN |
 
-Rutas: `customers`, `customers/:id` (todos); `customers/new`, `customers/:id/edit` dentro de `RequireRole role="ADMIN"`.
+Rutas: `customers`, `customers/:id` (todos; en `Navbar`, "Clientes" y `end` solo para `/`, así sigue marcado en el detalle); `customers/new`, `customers/:id/edit` dentro de `RequireRole role="ADMIN"`.
 
 ## 5. Decisiones
 
@@ -64,7 +69,8 @@ Rutas: `customers`, `customers/:id` (todos); `customers/new`, `customers/:id/edi
 | Filtros en la URL, no en Zustand | Enlaces compartibles y botón atrás gratis; una sola fuente de verdad. |
 | `keepPreviousData` + atenuado | Sin parpadeo al paginar; `isPlaceholderData` indica que hay datos viejos. |
 | Exportación con `http.download`, no `<a href>` | Un enlace directo con el access token vencido descargaría un `ProblemDetail`; así pasa por el refresh. El PDF también se descarga (abrir una ventana tras un `await` lo bloquea el navegador). |
-| Retroceder de página en `onSuccess` del borrado | Evita una página vacía sin usar effects. |
+| Retroceder de página en `onSuccess` del borrado | Evita una página vacía sin usar effects. Se decide en el handler antes de borrar (`content.length === 1 && page > 1`). La invalidación refresca una vez la página vacía antes de cambiar la URL: una petición de más, aceptada. |
+| Eliminar desde la tabla con estado local `toDelete` | `CustomerTable` recibe `onDelete`; la página abre `ConfirmDialog` («¿Eliminar a «Nombre Apellido»?», botón «Eliminar» en granate), limpia el error anterior con `reset()` al abrir y muestra el error de la mutación dentro del modal. `useDeleteCustomer` quita el detalle del cache (`removeQueries`) e invalida el resto. |
 | Página 1 en la URL, 0 en la API | Mejor para el usuario; la conversión vive solo en el servicio. |
 
 ## 6. Riesgos

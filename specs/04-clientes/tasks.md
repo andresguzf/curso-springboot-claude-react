@@ -4,7 +4,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
 [constitución](../constitution.md#6-calidad-definición-de-hecho). Requiere el backend
 con la tarea A-06 hecha (listado paginado y filtros).
 
-- [ ] **D-01** Esquemas, servicio y formateo de fechas de clientes
+- [x] **D-01** Esquemas, servicio y formateo de fechas de clientes
   - Depende de: C-03, A-06
   - Cubre: RF-04-01, RNF-04-02
   - Archivos: `src/schemas/customer.ts` (`customerSchema`, `customerPageSchema`, `customerFiltersSchema`), `src/services/customerService.ts` (`page`, `get`), `src/lib/format.ts`
@@ -12,7 +12,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; llamada de prueba desde la página (temporal) con el backend arriba
   - Commit: "Agrega esquemas, servicio y formateo de fechas de clientes"
 
-- [ ] **D-02** Filtros sincronizados con la URL y búsqueda con debounce
+- [x] **D-02** Filtros sincronizados con la URL y búsqueda con debounce
   - Depende de: D-01
   - Cubre: RF-04-03, RF-04-05, RNF-04-01
   - Archivos: `src/hooks/useCustomerFilters.ts`, `src/hooks/useDebouncedCallback.ts`
@@ -20,7 +20,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`
   - Commit: "Agrega filtros de clientes sincronizados con la URL y búsqueda con debounce"
 
-- [ ] **D-03** Tabla de datos y paginación reutilizables
+- [x] **D-03** Tabla de datos y paginación reutilizables
   - Depende de: B-05
   - Cubre: RF-04-01, RF-04-02, RNF-04-03
   - Archivos: `src/components/ui/DataTable.tsx`, `src/components/ui/Pagination.tsx`, `src/pages/DevUiPage.tsx` (ejemplo con datos ficticios)
@@ -28,7 +28,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; revisar en `/dev/ui` con teclado y a 375 px
   - Commit: "Agrega tabla de datos con orden por columna y paginación reutilizables"
 
-- [ ] **D-04** Filtros de clientes en el sidebar
+- [x] **D-04** Filtros de clientes en el sidebar
   - Depende de: B-08, D-02
   - Cubre: RF-04-04
   - Archivos: `src/components/filters/DateRangeField.tsx`, `src/components/customers/CustomerFilters.tsx`
@@ -36,7 +36,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`
   - Commit: "Agrega los filtros de clientes en el sidebar lateral"
 
-- [ ] **D-05** Página de listado y detalle de clientes
+- [x] **D-05** Página de listado y detalle de clientes
   - Depende de: D-03, D-04
   - Cubre: RF-04-01, RF-04-02, RF-04-03, RF-04-06, RF-04-07, RF-04-11, RNF-04-01
   - Archivos: `src/hooks/useCustomers.ts` (`customerKeys`, `useCustomersPage`, `useCustomer`), `src/components/customers/{CustomerSearch,CustomerTable}.tsx`, `src/pages/{CustomersPage,CustomerDetailPage}.tsx`, `src/App.tsx`, `src/components/layout/Navbar.tsx`
@@ -44,7 +44,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; en el navegador: URL compartida en otra pestaña, botón atrás, sidebar colapsado tras recargar, `?page=99`
   - Commit: "Agrega el listado de clientes con paginación, orden, búsqueda y filtros"
 
-- [ ] **D-06** Alta y edición de clientes con validación y mensajes flash
+- [x] **D-06** Alta y edición de clientes con validación y mensajes flash
   - Depende de: D-05, B-06
   - Cubre: RF-04-08, RF-04-10, RF-04-11, RNF-04-01
   - Archivos: `src/schemas/customer.ts` (`customerFormSchema`), `src/services/customerService.ts` (`create`, `update`), `src/hooks/useCustomers.ts` (mutaciones), `src/lib/serverErrors.ts`, `src/components/customers/CustomerForm.tsx`, `src/pages/{CustomerCreatePage,CustomerEditPage}.tsx`, `src/App.tsx` (rutas ADMIN)
@@ -52,7 +52,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; en el navegador: crear, editar, email duplicado, campo vacío forzado
   - Commit: "Agrega alta y edición de clientes con validación y mensajes flash"
 
-- [ ] **D-07** Eliminación de clientes con modal de confirmación
+- [x] **D-07** Eliminación de clientes con modal de confirmación
   - Depende de: D-06, B-07
   - Cubre: RF-04-09, RF-04-10, RF-04-11
   - Archivos: `src/services/customerService.ts` (`remove`), `src/hooks/useCustomers.ts` (`useDeleteCustomer`), `src/pages/CustomersPage.tsx`
@@ -60,7 +60,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; en el navegador: cancelar, Esc, confirmar, borrar el último de una página
   - Commit: "Agrega la eliminación de clientes con modal de confirmación"
 
-- [ ] **D-08** Exportación del resultado filtrado
+- [x] **D-08** Exportación del resultado filtrado
   - Depende de: D-05, B-03
   - Cubre: RF-04-12
   - Archivos: `src/services/customerService.ts` (`exportFile`), `src/hooks/useExportCustomers.ts`, `src/components/customers/ExportMenu.tsx`, `src/pages/CustomersPage.tsx`
@@ -68,7 +68,7 @@ con la tarea A-06 hecha (listado paginado y filtros).
   - Verificación: `npm run build && npm run lint`; el CSV filtrado tiene tantas filas como `totalElements`
   - Commit: "Agrega exportación del listado filtrado de clientes a CSV, Excel, PDF y XML"
 
-- [ ] **D-09** Documentar la fase D
+- [x] **D-09** Documentar la fase D
   - Depende de: D-07, D-08
   - Cubre: RF-04-13
   - Archivos: `README.md`, `CLAUDE.md` (actualizar `GET /api/customers` al contrato paginado), `specs/04-clientes/spec.md` (estado: Hecha), `specs/README.md` (estado)
