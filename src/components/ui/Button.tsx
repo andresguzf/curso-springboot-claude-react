@@ -1,10 +1,11 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ComponentProps } from 'react'
 import { Spinner } from './Spinner.tsx'
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
 type ButtonSize = 'sm' | 'md'
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+// ComponentProps<'button'> incluye `ref`: en React 19 es una prop más y llega al <button> con ...props.
+type ButtonProps = ComponentProps<'button'> & {
   variant?: ButtonVariant
   size?: ButtonSize
   /** Muestra un spinner y bloquea el botón mientras la acción está en curso (evita doble envío). */

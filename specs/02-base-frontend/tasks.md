@@ -56,10 +56,11 @@ verificar → marcar `[x]` → commit en `4-react` → pausa para revisión. Def
   - Verificación: `npm run build && npm run lint`; en `/dev/ui` medir el cierre automático, cerrar con X y con teclado, probar 4 mensajes seguidos
   - Commit: "Agrega mensajes flash con cierre automático y manual"
 
-- [ ] **B-07** Modal de confirmación
+- [x] **B-07** Modal de confirmación
   - Depende de: B-05
   - Cubre: RF-02-09, RNF-02-01
-  - Archivos: `src/components/ui/ConfirmDialog.tsx`, `src/pages/DevUiPage.tsx` (ejemplo con acción simulada que falla y que funciona)
+  - Archivos: `src/components/ui/ConfirmDialog.tsx`, `src/pages/DevUiPage.tsx` (ejemplo con acción simulada que falla y que funciona), `src/components/ui/Button.tsx` (props `ComponentProps<'button'>` para aceptar `ref`)
+  - Nota: Esc se intercepta (`preventDefault` en el evento `cancel`) para que el estado del padre sea la única fuente de verdad, y no cierra mientras `isPending`. Un doble clic real ejecuta la acción una vez; dos `.click()` programáticos en la misma tarea de JavaScript pueden ejecutarla dos veces porque React aún no re-renderizó el botón deshabilitado (no ocurre con interacción real)
   - Hecho cuando: `<dialog>` con `showModal()`; Esc y Cancelar cierran sin ejecutar; foco inicial en Cancelar y atrapado; `isPending` bloquea doble clic; `error` se muestra dentro sin cerrar
   - Verificación: `npm run build && npm run lint`; en `/dev/ui` probar teclado (Tab, Shift+Tab, Esc) y los dos casos simulados
   - Commit: "Agrega el modal de confirmación accesible"

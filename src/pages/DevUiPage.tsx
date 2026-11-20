@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog.tsx'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { FormField } from '../components/ui/FormField.tsx'
 import { Input } from '../components/ui/Input.tsx'
@@ -18,6 +19,56 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="text-xl font-semibold">{title}</h2>
       {children}
     </section>
+  )
+}
+
+type DemoOutcome = 'ok' | 'error'
+
+// Simula una eliminación de 1 segundo que funciona o que falla, para probar el modal.
+function ConfirmDialogDemo() {
+  const [outcome, setOutcome] = useState<DemoOutcome | null>(null)
+  const [isPending, setIsPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function open(next: DemoOutcome) {
+    setError(null)
+    setOutcome(next)
+  }
+
+  function handleConfirm() {
+    setIsPending(true)
+    setError(null)
+    setTimeout(() => {
+      setIsPending(false)
+      if (outcome === 'error') {
+        setError('Debe quedar al menos un administrador habilitado')
+        return
+      }
+      setOutcome(null)
+      flash.success('Cliente eliminado')
+    }, 1000)
+  }
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="danger" onClick={() => open('ok')}>
+          Eliminar (funciona)
+        </Button>
+        <Button onClick={() => open('error')}>Eliminar (falla)</Button>
+      </div>
+      <ConfirmDialog
+        open={outcome !== null}
+        title="¿Eliminar a «Ana Pérez»?"
+        description="Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        tone="danger"
+        isPending={isPending}
+        error={error}
+        onConfirm={handleConfirm}
+        onCancel={() => setOutcome(null)}
+      />
+    </>
   )
 }
 
@@ -107,6 +158,14 @@ export function DevUiPage() {
               Cuatro seguidos
             </Button>
           </div>
+        </Group>
+
+        <Group title="Modal de confirmación">
+          <p className="text-sm text-ink-muted">
+            Esc o Cancelar cierran sin ejecutar; el foco empieza en Cancelar y no sale del modal. «Falla» muestra el
+            error dentro del modal.
+          </p>
+          <ConfirmDialogDemo />
         </Group>
 
         <Group title="Estado vacío">

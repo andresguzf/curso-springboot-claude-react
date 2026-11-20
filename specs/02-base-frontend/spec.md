@@ -4,7 +4,7 @@
 |---|---|
 | Fase | B |
 | Repo | `4-react` |
-| Estado | En curso (6/9) |
+| Estado | En curso (7/9) |
 | Depende de | — (no necesita la spec 01 del backend) |
 | La necesitan | Specs 03, 04, 05 y 06 |
 | Constitución | [`../constitution.md`](../constitution.md) |
