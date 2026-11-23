@@ -3,7 +3,7 @@
 Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" en la
 [constitución](../constitution.md#6-calidad-definición-de-hecho). Rama: `feature/dashboard`.
 
-- [ ] **H-01** Cerrar sesión con icono
+- [x] **H-01** Cerrar sesión con icono
   - Depende de: G-07
   - Cubre: RF-08-01, RNF-08-01
   - Archivos: `src/components/layout/UserMenu.tsx`
