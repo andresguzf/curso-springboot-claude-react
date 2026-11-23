@@ -32,4 +32,8 @@ export const customerService = {
     const { accept, extension } = EXPORT_FORMATS[format]
     return http.download(`/api/customers${toQuery({ ...filters, format })}`, accept, `clientes.${extension}`)
   },
+
+  // Ficha de un cliente en PDF (el backend la arma con todos sus datos; sugiere cliente-{id}.pdf).
+  exportPdf: (id: number) =>
+    http.download(`/api/customers/${id}?format=pdf`, EXPORT_FORMATS.pdf.accept, `cliente-${id}.pdf`),
 }

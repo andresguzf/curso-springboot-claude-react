@@ -16,3 +16,12 @@ export function useExportCustomers() {
     onError: (error) => flash.error(errorMessage(error, 'No se pudo generar el archivo. Inténtalo de nuevo.')),
   })
 }
+
+// Ficha de un cliente en PDF, desde su detalle (USER y ADMIN). Mismo patrón que la exportación del listado.
+export function useExportCustomerPdf() {
+  return useMutation({
+    mutationFn: (id: number) => customerService.exportPdf(id),
+    onSuccess: ({ blob, filename }) => saveFile(blob, filename),
+    onError: (error) => flash.error(errorMessage(error, 'No se pudo generar el PDF. Inténtalo de nuevo.')),
+  })
+}

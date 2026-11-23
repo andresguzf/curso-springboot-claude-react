@@ -19,7 +19,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador en ambos temas y a 375 px
   - Commit: "Agrega iconos a las cifras del resumen"
 
-- [ ] **H-03** Exportar la ficha del cliente a PDF
+- [x] **H-03** Exportar la ficha del cliente a PDF
   - Depende de: G-07
   - Cubre: RF-08-03, RNF-08-01, RNF-08-02
   - Archivos: `src/services/customerService.ts`, `src/hooks/useExportCustomers.ts`, `src/pages/CustomerDetailPage.tsx`
