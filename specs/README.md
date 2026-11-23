@@ -37,7 +37,7 @@ necesita A-09 y A-10.
 | 04 | D · Clientes | `4-react` | [spec](04-clientes/spec.md) | D-01 … D-09 | Hecha |
 | 05 | E · Usuarios y roles | `4-react` | [spec](05-usuarios/spec.md) | E-01 … E-06 | Hecha |
 | 06 | F · Pulido, accesibilidad y documentación | `4-react` | [spec](06-pulido/spec.md) | F-01 … F-04 | Hecha |
-| 07 | G · Rendimiento e interfaz: bundle por ruta, iconos, tablas compactas, paginación por rango y tema oscuro | `4-react` | [spec](07-rendimiento-interfaz/spec.md) | G-01 … G-07 | En curso (3/7) |
+| 07 | G · Rendimiento e interfaz: bundle por ruta, iconos, tablas compactas, paginación por rango y tema oscuro | `4-react` | [spec](07-rendimiento-interfaz/spec.md) | G-01 … G-07 | En curso (4/7) |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 

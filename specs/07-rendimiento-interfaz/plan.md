@@ -91,6 +91,8 @@ Función pura `pageWindow(current, total, radius)` en `src/lib/pagination.ts` (s
 - Móvil: se calcula la ventana de radio 3 y los números a más de 1 de la actual llevan `hidden sm:inline-flex` (solo CSS, sin `useMediaQuery`); el «…» de cada lado se muestra si hay páginas ocultas en ese tamaño.
 - Se mantienen «Mostrando a–b de N» y «Por página».
 
+**Resultado (G-04)**: `pageWindow` devuelve `{ pages, gapBefore, gapAfter }` y acota la página actual al rango. Casos verificados llamándola desde la consola (los de la tabla, más 1 de 20 → `[1] 2 3 4 …`, 20 de 20 → `… 17 18 19 [20]` y radio 1 → `… 6 [7] 8 …`). En el navegador con 202 clientes (21 páginas; 180 de prueba, borrados al terminar): la página 7 muestra exactamente «Primera · Anterior · … · 4 5 6 [7] 8 9 10 · … · Siguiente · Última»; «Última», «Anterior», «Primera», «Siguiente» y los números navegan; en los extremos los botones correspondientes quedan deshabilitados. A 375 px la ventana es de ±1 y la paginación cabe en una línea en las páginas 1, 3, 7, 20 y 21; a 1024 px con el sidebar abierto también ocupa una línea. Los «…» de móvil se calculan con la ventana de radio 1 y se ocultan desde `sm` si la de radio 3 no los necesita.
+
 ## 5. Tema oscuro
 
 ### 5.1 Propuesta de paleta (G-05, a aprobar)

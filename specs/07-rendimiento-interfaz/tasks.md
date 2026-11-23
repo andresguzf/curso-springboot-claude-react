@@ -27,7 +27,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; medidas de ancho de tabla frente a contenedor en cada combinación (tabla en el plan); Lighthouse accesibilidad 100 en clientes y usuarios
   - Commit: "Ajusta las tablas para que quepan sin scroll horizontal"
 
-- [ ] **G-04** Paginación por rango
+- [x] **G-04** Paginación por rango
   - Depende de: G-03
   - Cubre: RF-07-04
   - Archivos: `src/lib/pagination.ts` (`pageWindow`), `src/components/ui/Pagination.tsx`
