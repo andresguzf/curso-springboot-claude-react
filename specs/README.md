@@ -39,7 +39,7 @@ necesita A-09 y A-10.
 | 06 | F · Pulido, accesibilidad y documentación | `4-react` | [spec](06-pulido/spec.md) | F-01 … F-04 | Hecha |
 | 07 | G · Rendimiento e interfaz: bundle por ruta, iconos, tablas compactas, paginación por rango y tema oscuro | `4-react` | [spec](07-rendimiento-interfaz/spec.md) | G-01 … G-07 | Hecha |
 | 08 | H · Iconos en la sesión y el resumen, y ficha de cliente en PDF | `4-react` | [spec](08-iconos-ficha-pdf/spec.md) | H-01 … H-04 | Hecha |
-| 09 | I · Docker y configuración para la nube (Render + Vercel con rewrite) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/09-docker-despliegue/spec.md) | I-01 … I-06 | En curso (3/6) |
+| 09 | I · Docker y configuración para la nube (Render + Vercel con rewrite) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/09-docker-despliegue/spec.md) | I-01 … I-06 | En curso (4/6) |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 
