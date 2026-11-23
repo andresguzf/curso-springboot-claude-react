@@ -57,7 +57,7 @@ export function UserActions({ user, me, activeAdmins, onAction, busy = false, le
         />
       </div>
       {reason && !reason.allowed && (
-        <p id={reasonId} className="max-w-44 text-right text-[0.8125rem] leading-snug whitespace-normal text-ink-muted">
+        <p id={reasonId} className="max-w-36 text-right text-[0.8125rem] leading-snug whitespace-normal text-ink-muted">
           {reason.reason}
         </p>
       )}

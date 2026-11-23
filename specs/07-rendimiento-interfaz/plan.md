@@ -49,14 +49,27 @@ A 1024 px con el sidebar abierto la tabla tiene ~710 px; hoy clientes ocupa ~1.2
 | Pieza | Cómo |
 |---|---|
 | Columnas por ancho del contenedor | `DataTable` envuelve la tabla en un contenedor `@container` (Tailwind 4) y cada columna puede declarar desde qué ancho se ve (`minWidth`: `'md' \| 'lg' \| 'xl' \| '2xl'` → clases `hidden @2xl:table-cell`…, en celda y encabezado). Al ser el ancho **del contenedor** (no de la ventana), abrir o colapsar el sidebar reacomoda las columnas sin JavaScript. |
-| Prioridades (propuesta, se ajusta midiendo) | Clientes: nombre, email, estado y acciones siempre; ciudad desde `@2xl`; nacimiento y alta desde `@4xl`; teléfono desde `@5xl`. Usuarios: email, rol, estado y acciones siempre; alta desde `@xl`. |
+| Prioridades (medidas en G-03) | Anchos naturales de clientes: nombre 143, email 224, teléfono 142, ciudad 97, nacimiento 114, estado 88, alta 150 (95 solo con el día), acciones 92. **Clientes**: nombre, estado y acciones siempre; email desde `@md` (448 px; en móvil se ve en la ficha), ciudad desde `@2xl` (672), nacimiento desde `@3xl` (768), alta desde `@4xl` (896), teléfono desde `@5xl` (1024). **Usuarios**: email y acciones siempre; estado desde `@md`, rol desde `@lg` (512), alta desde `@3xl`. |
 | Fechas solo con el día | `formatDay(localDateTime)` en `lib/format.ts` (toma la parte `yyyy-MM-dd` y la reordena, sin `new Date()`): la columna «Alta» muestra `20-11-2026`. La ficha sigue con `formatDateTime`. |
-| Email recortado | Celda con ancho máximo y `truncate`; el texto completo como `title` y en la ficha. |
+| Email recortado | `truncate` con ancho máximo (`max-w-48`; en usuarios `max-w-32 @md:max-w-48` para que quepa a 375 px); el texto completo como `title` y en la ficha. El motivo de las reglas de admin bajo los iconos toma el ancho de los iconos (`max-w-36`) para no ensanchar la columna. |
 | Acciones | Iconos de 32 px con espacio de 4 px (de G-02) en vez de enlaces de texto. |
 | Celdas | Padding horizontal de 12 a 10 px solo si hace falta tras medir; la altura de fila (44 px) no cambia. |
 | Móvil | A 375 px quedan nombre, estado y acciones; si aun así no cabe, el scroll horizontal queda **dentro** de la tabla, nunca en la página. |
 
-Verificación con medidas reales: ancho de la tabla frente al de su contenedor a 1024, 1280 y 1440 px, con el sidebar abierto y colapsado, para clientes (USER y ADMIN, que suma la columna de acciones) y usuarios.
+Verificación con medidas reales (G-03), como ADMIN (el caso más ancho: suma la columna de acciones). En todas las combinaciones el ancho de la tabla es igual al de su contenedor, sin scroll horizontal ni desborde de la página:
+
+| Ventana | Sidebar | Clientes: contenedor → columnas | Usuarios: contenedor → columnas |
+|---|---|---|---|
+| 1440 | abierto | 1111 → todas (8) | 1126 → todas (5) |
+| 1440 | colapsado | 1319 → todas | 1334 → todas |
+| 1280 | abierto | 951 → todas menos teléfono | 966 → todas |
+| 1280 | colapsado | 1159 → todas | 1174 → todas |
+| 1024 | abierto | 695 → nombre, email, ciudad, estado, acciones | 710 → email, rol, estado, acciones |
+| 1024 | colapsado | 903 → + nacimiento y alta | 918 → + alta |
+| 768 (cajón) | — | 734 → nombre, email, ciudad, estado, acciones | 734 → email, rol, estado, acciones |
+| 375 (cajón) | — | 341 → nombre, estado, acciones | 341 → email, acciones (tras recortar el email y el motivo; antes la tabla medía 389) |
+
+Lighthouse (accesibilidad): 100 en clientes (escritorio) y usuarios (móvil).
 
 ## 4. Paginación por rango
 

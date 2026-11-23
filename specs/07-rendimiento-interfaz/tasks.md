@@ -19,7 +19,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador con teclado (Tab muestra el tooltip; el menú de exportar se abre, se recorre y se cierra con Esc) y a 375 px; las cuatro exportaciones siguen descargando; Lighthouse accesibilidad 100 en clientes y usuarios
   - Commit: "Cambia las acciones por fila y la exportación a botones con iconos"
 
-- [ ] **G-03** Tablas compactas sin scroll horizontal
+- [x] **G-03** Tablas compactas sin scroll horizontal
   - Depende de: G-02
   - Cubre: RF-07-09
   - Archivos: `src/components/ui/DataTable.tsx` (contenedor `@container`, `minWidth` por columna), `src/lib/format.ts` (`formatDay`), `src/components/customers/CustomerTable.tsx`, `src/components/users/UserTable.tsx`
