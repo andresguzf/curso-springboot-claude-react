@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** terminado. Las seis fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive (React 19.3.1, Vite 8, Tailwind 4).
+> **Estado:** terminado. Las siete fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, y la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro). React 19.3.1, Vite 8, Tailwind 4.
 
 ## Stack
 
@@ -19,6 +19,7 @@ Proyecto del curso de Spring Boot con Claude Code.
 | Estado global | Zustand 5 | Estado del cliente compartido (p. ej. usuario en sesión) |
 | Validación | Zod 4 | Esquemas que validan respuestas y formularios y generan los tipos |
 | Formularios | React Hook Form + `@hookform/resolvers` | Formularios validados con los esquemas Zod |
+| Iconos | `lucide-react` | Iconos de trazo fino en las acciones, la paginación, exportar y el selector de tema (solo se empaquetan los que se usan) |
 | Lint | oxlint | Reglas de hooks (`rules-of-hooks`, `exhaustive-deps`) |
 
 Todas las dependencias se instalan en su última versión publicada al generar el proyecto.
@@ -135,7 +136,7 @@ Con la pestaña Network abierta: pasados 20 s, recargar muestra `/me` 401 → un
 
 | Ruta | Quién | Qué hace |
 |---|---|---|
-| `/customers` | `USER` y `ADMIN` | Tabla paginada (10 / 25 / 50 por página, «Mostrando a–b de N») con orden por columna, buscador por nombre, apellido, email y ciudad (espera una pausa al escribir) y filtros en el sidebar: estado, ciudad, rango de nacimiento y rango de alta (valida «desde ≤ hasta»). Al paginar, los datos anteriores se ven atenuados hasta que llegan los nuevos. Estados de carga, vacío (limpiar filtros o ir a la primera página) y error con «Reintentar». **Exportar** a CSV, Excel, PDF o XML descarga todos los clientes que cumplen los filtros y el orden, no solo la página visible. |
+| `/customers` | `USER` y `ADMIN` | Tabla paginada por rango (10 / 25 / 50 por página, «Mostrando a–b de N») con orden por columna, buscador por nombre, apellido, email y ciudad (espera una pausa al escribir) y filtros en el sidebar: estado, ciudad, rango de nacimiento y rango de alta (valida «desde ≤ hasta»). Al paginar, los datos anteriores se ven atenuados hasta que llegan los nuevos. Estados de carga, vacío (limpiar filtros o ir a la primera página) y error con «Reintentar». **Exportar** (icono de descarga con un menú de formatos) a CSV, Excel, PDF o XML descarga todos los clientes que cumplen los filtros y el orden, no solo la página visible. En escritorio la tabla cabe sin scroll horizontal: las columnas secundarias (teléfono, nacimiento, alta) aparecen cuando hay espacio y la columna «Alta» muestra solo el día. |
 | `/customers/:id` | `USER` y `ADMIN` | Ficha con todos los datos, fecha de alta y última modificación («Sin cambios» si nunca se editó). «Volver a clientes» regresa con los mismos filtros. |
 | `/customers/new`, `/customers/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con las mismas validaciones que el backend; los errores del servidor (400 por campo, email duplicado 409) aparecen bajo su campo. Al guardar vuelve al listado con el flash «Cliente «Nombre Apellido» creado / actualizado». |
 | Eliminar (en la tabla) | `ADMIN` | Modal «¿Eliminar a «Nombre Apellido»?»; el error se muestra dentro; si era la última fila de la página, pasa a la anterior; flash «Cliente eliminado». |
@@ -166,14 +167,16 @@ Toda la sección es solo para `ADMIN`: un `USER` no ve «Usuarios» en el menú 
 ```
 src/
 ├── main.tsx              # fuente, handlers de sesión, initSession(), StrictMode, QueryClientProvider
-├── App.tsx               # router: /login (AuthLayout) y el resto en RequireAuth + AppLayout; rutas ADMIN en RequireRole
-├── index.css             # Tailwind + tokens de diseño (@theme) y foco ámbar global
+├── App.tsx               # router: /login (AuthLayout) y el resto en RequireAuth + AppLayout; rutas ADMIN en RequireRole;
+│                         # cada página con carga diferida (lazy)
+├── index.css             # Tailwind + tokens de diseño (@theme, tema claro y :root[data-theme='dark']) y foco global
 ├── components/
 │   ├── auth/             # LoginForm, RequireAuth (sesión) y RequireRole (rol)
-│   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), UserMenu, Footer
-│   ├── ui/               # Button (+ buttonStyles), Input, Select, FormField, Badge, Spinner, EmptyState,
-│   │                     # PageHeader, FlashMessages / FlashMessage, ConfirmDialog, DataTable, Pagination
-│   │                     # y TableSkeleton
+│   ├── layout/           # AppLayout, AuthLayout, Header, Navbar (enlaces por rol), UserMenu, ThemeToggle,
+│   │                     # NavigationProgress, Footer
+│   ├── ui/               # Button (+ buttonStyles), IconButton / IconLink, Input, Select, FormField, Badge,
+│   │                     # Spinner, EmptyState, PageHeader, FlashMessages / FlashMessage, ConfirmDialog,
+│   │                     # DataTable, Pagination y TableSkeleton
 │   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil), DateRangeField
 │   │                     # y SearchField (buscador con debounce)
 │   ├── customers/        # CustomerTable, CustomerSearch, CustomerFilters, CustomerForm, ExportMenu
@@ -184,21 +187,21 @@ src/
 │                         # useCustomers y useUsers (consultas y mutaciones), useUserActions, useExportCustomers,
 │                         # useDashboardStats, useListPath, useDocumentTitle, useDebouncedCallback /
 │                         # useDebouncedText, useMediaQuery, useModalDialog
-├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar, persistido)
+├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar y tema, persistidos)
 ├── schemas/              # Zod: common (página, ProblemDetail, parámetros de listado), auth (login), customer y
 │                         # user (respuesta, filtros de la URL, formularios, ROLE_LABELS)
 ├── services/             # authService, customerService (+ exportFile) y userService (page, get, create,
 │                         # update, remove)
 └── lib/                  # http.ts (cliente HTTP), session.ts, query.ts (toQuery), queryClient.ts, format.ts
                           # (fechas es-CL), errors.ts, serverErrors.ts (errores por campo), saveFile.ts,
-                          # userRules.ts (reglas de administradores)
+                          # userRules.ts (reglas de administradores), pagination.ts (pageWindow), theme.ts (tema)
 ```
 
 El layout usa HTML semántico: `header` (banda grafito con la marca y la navegación `nav`), región de mensajes flash, `main` y `footer`.
 
 ## Interfaz
 
-La dirección visual está en [`specs/02-base-frontend/design.md`](specs/02-base-frontend/design.md): grafito con un solo acento ámbar, fondo gris frío y la fuente **Atkinson Hyperlegible Next** (autoalojada, con cifras tabulares). Los tokens se usan como clases de Tailwind (`bg-canvas`, `text-ink`, `bg-primary`, `bg-accent-soft`, `rounded-panel`…).
+La dirección visual está en [`specs/02-base-frontend/design.md`](specs/02-base-frontend/design.md): grafito con un solo acento ámbar, fondo gris frío y la fuente **Atkinson Hyperlegible Next** (autoalojada, con cifras tabulares). El **tema oscuro** (§8) usa grises azulados con un acento violeta; se cambia con el botón sol / luna del header o del login, la primera vez sigue el tema del sistema y después recuerda la elección (sin destello al recargar). Los tokens se usan como clases de Tailwind (`bg-canvas`, `text-ink`, `bg-primary`, `bg-accent-soft`, `rounded-panel`…).
 
 Piezas compartidas que usan todas las pantallas:
 
@@ -207,10 +210,13 @@ Piezas compartidas que usan todas las pantallas:
 | Mensajes flash | Arriba de la app, se cierran solos a los 5 s (se pausan con el puntero o el foco) y con la X; máximo 3. Se publican con `flash.success(…)`, `flash.error(…)` o `flash.info(…)` |
 | `ConfirmDialog` | Modal de confirmación con `<dialog>` nativo: foco inicial en Cancelar, Esc cancela, bloquea el doble envío y muestra el error dentro. Reemplaza a `confirm()` |
 | `FiltersLayout` | Filtros en un sidebar izquierdo colapsable (recuerda su estado al recargar) o, en pantallas chicas, en un cajón lateral |
-| `DataTable` | Tabla genérica con encabezado fijo, orden por columna (`aria-sort`), filas de 44 px, datos atenuados mientras carga y scroll propio (a 375 px se desplaza dentro de su recuadro) |
-| `Pagination` | «Mostrando a–b de N», anterior / siguiente, números con elipsis y selector de tamaño |
+| `DataTable` | Tabla genérica con encabezado fijo, orden por columna (`aria-sort`), filas de 44 px y datos atenuados mientras carga. Las columnas secundarias se ocultan según el ancho de la tabla (no de la ventana), así cabe sin scroll horizontal también con el sidebar abierto |
+| `Pagination` | Por rango: primera, anterior, la página actual con hasta tres a cada lado y «…», siguiente y última (una a cada lado en móvil); «Mostrando a–b de N» y selector de tamaño |
+| `IconButton` / `IconLink` | Acciones con icono (editar, eliminar, cambiar rol, exportar…) de 32 px, con nombre accesible y ayuda visible con el puntero o el teclado |
 
-**Accesibilidad y responsive** (spec 06): cada página tiene su título de pestaña («Clientes · Cartera») y, al llegar a una pantalla, el foco va a su `h1` (cambiar filtros u orden no lo mueve); las tablas muestran un esqueleto en la primera carga; los estados vacíos dicen qué hacer; con `prefers-reduced-motion` no hay animaciones de entrada. A 375 px la página no se desborda, los filtros pasan a un cajón y las tablas se desplazan dentro de su recuadro. Lighthouse (accesibilidad) da 100 en login, clientes, usuarios, el modal y el cajón de filtros. `public/robots.txt` impide indexar el panel.
+**Accesibilidad y responsive** (spec 06): cada página tiene su título de pestaña («Clientes · Cartera») y, al llegar a una pantalla, el foco va a su `h1` (cambiar filtros u orden no lo mueve); las tablas muestran un esqueleto en la primera carga; los estados vacíos dicen qué hacer; con `prefers-reduced-motion` no hay animaciones de entrada. A 375 px la página no se desborda, los filtros pasan a un cajón y las tablas muestran las columnas esenciales. Lighthouse (accesibilidad) da 100 en login, clientes, usuarios, el modal y el cajón de filtros, en ambos temas. `public/robots.txt` impide indexar el panel.
+
+**Rendimiento** (spec 07): cada página se descarga cuando se visita (una barra fina arriba indica la carga) y las librerías van en chunks propios que el navegador mantiene en caché entre despliegues; el build no supera la advertencia de 500 kB.
 
 ## Convenciones
 

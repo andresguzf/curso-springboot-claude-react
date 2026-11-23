@@ -51,7 +51,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; recorrido de todas las pantallas en ambos temas (escritorio y 375 px); emulación de `prefers-color-scheme`; Lighthouse accesibilidad 100 en login, clientes y usuarios en oscuro
   - Commit: "Agrega el tema oscuro con selector en el header"
 
-- [ ] **G-07** Documentar la fase G
+- [x] **G-07** Documentar la fase G
   - Depende de: G-01, G-03, G-04, G-06
   - Cubre: RF-07-07
   - Archivos: `README.md`, `CLAUDE.md`, `specs/07-rendimiento-interfaz/spec.md` (estado: Hecha), `specs/README.md` (estado)

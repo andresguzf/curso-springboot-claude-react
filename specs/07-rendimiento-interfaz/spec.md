@@ -4,7 +4,7 @@
 |---|---|
 | Fase | G |
 | Repo | `4-react` |
-| Estado | En curso |
+| Estado | Hecha |
 | Depende de | Spec 06 |
 | La necesitan | — |
 | Constitución | [`../constitution.md`](../constitution.md) |
