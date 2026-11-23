@@ -34,6 +34,7 @@ Fuentes: [`CLAUDE.md`](../CLAUDE.md), skill [`react-rules`](../.claude/skills/re
 ## 3. Integración con el backend
 
 - La API corre en `http://localhost:8080`; en desarrollo se accede por el proxy de Vite (`/api`), mismo origen, sin CORS.
+- En la nube (spec 09) se mantiene el mismo origen: Vercel reenvía `/api/*` al backend en Render con el rewrite de `vercel.json`. `VITE_API_URL` queda vacía; nunca se llama a la API en otro dominio.
 - La sesión vive en cookies `HttpOnly`: el frontend **nunca** lee, guarda ni envía tokens a mano. Todas las peticiones usan `credentials: 'include'`.
 - Escrituras (`POST`, `PUT`, `DELETE`, salvo el login) con cabecera `X-XSRF-TOKEN` = valor de la cookie `XSRF-TOKEN`.
 - Un 401 dispara **un único** `POST /api/auth/refresh` compartido entre peticiones (el backend rota el refresh token y detecta reusos) y un reintento.
