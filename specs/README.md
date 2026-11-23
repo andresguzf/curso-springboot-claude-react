@@ -25,7 +25,7 @@ hace merge a `main` y push.
 
 ## Fases
 
-Orden recomendado: 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08. La fase 02 y la 03 no dependen del
+Orden recomendado: 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09. La fase 02 y la 03 no dependen del
 backend nuevo y pueden avanzar antes de terminar la 01; la 04 necesita A-06 y la 05
 necesita A-09 y A-10.
 
@@ -39,6 +39,7 @@ necesita A-09 y A-10.
 | 06 | F · Pulido, accesibilidad y documentación | `4-react` | [spec](06-pulido/spec.md) | F-01 … F-04 | Hecha |
 | 07 | G · Rendimiento e interfaz: bundle por ruta, iconos, tablas compactas, paginación por rango y tema oscuro | `4-react` | [spec](07-rendimiento-interfaz/spec.md) | G-01 … G-07 | Hecha |
 | 08 | H · Iconos en la sesión y el resumen, y ficha de cliente en PDF | `4-react` | [spec](08-iconos-ficha-pdf/spec.md) | H-01 … H-04 | Hecha |
+| 09 | I · Docker y configuración para la nube (Render + Vercel con rewrite) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/09-docker-despliegue/spec.md) | I-01 … I-06 | Hecha |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 

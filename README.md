@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** terminado. Las ocho fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) y la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF). React 19.3.1, Vite 8, Tailwind 4.
+> **Estado:** terminado. Las nueve fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF) y la fase 09 (Docker y configuración para publicar en Vercel con rewrite a Render). React 19.3.1, Vite 8, Tailwind 4.
 
 ## Stack
 
@@ -60,9 +60,9 @@ bash .claude/skills/react-rules/scripts/create_project.sh .
 
    | Variable | Descripción | Valor por defecto |
    |---|---|---|
-   | `VITE_API_URL` | URL base de la API. Vacía = mismo origen (con el proxy de Vite) | vacía |
+   | `VITE_API_URL` | URL base de la API. Vacía = mismo origen (proxy de Vite en local, rewrite en Vercel); déjala vacía | vacía |
 
-4. Levanta el backend (ver su README) y luego el frontend:
+4. Levanta el backend (ver su README: con `./mvnw spring-boot:run` o con `docker compose up --build`, ambos en el 8080) y luego el frontend:
 
    ```bash
    npm run dev
@@ -123,6 +123,28 @@ El frontend solo conoce **quién** está en sesión (`authStore`: `user` y `stat
 ```
 
 Con la pestaña Network abierta: pasados 20 s, recargar muestra `/me` 401 → un solo `/refresh` 200 → `/me` 200. Pasados 90 s sin actividad, la siguiente petición lleva al login con el aviso y, al entrar, de vuelta a la ruta original.
+
+## Despliegue en Vercel (preparado)
+
+El frontend se publicará en **Vercel** y el backend en **Render** (Docker, con la base en Supabase). Son dominios distintos (`*.vercel.app` y `*.onrender.com`) que el navegador trata como sitios distintos: si el frontend llamara directo a Render, las cookies `SameSite=Strict` no viajarían, Safari bloquearía las cookies de terceros y JavaScript no podría leer la cookie `XSRF-TOKEN`.
+
+Por eso [`vercel.json`](vercel.json) hace lo mismo que el proxy de Vite en desarrollo:
+
+```json
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://cartera-api.onrender.com/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+- La primera regla reenvía `/api/*` al backend: para el navegador todo ocurre en el dominio de Vercel, así que las cookies, el CSRF y la renovación de sesión funcionan sin cambios y sin CORS.
+- La segunda devuelve `index.html` para las rutas de React Router (recargar `/customers/3` o abrir un enlace directo); los archivos del build se sirven antes y no pasan por ella.
+- `VITE_API_URL` queda vacía y el código no cambia. Si el servicio de Render queda con otra URL, se cambia solo en `vercel.json`.
+- El plan gratis de Render se duerme tras 15 minutos sin tráfico: la primera petición tarda mientras despierta (Vercel espera hasta 120 s).
+
+Detalle y decisiones en la [spec 09](https://github.com/andresguzf/curso-springboot-claude-api/blob/main/specs/09-docker-despliegue/spec.md) del backend.
 
 ## Funcionalidades
 
@@ -232,7 +254,7 @@ Las reglas completas están en la skill [`react-rules`](.claude/skills/react-rul
 
 ## Desarrollo guiado por especificaciones (SDD)
 
-El dashboard se construye por fases a partir de especificaciones: cada fase tiene su `spec.md` (qué y por qué), `plan.md` (cómo) y `tasks.md` (tareas en orden). El índice, el estado de cada fase y la cobertura de los requisitos están en [`specs/README.md`](specs/README.md). La fase 01 modifica el backend y sus specs viven en el repositorio de la API (`specs/01-paginacion-filtros-admin/`).
+El dashboard se construye por fases a partir de especificaciones: cada fase tiene su `spec.md` (qué y por qué), `plan.md` (cómo) y `tasks.md` (tareas en orden). El índice, el estado de cada fase y la cobertura de los requisitos están en [`specs/README.md`](specs/README.md). La fase 01 modifica el backend y sus specs viven en el repositorio de la API (`specs/01-paginacion-filtros-admin/`), igual que la 09 (Docker y configuración para Render y Vercel, `specs/09-docker-despliegue/`).
 
 ## Desarrollo con Claude Code
 
