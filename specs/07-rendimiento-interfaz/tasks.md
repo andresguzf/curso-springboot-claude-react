@@ -35,7 +35,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; los casos de la tabla del plan llamando a `pageWindow` desde la consola; en el navegador con más de 7 páginas (tamaño 10 y datos de prueba que se borran al terminar)
   - Commit: "Agrega paginación por rango con primera y última página"
 
-- [ ] **G-05** Propuesta de paleta del tema oscuro
+- [x] **G-05** Propuesta de paleta del tema oscuro
   - Depende de: G-03
   - Cubre: RF-07-05
   - Archivos: `specs/02-base-frontend/design.md` (sección «Tema oscuro»), `specs/07-rendimiento-interfaz/plan.md` (§5.1 con la paleta final)

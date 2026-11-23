@@ -97,6 +97,8 @@ Función pura `pageWindow(current, total, radius)` en `src/lib/pagination.ts` (s
 
 ### 5.1 Propuesta de paleta (G-05, a aprobar)
 
+> **Paleta aprobada en G-05**: tabla completa, tokens nuevos (`band`, `on-primary`, `on-danger`) y contrastes medidos en [`design.md` §8](../02-base-frontend/design.md#8-tema-oscuro-spec-07-aprobado-en-g-05). La tabla de abajo fue el punto de partida.
+
 Punto de partida, inspirado en el modo oscuro de macOS con un tinte azul y violeta como acento. La tarea G-05 la ajusta con `frontend-design`, comprueba contrastes y la presenta para aprobación:
 
 | Token | Claro (actual) | Oscuro (propuesta) | Uso |
