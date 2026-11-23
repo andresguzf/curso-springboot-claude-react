@@ -182,3 +182,60 @@ Clases resultantes: `bg-canvas`, `bg-surface`, `text-ink`, `text-ink-muted`, `bo
 `text-accent-strong`, `bg-accent-soft`, `text-danger`, `rounded-control`, `rounded-panel`,
 `rounded-dialog`. La fuente se importa una vez en `src/main.tsx`
 (`import '@fontsource-variable/atkinson-hyperlegible-next'`).
+
+## 8. Tema oscuro (spec 07, aprobado en G-05)
+
+Mismo principio que el claro, trasladado a la noche: **la firmeza está en una banda casi negra
+azulada y el color en un solo acento**. Grises azulados como el modo oscuro de macOS (no negro
+puro ni el «casi negro + acento ácido» genérico) y, en lugar del ámbar, un **violeta lavanda**:
+el ámbar sobre gris azulado oscuro pierde contraste y se ve terroso; el violeta da el acento frío
+que pide el tema. El claro conserva el ámbar.
+
+Se implementa con los mismos tokens del `@theme`, redefinidos bajo `:root[data-theme="dark"]`.
+Hacen falta tres tokens nuevos (en claro toman el valor de hoy, así nada cambia):
+
+- `--color-band`: la banda del header y del login. En claro es el grafito de `primary`; en oscuro se separa del botón principal (banda casi negra, botón violeta).
+- `--color-on-primary` y `--color-on-danger`: el texto sobre el botón principal y sobre el de eliminar. En claro, blanco. En oscuro el botón de eliminar es rojo claro con texto oscuro: ningún rojo sirve a la vez como texto sobre un panel oscuro (≥ 4,5:1) y como fondo con texto blanco (≥ 4,5:1).
+
+| Token | Claro | Oscuro | Nombre | Uso |
+|---|---|---|---|---|
+| `--color-canvas` | `#F2F3F5` | `#191D25` | Noche | Fondo de la app |
+| `--color-surface` | `#FFFFFF` | `#232A35` | Pizarra | Tablas, paneles, modal, menú |
+| `--color-band` *(nuevo)* | `#1F2933` | `#10141A` | Medianoche | Banda del header y del login |
+| `--color-ink` | `#1F2933` | `#E5E8EE` | Niebla | Texto principal |
+| `--color-ink-muted` | `#5B6470` | `#A0A9B8` | Ceniza | Texto secundario, encabezados de tabla |
+| `--color-line` | `#D9DDE2` | `#323A47` | Grafito | Divisores y bordes de paneles |
+| `--color-line-strong` | `#7D8692` | `#788296` | Acero | Bordes de inputs (≥ 3:1) |
+| `--color-primary` | `#1F2933` | `#6C5CE0` | Violeta | Botón principal |
+| `--color-primary-hover` | `#323F4F` | `#5B4BCF` | Violeta hondo | Hover del botón principal (en oscuro baja, no sube) |
+| `--color-on-primary` *(nuevo)* | `#FFFFFF` | `#FFFFFF` | — | Texto sobre el botón principal |
+| `--color-accent` | `#B7791F` | `#9F91FF` | Lavanda | Foco, sección actual, orden activo, barra de navegación. Nunca como texto |
+| `--color-accent-strong` | `#8F5A0E` | `#BCB2FF` | Lavanda clara | Texto en acento («Limpiar filtros», contador) |
+| `--color-accent-soft` | `#FBF0DA` | `#2D2852` | Lavanda noche | Filtro activo, página actual, badge «Administrador» |
+| `--color-danger` | `#A3262D` | `#FF8F87` | Coral | Eliminar (icono y texto), errores |
+| `--color-on-danger` *(nuevo)* | `#FFFFFF` | `#2A0F0E` | — | Texto sobre el botón de eliminar |
+| `--color-success` | `#2D6A4F` | `#6FD6A0` | Menta | Activo / Habilitado, flash de éxito |
+| `--color-warning` | `#8A4B12` | `#EFBE6A` | Miel | Avisos |
+
+Contraste calculado (WCAG) en oscuro:
+
+| Par | Contraste | Mínimo |
+|---|---|---|
+| Niebla sobre pizarra / noche / medianoche | 11.8 / 13.8 / 15.0:1 | 4.5 |
+| Ceniza sobre pizarra / noche | 6.1 / 7.1:1 | 4.5 |
+| Blanco sobre violeta / violeta hondo | 4.9 / 6.3:1 | 4.5 |
+| Lavanda clara sobre pizarra / lavanda noche | 7.5 / 7.1:1 | 4.5 |
+| Niebla sobre lavanda noche (badge, página actual) | 11.1:1 | 4.5 |
+| Coral / menta / miel sobre pizarra | 6.6 / 8.1 / 8.4:1 | 4.5 |
+| Texto oscuro sobre coral (botón eliminar) | 8.1:1 | 4.5 |
+| Lavanda sobre pizarra / noche / medianoche (foco, subrayado) | 5.5 / 6.4 / 7.0:1 | 3 |
+| Acero sobre pizarra / noche (bordes de inputs) | 3.7 / 4.4:1 | 3 |
+
+Se descartaron en la revisión: un hover más claro del botón principal (`#7B6CEB`, 4.0:1 con texto
+blanco) y un borde de input más oscuro (`#687285`, 3.0:1, justo en el límite).
+
+Otros detalles para G-06: `color-scheme: dark` (controles nativos, fechas, scroll); las sombras
+del modal, el flash y el menú de exportar pasan a un token (`rgb(0 0 0 / 0.4)` en oscuro); el hover
+de filas y botones de icono usa `canvas`, que en oscuro queda por debajo de la superficie, así que
+se revisa visualmente y, si no se nota, se usa un tinte claro (`white/5`).
+

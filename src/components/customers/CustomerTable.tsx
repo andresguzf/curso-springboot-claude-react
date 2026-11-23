@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
-import { formatDate, formatDateTime } from '../../lib/format.ts'
+import { formatDate, formatDay } from '../../lib/format.ts'
 import type { Customer } from '../../schemas/customer.ts'
 import { Badge } from '../ui/Badge.tsx'
 import { DataTable, type DataTableColumn } from '../ui/DataTable.tsx'
+import { IconButton, IconLink } from '../ui/IconButton.tsx'
 
 type CustomerTableProps = {
   customers: Customer[]
@@ -38,13 +40,32 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, 
         </Link>
       ),
     },
-    { key: 'email', header: 'Email', sortField: 'email', cell: (customer) => customer.email },
-    { key: 'phone', header: 'Teléfono', cell: (customer) => customer.phone, className: 'tabular-nums' },
-    { key: 'city', header: 'Ciudad', sortField: 'city', cell: (customer) => customer.city },
+    // Prioridad de columnas (spec 07): nombre, estado y acciones siempre; el resto según el ancho
+    // del contenedor de la tabla (medido: con el sidebar abierto a 1024 px hay ~710 px).
+    {
+      key: 'email',
+      header: 'Email',
+      sortField: 'email',
+      minWidth: 'md',
+      cell: (customer) => (
+        <span className="block max-w-48 truncate" title={customer.email}>
+          {customer.email}
+        </span>
+      ),
+    },
+    {
+      key: 'phone',
+      header: 'Teléfono',
+      minWidth: '5xl',
+      cell: (customer) => customer.phone,
+      className: 'tabular-nums',
+    },
+    { key: 'city', header: 'Ciudad', sortField: 'city', minWidth: '2xl', cell: (customer) => customer.city },
     {
       key: 'birthDate',
       header: 'Nacimiento',
       sortField: 'birthDate',
+      minWidth: '3xl',
       cell: (customer) => formatDate(customer.birthDate),
       className: 'tabular-nums',
     },
@@ -58,7 +79,8 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, 
       key: 'createdAt',
       header: 'Alta',
       sortField: 'createdAt',
-      cell: (customer) => formatDateTime(customer.createdAt),
+      minWidth: '4xl',
+      cell: (customer) => formatDay(customer.createdAt),
       className: 'tabular-nums',
     },
   ]
@@ -70,24 +92,20 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, 
       header: 'Acciones',
       className: 'text-right',
       cell: (customer) => (
-        <div className="flex items-center justify-end gap-4">
-          <Link
+        <div className="flex items-center justify-end gap-1">
+          <IconLink
             to={`/customers/${customer.id}/edit`}
             state={listState}
-            aria-label={`Editar a ${customer.name} ${customer.lastName}`}
-            className="text-sm font-medium text-accent-strong underline-offset-2 hover:underline"
-          >
-            Editar
-          </Link>
+            label={`Editar a ${customer.name} ${customer.lastName}`}
+            icon={Pencil}
+          />
           {onDelete && (
-            <button
-              type="button"
+            <IconButton
+              label={`Eliminar a ${customer.name} ${customer.lastName}`}
+              icon={Trash2}
+              tone="danger"
               onClick={() => onDelete(customer)}
-              aria-label={`Eliminar a ${customer.name} ${customer.lastName}`}
-              className="rounded-control text-sm font-medium text-danger underline-offset-2 hover:underline"
-            >
-              Eliminar
-            </button>
+            />
           )}
         </div>
       ),

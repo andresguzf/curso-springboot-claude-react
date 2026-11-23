@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Cartera: panel para administrar clientes y usuarios." />
     <title>Cartera</title>
+    <script>
+      // Tema antes del primer pintado (sin destello): misma regla que src/lib/theme.ts, leyendo la
+      // preferencia que uiStore guarda en localStorage["ui"]. Por defecto, el tema del sistema.
+      try {
+        var preference = (JSON.parse(localStorage.getItem('ui') || '{}').state || {}).theme || 'system'
+        var dark = preference === 'dark' || (preference === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (error) {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

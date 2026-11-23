@@ -53,7 +53,7 @@ export function ConfirmDialog({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onCancel={handleCancel}
-      className="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-dialog border border-line bg-surface text-ink shadow-[0_12px_40px_rgb(31_41_51/0.25)] backdrop:bg-ink/40"
+      className="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-dialog border border-line bg-surface text-ink shadow-dialog backdrop:bg-scrim/40"
     >
       <div className="space-y-3 px-6 pt-6">
         <h2 id={titleId} className="text-xl font-semibold">

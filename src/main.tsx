@@ -9,8 +9,10 @@ import './index.css'
 import { setAuthHandlers } from './lib/http.ts'
 import { queryClient } from './lib/queryClient.ts'
 import { initSession } from './lib/session.ts'
+import { applyTheme, onSystemThemeChange } from './lib/theme.ts'
 import { useAuthStore } from './stores/authStore.ts'
 import { flash } from './stores/flashStore.ts'
+import { useUiStore } from './stores/uiStore.ts'
 
 // Qué hace la app cuando lib/http.ts renueva la sesión o no puede renovarla. lib/ no importa
 // stores: la conexión se hace aquí, una sola vez al cargar el módulo.
@@ -28,6 +30,14 @@ setAuthHandlers({
 })
 
 initSession()
+
+// Tema: index.html ya lo puso antes del primer pintado (sin destello); aquí se mantiene sincronizado
+// cuando el usuario lo cambia o, con la preferencia 'system', cuando cambia el del sistema.
+applyTheme(useUiStore.getState().theme)
+useUiStore.subscribe((state, previous) => {
+  if (state.theme !== previous.theme) applyTheme(state.theme)
+})
+onSystemThemeChange(() => applyTheme(useUiStore.getState().theme))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

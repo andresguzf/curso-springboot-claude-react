@@ -11,6 +11,12 @@ export function formatDate(value: string | null | undefined): string {
   return `${day}-${month}-${year}`
 }
 
+// LocalDateTime de la API ("2026-11-19T10:15:30.123") → solo el día, "19-11-2026" (tablas: la hora
+// rara vez decide algo en un listado; la ficha la conserva). Sin `new Date()`, como formatDate.
+export function formatDay(value: string | null | undefined): string {
+  return formatDate(value?.slice(0, 10))
+}
+
 const dateTimeFormat = new Intl.DateTimeFormat('es-CL', {
   day: '2-digit',
   month: '2-digit',

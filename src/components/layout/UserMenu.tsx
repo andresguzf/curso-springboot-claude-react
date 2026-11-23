@@ -11,7 +11,7 @@ export function UserMenu() {
   if (!user) return null
 
   return (
-    <div className="ml-auto flex min-w-0 items-center gap-3 py-2">
+    <div className="flex min-w-0 items-center gap-3 py-2">
       <span className="truncate text-sm text-white/90">{user.email}</span>
       <Badge tone={user.role === 'ADMIN' ? 'accent' : 'neutral'}>{ROLE_LABELS[user.role]}</Badge>
       <button

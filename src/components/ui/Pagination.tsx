@@ -1,4 +1,7 @@
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { useId } from 'react'
+import { pageWindow } from '../../lib/pagination.ts'
+import { IconButton } from './IconButton.tsx'
 import { Select } from './Select.tsx'
 
 type PaginationProps = {
@@ -12,16 +15,16 @@ type PaginationProps = {
   onSizeChange: (size: number) => void
 }
 
-type PageItem = number | 'gap-start' | 'gap-end'
+// Páginas a cada lado de la actual: 3 desde `sm`; en pantallas chicas solo 1 (con CSS: los números
+// más lejanos llevan `hidden sm:block`), así la paginación cabe a 375 px.
+const RADIUS = 3
+const MOBILE_RADIUS = 1
 
-// Números a mostrar: primera, última, la actual y sus vecinas; el resto se resume con "…".
-// 1 … 4 5 6 … 12. Con 7 páginas o menos se muestran todas.
-function pageItems(current: number, total: number): PageItem[] {
-  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1)
-  const start = Math.max(2, Math.min(current - 1, total - 4))
-  const end = Math.min(total - 1, Math.max(current + 1, 5))
-  const middle = Array.from({ length: end - start + 1 }, (_, index) => start + index)
-  return [1, ...(start > 2 ? ['gap-start' as const] : []), ...middle, ...(end < total - 1 ? ['gap-end' as const] : []), total]
+// «…» de un lado: visible en escritorio si la ventana de 3 deja páginas ocultas; si solo las deja la
+// ventana de 1 (móvil), se oculta desde `sm`.
+function gapClass(desktop: boolean, mobile: boolean): string | null {
+  if (desktop) return ''
+  return mobile ? 'sm:hidden' : null
 }
 
 const numberFormat = new Intl.NumberFormat('es-CL')
@@ -29,12 +32,19 @@ const numberFormat = new Intl.NumberFormat('es-CL')
 const pageButton =
   'inline-flex h-8 min-w-8 items-center justify-center rounded-control px-2 text-sm tabular-nums transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 
-// Pie de la tabla: rango visible, tamaño de página y navegación. Es presentacional: el padre
+// Pie de la tabla: rango visible, tamaño de página y navegación por rango
+// (Primera · Anterior · … 4 5 6 [7] 8 9 10 … · Siguiente · Última). Es presentacional: el padre
 // guarda la página y el tamaño (en la URL) y recibe los cambios por callbacks.
 export function Pagination({ page, size, totalElements, totalPages, sizes, onPageChange, onSizeChange }: PaginationProps) {
   const sizeId = useId()
   const from = totalElements === 0 ? 0 : (page - 1) * size + 1
   const to = Math.min(page * size, totalElements)
+  const range = pageWindow(page, totalPages, RADIUS)
+  const mobile = pageWindow(page, totalPages, MOBILE_RADIUS)
+  const gapBefore = gapClass(range.gapBefore, mobile.gapBefore)
+  const gapAfter = gapClass(range.gapAfter, mobile.gapAfter)
+  const isFirst = page <= 1
+  const isLast = page >= totalPages
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm text-ink-muted">
@@ -68,45 +78,41 @@ export function Pagination({ page, size, totalElements, totalPages, sizes, onPag
 
         {totalPages > 1 && (
           <nav aria-label="Paginación">
-            <ul className="flex flex-wrap items-center gap-1">
+            <ul className="flex items-center gap-1">
               <li>
-                <button
-                  type="button"
-                  onClick={() => onPageChange(page - 1)}
-                  disabled={page <= 1}
-                  className={`${pageButton} text-ink hover:bg-canvas`}
-                >
-                  Anterior
-                </button>
+                <IconButton label="Primera página" icon={ChevronsLeft} disabled={isFirst} onClick={() => onPageChange(1)} />
               </li>
-              {pageItems(page, totalPages).map((item) =>
-                typeof item === 'number' ? (
-                  <li key={item}>
-                    <button
-                      type="button"
-                      onClick={() => onPageChange(item)}
-                      aria-label={`Página ${item}`}
-                      aria-current={item === page ? 'page' : undefined}
-                      className={`${pageButton} ${item === page ? 'bg-accent-soft font-semibold text-ink' : 'text-ink hover:bg-canvas'}`}
-                    >
-                      {item}
-                    </button>
-                  </li>
-                ) : (
-                  <li key={item} aria-hidden="true" className="px-1">
-                    …
-                  </li>
-                ),
+              <li>
+                <IconButton label="Página anterior" icon={ChevronLeft} disabled={isFirst} onClick={() => onPageChange(page - 1)} />
+              </li>
+              {gapBefore !== null && (
+                <li aria-hidden="true" className={`px-1 ${gapBefore}`}>
+                  …
+                </li>
+              )}
+              {range.pages.map((item) => (
+                <li key={item} className={Math.abs(item - page) > MOBILE_RADIUS ? 'hidden sm:block' : undefined}>
+                  <button
+                    type="button"
+                    onClick={() => onPageChange(item)}
+                    aria-label={`Página ${item}`}
+                    aria-current={item === page ? 'page' : undefined}
+                    className={`${pageButton} ${item === page ? 'bg-accent-soft font-semibold text-ink' : 'text-ink hover:bg-canvas'}`}
+                  >
+                    {item}
+                  </button>
+                </li>
+              ))}
+              {gapAfter !== null && (
+                <li aria-hidden="true" className={`px-1 ${gapAfter}`}>
+                  …
+                </li>
               )}
               <li>
-                <button
-                  type="button"
-                  onClick={() => onPageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  className={`${pageButton} text-ink hover:bg-canvas`}
-                >
-                  Siguiente
-                </button>
+                <IconButton label="Página siguiente" icon={ChevronRight} disabled={isLast} onClick={() => onPageChange(page + 1)} />
+              </li>
+              <li>
+                <IconButton label="Última página" icon={ChevronsRight} disabled={isLast} onClick={() => onPageChange(totalPages)} />
               </li>
             </ul>
           </nav>
