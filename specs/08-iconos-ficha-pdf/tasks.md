@@ -11,7 +11,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador, cerrar sesión con puntero y con teclado, en claro y oscuro y a 375 px
   - Commit: "Cambia Cerrar sesión por un botón de icono"
 
-- [ ] **H-02** Iconos en las cifras del resumen
+- [x] **H-02** Iconos en las cifras del resumen
   - Depende de: G-07
   - Cubre: RF-08-02, RNF-08-01
   - Archivos: `src/pages/DashboardPage.tsx`
