@@ -46,7 +46,7 @@ export function ExportMenu({ onExport, pendingFormat }: ExportMenuProps) {
         id={MENU_ID}
         popover="auto"
         aria-label="Exportar a"
-        className="m-0 mt-1 w-44 rounded-panel border border-line bg-surface p-1 text-ink shadow-[0_6px_20px_rgb(31_41_51/0.12)] [inset:auto] [position-anchor:--export-menu] [position-area:bottom_span-left] [position-try-fallbacks:flip-inline,flip-block,flip-block_flip-inline]"
+        className="m-0 mt-1 w-44 rounded-panel border border-line bg-surface p-1 text-ink shadow-popover [inset:auto] [position-anchor:--export-menu] [position-area:bottom_span-left] [position-try-fallbacks:flip-inline,flip-block,flip-block_flip-inline]"
       >
         <p className="px-2.5 pt-1.5 pb-1 text-[0.8125rem] text-ink-muted">Exportar el resultado a</p>
         <ul>

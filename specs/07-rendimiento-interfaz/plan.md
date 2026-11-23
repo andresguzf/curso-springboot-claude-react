@@ -121,6 +121,13 @@ Punto de partida, inspirado en el modo oscuro de macOS con un tinte azul y viole
 | Sin destello | Script en línea en `index.html` (antes del CSS) que lee `localStorage['ui']` y pone `data-theme` antes del primer pintado. |
 | Selector | `src/components/layout/ThemeToggle.tsx` en el header (y en la esquina del `AuthLayout`): `IconButton` con `Sun` / `Moon` y `aria-label` «Cambiar a tema oscuro» / «Cambiar a tema claro». |
 
+**Resultado (G-06)**:
+
+- Tokens nuevos según la paleta aprobada: `band` (header y login; `Header` y `AuthLayout` pasan de `bg-primary` a `bg-band`, el texto sigue blanco porque la banda es oscura en ambos temas), `on-primary` y `on-danger` (`buttonStyles`), `scrim` (velo del modal y del cajón: `backdrop:bg-scrim/40`; antes `bg-ink/40`, que en oscuro sería un velo claro) y las sombras `shadow-popover` (flash, menú de exportar) y `shadow-dialog` (modal), que antes eran valores fijos. El bloque `:root[data-theme='dark']` de `index.css` redefine todos y pone `color-scheme: dark`.
+- `uiStore` suma `theme` (`'system'` por defecto) y `setTheme`, persistidos junto a `filtersOpen`. `lib/theme.ts`: `resolveTheme`, `applyTheme` y `onSystemThemeChange`; `main.tsx` aplica el tema al cargar, se suscribe al store y al cambio del sistema (sin `useEffect`). `ThemeToggle` lee el tema del sistema con `useMediaQuery` para mostrar el icono correcto.
+- `IconButton` suma el tono `band` (blanco sobre la banda). El selector va en la misma fila que el menú de usuario (un contenedor `ml-auto` en `Header`), así a 375 px no ocupa una tercera fila del header.
+- Verificado: sin preferencia guardada sigue al sistema (emulado en oscuro → `data-theme="dark"`, fondo `#191D25`); elegir claro con el sistema en oscuro se mantiene al recargar; en el build el script del tema va antes del módulo y de la hoja de estilos (sin destello); recorrido en oscuro de resumen, clientes, usuarios (motivo de reglas), modal (botón coral con texto oscuro, velo oscuro), formulario con flash y menú de exportar; 375 px sin desborde. Lighthouse en oscuro: accesibilidad 100 en login, clientes y usuarios.
+
 ## 6. Decisiones
 
 | Decisión | Motivo |

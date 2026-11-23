@@ -1,9 +1,10 @@
 @import 'tailwindcss';
 
 /*
- * Tokens de diseño aprobados en specs/02-base-frontend/design.md (B-04):
- * grafito + un solo acento ámbar. Se usan como clases de Tailwind:
- * bg-canvas, text-ink, border-line, bg-primary, bg-accent-soft, rounded-panel...
+ * Tokens de diseño aprobados en specs/02-base-frontend/design.md: tema claro (B-04, grafito + un
+ * solo acento ámbar) y tema oscuro (G-05, gris azulado + violeta, más abajo). Se usan como clases de
+ * Tailwind: bg-canvas, text-ink, border-line, bg-primary, bg-accent-soft, rounded-panel...
+ * El tema solo cambia los VALORES de los tokens; los componentes no llevan clases dark:.
  */
 @theme {
   --font-sans: 'Atkinson Hyperlegible Next Variable', ui-sans-serif, system-ui, sans-serif;
@@ -14,14 +15,22 @@
   --color-ink-muted: #5b6470; /* Piedra: texto secundario */
   --color-line: #d9dde2; /* Escarcha: divisores decorativos */
   --color-line-strong: #7d8692; /* Pizarra: borde de inputs (≥ 3:1) */
-  --color-primary: #1f2933; /* Grafito: header y botón principal */
+  --color-band: #1f2933; /* Grafito: banda del header y del login (texto blanco en ambos temas) */
+  --color-primary: #1f2933; /* Grafito: botón principal */
   --color-primary-hover: #323f4f;
+  --color-on-primary: #ffffff; /* Texto sobre el botón principal */
   --color-accent: #b7791f; /* Ámbar: foco, selección, sección actual. Nunca como texto */
   --color-accent-strong: #8f5a0e; /* Ámbar tostado: texto en acento */
   --color-accent-soft: #fbf0da; /* Ámbar claro: fondo de lo activo o seleccionado */
   --color-danger: #a3262d; /* Granate */
+  --color-on-danger: #ffffff; /* Texto sobre el botón de eliminar */
   --color-success: #2d6a4f; /* Alerce */
   --color-warning: #8a4b12; /* Cobre oscuro */
+  --color-scrim: #1f2933; /* Velo detrás del modal (con opacidad) */
+
+  /* Sombras: solo en lo que flota (menú, flash) y en el modal */
+  --shadow-popover: 0 6px 20px rgb(31 41 51 / 0.12);
+  --shadow-dialog: 0 12px 40px rgb(31 41 51 / 0.25);
 
   /* Radios por jerarquía: controles < paneles < modal */
   --radius-control: 6px;
@@ -58,12 +67,42 @@
   }
 }
 
+/* Tema oscuro (G-05): mismos tokens con otros valores. data-theme lo pone en <html> el script de
+   index.html (antes del primer pintado) y src/lib/theme.ts al cambiar la preferencia. */
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark; /* controles nativos: fechas, selects, barras de scroll */
+  --color-canvas: #191d25; /* Noche */
+  --color-surface: #232a35; /* Pizarra */
+  --color-band: #10141a; /* Medianoche */
+  --color-ink: #e5e8ee; /* Niebla */
+  --color-ink-muted: #a0a9b8; /* Ceniza */
+  --color-line: #323a47; /* Grafito */
+  --color-line-strong: #788296; /* Acero (≥ 3:1) */
+  --color-primary: #6c5ce0; /* Violeta */
+  --color-primary-hover: #5b4bcf; /* Violeta hondo: el hover baja, no sube */
+  --color-on-primary: #ffffff;
+  --color-accent: #9f91ff; /* Lavanda: foco, sección actual. Nunca como texto */
+  --color-accent-strong: #bcb2ff; /* Lavanda clara: texto en acento */
+  --color-accent-soft: #2d2852; /* Lavanda noche: fondo de lo activo o seleccionado */
+  --color-danger: #ff8f87; /* Coral */
+  --color-on-danger: #2a0f0e; /* Texto oscuro sobre el coral */
+  --color-success: #6fd6a0; /* Menta */
+  --color-warning: #efbe6a; /* Miel */
+  --color-scrim: #05070a;
+  --shadow-popover: 0 6px 20px rgb(0 0 0 / 0.4);
+  --shadow-dialog: 0 12px 40px rgb(0 0 0 / 0.55);
+}
+
 @layer base {
   body {
     @apply bg-canvas text-ink antialiased;
   }
 
-  /* Foco visible en toda la app: anillo ámbar con separación, se ve sobre papel y sobre grafito */
+  /* Foco visible en toda la app: anillo del acento con separación (ámbar en claro, lavanda en oscuro) */
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;

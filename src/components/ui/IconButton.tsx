@@ -3,19 +3,20 @@ import type { ComponentProps } from 'react'
 import { Link, type LinkProps } from 'react-router'
 import { Spinner } from './Spinner.tsx'
 
-type Tone = 'neutral' | 'danger'
+type Tone = 'neutral' | 'danger' | 'band'
 
 type IconProps = {
   /** Nombre accesible y texto de la ayuda visible ("Editar a Ana Pérez"). Obligatorio: el botón no tiene texto. */
   label: string
   icon: LucideIcon
-  /** "danger" para eliminar (granate). */
+  /** "danger" para eliminar (granate); "band" sobre la banda oscura del header. */
   tone?: Tone
 }
 
 const TONES: Record<Tone, string> = {
   neutral: 'text-ink-muted hover:bg-canvas hover:text-ink',
   danger: 'text-danger hover:bg-danger/10',
+  band: 'text-white/80 hover:bg-white/10 hover:text-white',
 }
 
 const base =

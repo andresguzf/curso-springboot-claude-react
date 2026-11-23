@@ -43,7 +43,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: contrastes de texto ≥ 4,5:1 (≥ 3:1 en texto grande e iconos) calculados para cada combinación; vista previa en un artifact o captura para revisarla
   - Commit: "Define la paleta del tema oscuro"
 
-- [ ] **G-06** Tema oscuro y selector de tema
+- [x] **G-06** Tema oscuro y selector de tema
   - Depende de: G-05
   - Cubre: RF-07-06, RNF-07-02, RNF-07-03
   - Archivos: `src/index.css`, `index.html` (script sin destello), `src/stores/uiStore.ts` (`theme`, `toggleTheme`), `src/lib/theme.ts`, `src/main.tsx`, `src/components/layout/{ThemeToggle,Header,AuthLayout}.tsx`, componentes con colores fijos que haga falta pasar a tokens

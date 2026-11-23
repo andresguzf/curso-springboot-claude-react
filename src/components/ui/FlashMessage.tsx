@@ -48,7 +48,7 @@ export function FlashMessage({ flash, onDismiss }: FlashMessageProps) {
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={handleBlur}
-      className={`pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-panel border bg-surface px-4 py-3 text-[0.9375rem] text-ink shadow-[0_6px_20px_rgb(31_41_51/0.12)] motion-safe:animate-flash-in ${
+      className={`pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-panel border bg-surface px-4 py-3 text-[0.9375rem] text-ink shadow-popover motion-safe:animate-flash-in ${
         flash.type === 'error' ? 'border-danger/40' : 'border-line'
       }`}
     >

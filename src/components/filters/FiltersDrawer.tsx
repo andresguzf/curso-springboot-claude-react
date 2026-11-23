@@ -30,7 +30,7 @@ export function FiltersDrawer({ activeCount = 0, onClear, children }: FiltersPan
         ref={dialogRef}
         aria-labelledby={titleId}
         onCancel={handleCancel}
-        className="m-0 h-dvh max-h-dvh w-[min(20rem,85vw)] max-w-none border-r border-line bg-surface text-ink backdrop:bg-ink/40"
+        className="m-0 h-dvh max-h-dvh w-[min(20rem,85vw)] max-w-none border-r border-line bg-surface text-ink backdrop:bg-scrim/40"
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
