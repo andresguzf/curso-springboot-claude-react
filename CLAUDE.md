@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Frontend React + TypeScript del curso. Es parte de un curso: el código se muestra en pantalla y se publica en GitHub.
 
-Proyecto generado con el script de la skill `react-rules` (Vite + React 19.3.1 + TypeScript 7 + Tailwind 4); no lo vuelvas a ejecutar. `vite.config.ts` reenvía `/api` a `http://localhost:8080`. Las pantallas se construyeron por fases según `specs/` (todas hechas, incluida la 07; ver abajo).
+Proyecto generado con el script de la skill `react-rules` (Vite + React 19.3.1 + TypeScript 7 + Tailwind 4); no lo vuelvas a ejecutar. `vite.config.ts` reenvía `/api` a `http://localhost:8080`. Las pantallas se construyeron por fases según `specs/` (todas hechas, hasta la 08; ver abajo).
 
 ## Recursos: documentación del backend
 
@@ -45,15 +45,16 @@ Puntos que afectan directamente al frontend (detalle en esos archivos):
   - **Tablas**: el contenedor de `DataTable` es `@container`; una columna secundaria declara `minWidth` (`'md'`…`'5xl'`) y se oculta si el contenedor es más angosto, así se adapta al sidebar sin JavaScript. Fechas de tabla con `formatDay` (solo el día); emails con `truncate` + `title`. Al agregar una columna, mide y elige su `minWidth` para que no vuelva el scroll horizontal (medidas en `specs/07-rendimiento-interfaz/plan.md`).
   - **Paginación**: `pageWindow(actual, total, radio)` en `lib/pagination.ts` (pura); radio 3 y 1 en móvil con clases `hidden sm:block`.
   - **Tema**: los tokens se redefinen en `:root[data-theme='dark']` de `index.css`; nunca clases `dark:` por color ni colores fijos (usa `band`, `on-primary`, `on-danger`, `scrim`, `shadow-popover`, `shadow-dialog`). `uiStore.theme` (`'system'` | `'light'` | `'dark'`, persistido); `lib/theme.ts` lo aplica (desde `main.tsx`, sin `useEffect`) y el script de `index.html` evita el destello. Un color nuevo se agrega en los dos temas y con su contraste medido (`design.md` §8).
+- **Fase 08**: «Cerrar sesión» es un `IconButton` (`LogOut`, tono `band`) en `UserMenu`; cada `StatRow` del resumen recibe `icon` (recuadro `bg-accent-soft text-accent-strong`, decorativo); el detalle del cliente exporta su ficha con `useExportCustomerPdf` → `customerService.exportPdf(id)` (`GET /api/customers/{id}?format=pdf`, solo PDF, un `IconButton` sin menú).
 - **Estilos**: solo tokens del `@theme` de `src/index.css` (dirección visual en `specs/02-base-frontend/design.md`, tema oscuro en su §8); el acento (`accent`: ámbar en claro, lavanda en oscuro) nunca como color de texto (usa `accent-strong`). Las piezas nuevas se revisan en las pantallas reales (el catálogo `/dev/ui` se eliminó al cerrar el SDD).
 
 ## Desarrollo guiado por especificaciones (SDD)
 
-El dashboard (frontend) y los cambios que necesitó en el backend se construyeron con SDD, en formato estilo Spec Kit (solo Markdown). Índice y estado de las fases: [`specs/README.md`](specs/README.md). **Las siete fases están hechas**; una funcionalidad nueva se agrega como una fase nueva (`specs/08-…/` con su `spec.md`, `plan.md` y `tasks.md`) respetando la constitución.
+El dashboard (frontend) y los cambios que necesitó en el backend se construyeron con SDD, en formato estilo Spec Kit (solo Markdown). Índice y estado de las fases: [`specs/README.md`](specs/README.md). **Las ocho fases están hechas**; una funcionalidad nueva se agrega como una fase nueva (`specs/09-…/` con su `spec.md`, `plan.md` y `tasks.md`) respetando la constitución.
 
 - `specs/constitution.md` (frontend) y `../3-spring-api/specs/constitution.md` (backend): reglas que no se negocian.
 - Cada fase tiene `spec.md` (qué y por qué: historias, criterios de aceptación, `RF-NN-xx`), `plan.md` (cómo: contrato, decisiones, archivos, trazabilidad) y `tasks.md` (tareas con checkbox, dependencias, verificación y mensaje de commit).
-- Orden: 01 backend (`../3-spring-api/specs/01-paginacion-filtros-admin/`, tareas `A-xx`) → 02 base (`B-xx`) → 03 autenticación (`C-xx`) → 04 clientes (`D-xx`) → 05 usuarios (`E-xx`) → 06 pulido (`F-xx`) → 07 rendimiento e interfaz (`G-xx`). Las fases 02 y 03 no dependen del backend nuevo; la 04 necesita A-06 y la 05 necesita A-09 y A-10.
+- Orden: 01 backend (`../3-spring-api/specs/01-paginacion-filtros-admin/`, tareas `A-xx`) → 02 base (`B-xx`) → 03 autenticación (`C-xx`) → 04 clientes (`D-xx`) → 05 usuarios (`E-xx`) → 06 pulido (`F-xx`) → 07 rendimiento e interfaz (`G-xx`) → 08 iconos y ficha en PDF (`H-xx`). Las fases 02 y 03 no dependen del backend nuevo; la 04 necesita A-06 y la 05 necesita A-09 y A-10.
 - Las tareas se ejecutan **una a una** con la skill `sdd-next-task`: implementar, verificar, marcar `[x]`, commit en el repo de la tarea y pausa para revisión. Sin push ni merge a `main` sin el OK del usuario al cerrar cada fase.
 - Si la implementación se desvía de la spec, se actualiza `spec.md` / `plan.md` en el mismo commit.
 

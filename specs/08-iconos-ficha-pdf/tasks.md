@@ -27,7 +27,7 @@ Se ejecutan **una a una** con la skill `sdd-next-task`. Definición de "hecho" e
   - Verificación: `npm run build && npm run lint`; en el navegador, `GET /api/customers/{id}?format=pdf` → 200 `application/pdf` y nombre de archivo `cliente-{id}.pdf`
   - Commit: "Agrega la exportación de la ficha del cliente a PDF"
 
-- [ ] **H-04** Documentar la fase H
+- [x] **H-04** Documentar la fase H
   - Depende de: H-01, H-02, H-03
   - Cubre: RF-08-04
   - Archivos: `README.md`, `CLAUDE.md`, `specs/08-iconos-ficha-pdf/spec.md` (estado: Hecha), `specs/README.md` (estado)
