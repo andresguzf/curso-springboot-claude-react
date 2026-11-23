@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** terminado. Las siete fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, y la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro). React 19.3.1, Vite 8, Tailwind 4.
+> **Estado:** terminado. Las ocho fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) y la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF). React 19.3.1, Vite 8, Tailwind 4.
 
 ## Stack
 
@@ -19,7 +19,7 @@ Proyecto del curso de Spring Boot con Claude Code.
 | Estado global | Zustand 5 | Estado del cliente compartido (p. ej. usuario en sesión) |
 | Validación | Zod 4 | Esquemas que validan respuestas y formularios y generan los tipos |
 | Formularios | React Hook Form + `@hookform/resolvers` | Formularios validados con los esquemas Zod |
-| Iconos | `lucide-react` | Iconos de trazo fino en las acciones, la paginación, exportar y el selector de tema (solo se empaquetan los que se usan) |
+| Iconos | `lucide-react` | Iconos de trazo fino en las acciones, la paginación, exportar, cerrar sesión, el resumen y el selector de tema (solo se empaquetan los que se usan) |
 | Lint | oxlint | Reglas de hooks (`rules-of-hooks`, `exhaustive-deps`) |
 
 Todas las dependencias se instalan en su última versión publicada al generar el proyecto.
@@ -100,7 +100,7 @@ Endpoints usados (detalle completo, roles y ejemplos en el README del backend):
 | Recurso | Endpoints |
 |---|---|
 | Autenticación | `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`, `GET /api/auth/csrf` |
-| Clientes | `GET /api/customers?search&active&city&birthFrom&birthTo&createdFrom&createdTo&page&size&sort` (JSON paginado: `{content, page}`), el mismo con `&format=csv\|xlsx\|pdf\|xml` para exportar todo el resultado (sin `page` ni `size`), `GET`/`PUT`/`DELETE /api/customers/{id}`, `POST /api/customers` |
+| Clientes | `GET /api/customers?search&active&city&birthFrom&birthTo&createdFrom&createdTo&page&size&sort` (JSON paginado: `{content, page}`), el mismo con `&format=csv\|xlsx\|pdf\|xml` para exportar todo el resultado (sin `page` ni `size`), `GET`/`PUT`/`DELETE /api/customers/{id}`, `GET /api/customers/{id}?format=pdf` (ficha en PDF), `POST /api/customers` |
 | Usuarios (solo `ADMIN`) | `GET /api/users?search&role&enabled&page&size&sort` (paginado; orden por `id`, `email`, `role`, `enabled` o `createdAt`), `GET /api/users/{id}`, `POST /api/users` `{email, password, role, enabled}`, `PUT /api/users/{id}` (completo; sin `password` conserva la actual), `DELETE /api/users/{id}`. Las reglas de administradores responden 409 |
 
 ### Flujo de sesión
@@ -114,7 +114,7 @@ El frontend solo conoce **quién** está en sesión (`authStore`: `user` y `stat
 | Rutas | `RequireAuth` envía al login a quien no tiene sesión, guardando la ruta de origen en `location.state` (no en la URL). `RequireRole role="ADMIN"` envía a `/forbidden` a un `USER`; la navegación oculta lo que su rol no puede usar. |
 | Access token vencido (15 min) | La primera petición recibe 401 y hace **un solo** `POST /api/auth/refresh`; las que lleguen mientras tanto esperan esa misma promesa y todas se reintentan. El refresh trae el usuario: si su rol cambió, la interfaz se actualiza. |
 | Refresh vencido o revocado (7 días, logout en otro equipo, cambio de contraseña) | Se limpia la sesión y la caché, se va al login con el flash «Tu sesión expiró, inicia sesión de nuevo» y, al entrar, se vuelve a la ruta donde estaba. Al abrir la app sin sesión no se muestra ese aviso: nunca hubo sesión. |
-| Cerrar sesión | `POST /api/auth/logout` (el backend revoca el refresh token y borra las cookies); se limpia la sesión aunque la API falle, se va al login con el flash «Sesión cerrada» y el siguiente login empieza en el inicio. |
+| Cerrar sesión (icono de salida en el header) | `POST /api/auth/logout` (el backend revoca el refresh token y borra las cookies); se limpia la sesión aunque la API falle, se va al login con el flash «Sesión cerrada» y el siguiente login empieza en el inicio. |
 
 **Cómo probar la renovación sin esperar 15 minutos**: las cookies son `HttpOnly` (DevTools > Application > Cookies permite borrarlas a mano) o, más fiel, levanta el backend con tokens cortos; el `Max-Age` de las cookies sigue esos tiempos, así que el navegador las borra solo al vencer:
 
@@ -126,7 +126,7 @@ Con la pestaña Network abierta: pasados 20 s, recargar muestra `/me` 401 → un
 
 ## Funcionalidades
 
-- **Resumen** (`/`): total de clientes, activos, dados de alta este mes y, para `ADMIN`, usuarios. Cada cifra abre el listado ya filtrado y sale de una consulta de una sola fila (`size=1` → `totalElements`).
+- **Resumen** (`/`): cada cifra con su icono: total de clientes, activos, dados de alta este mes y, para `ADMIN`, usuarios. Cada cifra abre el listado ya filtrado y sale de una consulta de una sola fila (`size=1` → `totalElements`).
 - **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (ver «Flujo de sesión»).
 - **Clientes**, ver «Pantallas de clientes».
 - **Administración de usuarios** (solo `ADMIN`), ver «Administración de usuarios».
@@ -137,7 +137,7 @@ Con la pestaña Network abierta: pasados 20 s, recargar muestra `/me` 401 → un
 | Ruta | Quién | Qué hace |
 |---|---|---|
 | `/customers` | `USER` y `ADMIN` | Tabla paginada por rango (10 / 25 / 50 por página, «Mostrando a–b de N») con orden por columna, buscador por nombre, apellido, email y ciudad (espera una pausa al escribir) y filtros en el sidebar: estado, ciudad, rango de nacimiento y rango de alta (valida «desde ≤ hasta»). Al paginar, los datos anteriores se ven atenuados hasta que llegan los nuevos. Estados de carga, vacío (limpiar filtros o ir a la primera página) y error con «Reintentar». **Exportar** (icono de descarga con un menú de formatos) a CSV, Excel, PDF o XML descarga todos los clientes que cumplen los filtros y el orden, no solo la página visible. En escritorio la tabla cabe sin scroll horizontal: las columnas secundarias (teléfono, nacimiento, alta) aparecen cuando hay espacio y la columna «Alta» muestra solo el día. |
-| `/customers/:id` | `USER` y `ADMIN` | Ficha con todos los datos, fecha de alta y última modificación («Sin cambios» si nunca se editó). «Volver a clientes» regresa con los mismos filtros. |
+| `/customers/:id` | `USER` y `ADMIN` | Ficha con todos los datos, fecha de alta y última modificación («Sin cambios» si nunca se editó). «Volver a clientes» regresa con los mismos filtros. **Exportar a PDF** (icono) descarga la ficha `cliente-{id}.pdf`. |
 | `/customers/new`, `/customers/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con las mismas validaciones que el backend; los errores del servidor (400 por campo, email duplicado 409) aparecen bajo su campo. Al guardar vuelve al listado con el flash «Cliente «Nombre Apellido» creado / actualizado». |
 | Eliminar (en la tabla) | `ADMIN` | Modal «¿Eliminar a «Nombre Apellido»?»; el error se muestra dentro; si era la última fila de la página, pasa a la anterior; flash «Cliente eliminado». |
 
@@ -184,13 +184,14 @@ src/
 ├── pages/                # una página por ruta (Dashboard, Login, Customers, CustomerDetail / Create / Edit,
 │                         # Users, UserDetail / Create / Edit, Forbidden, NotFound, RouteError)
 ├── hooks/                # useAuth; useUrlFilters (URL ↔ filtros) con useCustomerFilters y useUserFilters;
-│                         # useCustomers y useUsers (consultas y mutaciones), useUserActions, useExportCustomers,
+│                         # useCustomers y useUsers (consultas y mutaciones), useUserActions, useExportCustomers
+│                         # (listado y ficha en PDF),
 │                         # useDashboardStats, useListPath, useDocumentTitle, useDebouncedCallback /
 │                         # useDebouncedText, useMediaQuery, useModalDialog
 ├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar y tema, persistidos)
 ├── schemas/              # Zod: common (página, ProblemDetail, parámetros de listado), auth (login), customer y
 │                         # user (respuesta, filtros de la URL, formularios, ROLE_LABELS)
-├── services/             # authService, customerService (+ exportFile) y userService (page, get, create,
+├── services/             # authService, customerService (+ exportFile y exportPdf) y userService (page, get, create,
 │                         # update, remove)
 └── lib/                  # http.ts (cliente HTTP), session.ts, query.ts (toQuery), queryClient.ts, format.ts
                           # (fechas es-CL), errors.ts, serverErrors.ts (errores por campo), saveFile.ts,

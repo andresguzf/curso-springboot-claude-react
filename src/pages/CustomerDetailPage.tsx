@@ -1,14 +1,17 @@
+import { FileDown } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { buttonClassName } from '../components/ui/buttonStyles.ts'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
+import { IconButton } from '../components/ui/IconButton.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useCustomer } from '../hooks/useCustomers.ts'
 import { useCustomersListPath } from '../hooks/useCustomersListPath.ts'
+import { useExportCustomerPdf } from '../hooks/useExportCustomers.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { formatDate, formatDateTime } from '../lib/format.ts'
 import { HttpError } from '../lib/http.ts'
@@ -29,6 +32,7 @@ export function CustomerDetailPage() {
   const customer = useCustomer(id)
   useDocumentTitle(customer.data ? `${customer.data.name} ${customer.data.lastName}` : 'Cliente')
   const { isAdmin } = useAuth()
+  const exportPdf = useExportCustomerPdf()
   const { listPath, listState } = useCustomersListPath()
   const backLink = (
     <Link to={listPath} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
@@ -81,6 +85,13 @@ export function CustomerDetailPage() {
         actions={
           <>
             {backLink}
+            {/* Exportar la ficha: solo PDF, para todos los roles (como la exportación del listado). */}
+            <IconButton
+              label={exportPdf.isPending ? 'Generando PDF…' : 'Exportar a PDF'}
+              icon={FileDown}
+              isPending={exportPdf.isPending}
+              onClick={() => exportPdf.mutate(data.id)}
+            />
             {isAdmin && (
               // Se reenvía el state: al guardar, la edición vuelve al listado con sus filtros.
               <Link to={`/customers/${data.id}/edit`} state={listState} className={buttonClassName({ variant: 'primary' })}>
