@@ -133,7 +133,7 @@ Por eso [`vercel.json`](vercel.json) hace lo mismo que el proxy de Vite en desar
 ```json
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://cartera-api.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://cartera-api-huv3.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
