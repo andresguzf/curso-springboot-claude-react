@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { todayIsoDate } from '../lib/dates.ts'
 import { pagedSchema, pageParam, sizeParam, sortParam } from './common.ts'
 
 // CustomerDto del backend. birthDate es LocalDate ("1990-05-20"); createdAt / updatedAt son
@@ -53,12 +54,6 @@ export const customerFiltersSchema = z.object({
 })
 
 export type CustomerFilters = z.infer<typeof customerFiltersSchema>
-
-// Fecha de hoy en hora local (yyyy-MM-dd). Se llama al validar, no durante el render.
-function todayIsoDate(): string {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-}
 
 // Formulario de alta y edición. Mismas reglas y mensajes que las validaciones del CustomerDto
 // (obligatorios, máximos, email válido, fecha pasada): el usuario ve el error antes de enviar.

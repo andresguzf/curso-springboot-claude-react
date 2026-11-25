@@ -33,3 +33,23 @@ export function formatDateTime(value: string | null | undefined): string {
   if (!value) return EMPTY
   return dateTimeFormat.format(new Date(value))
 }
+
+// Montos en pesos chilenos: "$ 178.500". Hasta 2 decimales solo si los hay ("$ 33,33"): las columnas
+// admiten decimales aunque el peso no los use.
+const moneyFormat = new Intl.NumberFormat('es-CL', {
+  style: 'currency',
+  currency: 'CLP',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+})
+
+export function formatMoney(value: number): string {
+  return moneyFormat.format(value)
+}
+
+// Cantidades de una línea: "20", "1,5".
+const quantityFormat = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 2 })
+
+export function formatQuantity(value: number): string {
+  return quantityFormat.format(value)
+}

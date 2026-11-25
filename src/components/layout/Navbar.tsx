@@ -12,6 +12,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Resumen' },
   { to: '/customers', label: 'Clientes' },
+  { to: '/invoices', label: 'Facturas' },
   { to: '/users', label: 'Usuarios', roles: ['ADMIN'] },
 ]
 

@@ -51,7 +51,16 @@ const router = createBrowserRouter([
             path: 'customers/:id',
             lazy: () => import('./pages/CustomerDetailPage.tsx').then((m) => ({ Component: m.CustomerDetailPage })),
           },
-          // Solo ADMIN (un USER va a /forbidden): escritura de clientes y toda la sección de usuarios.
+          // Lectura de facturas: USER y ADMIN.
+          {
+            path: 'invoices',
+            lazy: () => import('./pages/InvoicesPage.tsx').then((m) => ({ Component: m.InvoicesPage })),
+          },
+          {
+            path: 'invoices/:id',
+            lazy: () => import('./pages/InvoiceDetailPage.tsx').then((m) => ({ Component: m.InvoiceDetailPage })),
+          },
+          // Solo ADMIN (un USER va a /forbidden): escritura de clientes y facturas, y toda la sección de usuarios.
           // 'customers/new' gana a 'customers/:id' porque React Router prioriza los segmentos fijos.
           {
             element: <RequireRole role="ADMIN" />,
@@ -63,6 +72,15 @@ const router = createBrowserRouter([
               {
                 path: 'customers/:id/edit',
                 lazy: () => import('./pages/CustomerEditPage.tsx').then((m) => ({ Component: m.CustomerEditPage })),
+              },
+              // 'invoices/new' gana a 'invoices/:id' (segmento fijo), igual que en clientes.
+              {
+                path: 'invoices/new',
+                lazy: () => import('./pages/InvoiceCreatePage.tsx').then((m) => ({ Component: m.InvoiceCreatePage })),
+              },
+              {
+                path: 'invoices/:id/edit',
+                lazy: () => import('./pages/InvoiceEditPage.tsx').then((m) => ({ Component: m.InvoiceEditPage })),
               },
               { path: 'users', lazy: () => import('./pages/UsersPage.tsx').then((m) => ({ Component: m.UsersPage })) },
               {

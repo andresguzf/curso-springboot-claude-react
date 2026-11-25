@@ -1,6 +1,7 @@
 import { FileDown } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
+import { CustomerInvoices } from '../components/invoices/CustomerInvoices.tsx'
 import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { buttonClassName } from '../components/ui/buttonStyles.ts'
@@ -102,24 +103,28 @@ export function CustomerDetailPage() {
         }
       />
 
-      <dl className="divide-y divide-line rounded-panel border border-line bg-surface">
-        <Field label="Email">{data.email}</Field>
-        <Field label="Teléfono">
-          <span className="tabular-nums">{data.phone}</span>
-        </Field>
-        <Field label="Dirección">{data.address}</Field>
-        <Field label="Ciudad">{data.city}</Field>
-        <Field label="Fecha de nacimiento">
-          <span className="tabular-nums">{formatDate(data.birthDate)}</span>
-        </Field>
-        <Field label="Estado">{data.active ? <Badge tone="success">Activo</Badge> : <Badge>Inactivo</Badge>}</Field>
-        <Field label="Alta">
-          <span className="tabular-nums">{formatDateTime(data.createdAt)}</span>
-        </Field>
-        <Field label="Última modificación">
-          {data.updatedAt ? <span className="tabular-nums">{formatDateTime(data.updatedAt)}</span> : 'Sin cambios'}
-        </Field>
-      </dl>
+      <div className="space-y-8">
+        <dl className="divide-y divide-line rounded-panel border border-line bg-surface">
+          <Field label="Email">{data.email}</Field>
+          <Field label="Teléfono">
+            <span className="tabular-nums">{data.phone}</span>
+          </Field>
+          <Field label="Dirección">{data.address}</Field>
+          <Field label="Ciudad">{data.city}</Field>
+          <Field label="Fecha de nacimiento">
+            <span className="tabular-nums">{formatDate(data.birthDate)}</span>
+          </Field>
+          <Field label="Estado">{data.active ? <Badge tone="success">Activo</Badge> : <Badge>Inactivo</Badge>}</Field>
+          <Field label="Alta">
+            <span className="tabular-nums">{formatDateTime(data.createdAt)}</span>
+          </Field>
+          <Field label="Última modificación">
+            {data.updatedAt ? <span className="tabular-nums">{formatDateTime(data.updatedAt)}</span> : 'Sin cambios'}
+          </Field>
+        </dl>
+
+        <CustomerInvoices customerId={data.id} canEdit={isAdmin} />
+      </div>
     </>
   )
 }
