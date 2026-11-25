@@ -1,11 +1,14 @@
-import type { ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { Trash2 } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
+import { DeleteInvoiceDialog } from '../components/invoices/DeleteInvoiceDialog.tsx'
 import { InvoiceItemsTable } from '../components/invoices/InvoiceItemsTable.tsx'
 import { InvoiceStatusBadge } from '../components/invoices/InvoiceStatusBadge.tsx'
 import { InvoiceTotals } from '../components/invoices/InvoiceTotals.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { buttonClassName } from '../components/ui/buttonStyles.ts'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
+import { IconButton } from '../components/ui/IconButton.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
@@ -15,6 +18,7 @@ import { useListPath } from '../hooks/useListPath.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { formatDate, formatDateTime } from '../lib/format.ts'
 import { HttpError } from '../lib/http.ts'
+import type { Invoice } from '../schemas/invoice.ts'
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -33,6 +37,8 @@ export function InvoiceDetailPage() {
   useDocumentTitle(invoice.data ? `Factura ${invoice.data.invoiceNumber}` : 'Factura')
   const { listPath, listState } = useListPath('/invoices')
   const { isAdmin } = useAuth()
+  const navigate = useNavigate()
+  const [toDelete, setToDelete] = useState<Invoice | null>(null)
   const backLink = (
     <Link to={listPath} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
       Volver a facturas
@@ -85,6 +91,14 @@ export function InvoiceDetailPage() {
           <>
             {backLink}
             {isAdmin && (
+              <IconButton
+                label={`Eliminar la factura ${data.invoiceNumber}`}
+                icon={Trash2}
+                tone="danger"
+                onClick={() => setToDelete(data)}
+              />
+            )}
+            {isAdmin && (
               // Se reenvía el state: tras editar, "Volver a facturas" sigue llevando al listado con sus filtros.
               <Link to={`/invoices/${data.id}/edit`} state={listState} className={buttonClassName({ variant: 'primary' })}>
                 Editar
@@ -127,6 +141,14 @@ export function InvoiceDetailPage() {
           <InvoiceTotals totals={data} />
         </section>
       </div>
+
+      <DeleteInvoiceDialog
+        key={toDelete?.id}
+        invoice={toDelete}
+        onCancel={() => setToDelete(null)}
+        // La factura ya no existe: se vuelve al listado (con sus filtros, si se llegó desde él).
+        onDeleted={() => navigate(listPath)}
+      />
     </>
   )
 }

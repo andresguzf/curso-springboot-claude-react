@@ -1,11 +1,13 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { useInvoicesPage } from '../../hooks/useInvoices.ts'
 import { errorMessage } from '../../lib/errors.ts'
-import { invoiceFiltersSchema, type InvoiceFilters } from '../../schemas/invoice.ts'
+import { invoiceFiltersSchema, type Invoice, type InvoiceFilters } from '../../schemas/invoice.ts'
 import { Button } from '../ui/Button.tsx'
 import { buttonClassName } from '../ui/buttonStyles.ts'
 import { EmptyState } from '../ui/EmptyState.tsx'
 import { TableSkeleton } from '../ui/TableSkeleton.tsx'
+import { DeleteInvoiceDialog } from './DeleteInvoiceDialog.tsx'
 import { InvoiceTable } from './InvoiceTable.tsx'
 
 // Filtros por defecto del listado (orden por emisión descendente, 10 por página), sin filtros.
@@ -13,19 +15,20 @@ const DEFAULT_FILTERS = invoiceFiltersSchema.parse({})
 
 type CustomerInvoicesProps = {
   customerId: number
-  /** ADMIN: muestra «Nueva factura». */
-  canCreate?: boolean
+  /** ADMIN: muestra «Nueva factura» y las acciones de editar y eliminar. */
+  canEdit?: boolean
 }
 
 // Facturas de un cliente dentro de su ficha (USER y ADMIN): las 10 más recientes. Es el mismo
 // listado de /invoices con customerId, así que comparte cache e invalidaciones; el orden es fijo y
 // "Ver todas" abre el listado completo filtrado por este cliente.
-export function CustomerInvoices({ customerId, canCreate = false }: CustomerInvoicesProps) {
+export function CustomerInvoices({ customerId, canEdit = false }: CustomerInvoicesProps) {
   const filters: InvoiceFilters = { ...DEFAULT_FILTERS, customerId }
   const invoices = useInvoicesPage(filters)
   const data = invoices.data
   const listPath = `/invoices?customerId=${customerId}`
-  const newInvoiceLink = canCreate && (
+  const [toDelete, setToDelete] = useState<Invoice | null>(null)
+  const newInvoiceLink = canEdit && (
     <Link to={`/invoices/new?customerId=${customerId}`} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
       Nueva factura
     </Link>
@@ -62,7 +65,7 @@ export function CustomerInvoices({ customerId, canCreate = false }: CustomerInvo
         </div>
       )}
 
-      {invoices.isPending && <TableSkeleton label="Cargando facturas" columns={5} rows={3} />}
+      {invoices.isPending && <TableSkeleton label="Cargando facturas" columns={canEdit ? 6 : 5} rows={3} />}
 
       {data && (
         <InvoiceTable
@@ -70,14 +73,23 @@ export function CustomerInvoices({ customerId, canCreate = false }: CustomerInvo
           // Orden fijo (las más recientes, sin onSortChange); para ordenar o filtrar está el listado completo.
           sort={filters.sort}
           hideCustomer
+          canEdit={canEdit}
+          onDelete={canEdit ? setToDelete : undefined}
           empty={
             <EmptyState
               title="Este cliente todavía no tiene facturas"
-              description={canCreate ? 'Crea la primera con «Nueva factura».' : undefined}
+              description={canEdit ? 'Crea la primera con «Nueva factura».' : undefined}
             />
           }
         />
       )}
+
+      <DeleteInvoiceDialog
+        key={toDelete?.id}
+        invoice={toDelete}
+        onCancel={() => setToDelete(null)}
+        onDeleted={() => setToDelete(null)}
+      />
     </section>
   )
 }

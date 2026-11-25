@@ -1,8 +1,10 @@
+import { Pencil, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
 import { formatDate, formatMoney } from '../../lib/format.ts'
 import type { Invoice } from '../../schemas/invoice.ts'
 import { DataTable, type DataTableColumn } from '../ui/DataTable.tsx'
+import { IconButton, IconLink } from '../ui/IconButton.tsx'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge.tsx'
 
 type InvoiceTableProps = {
@@ -14,11 +16,24 @@ type InvoiceTableProps = {
   empty?: ReactNode
   /** Oculta la columna del cliente (la sección de facturas dentro de su ficha). */
   hideCustomer?: boolean
+  /** ADMIN: muestra las acciones de escritura por fila. */
+  canEdit?: boolean
+  /** Pide eliminar una factura; el padre abre el modal de confirmación. */
+  onDelete?: (invoice: Invoice) => void
 }
 
 // Tabla de facturas. El número enlaza al detalle con el query string actual en el state, para que
 // "Volver a facturas" regrese con los mismos filtros y en la misma página.
-export function InvoiceTable({ invoices, sort, onSortChange, isDimmed, empty, hideCustomer = false }: InvoiceTableProps) {
+export function InvoiceTable({
+  invoices,
+  sort,
+  onSortChange,
+  isDimmed,
+  empty,
+  hideCustomer = false,
+  canEdit = false,
+  onDelete,
+}: InvoiceTableProps) {
   const location = useLocation()
   const listState = { listSearch: location.search }
 
@@ -83,6 +98,33 @@ export function InvoiceTable({ invoices, sort, onSortChange, isDimmed, empty, hi
       className: 'text-right whitespace-nowrap tabular-nums',
     },
   ]
+
+  // Acciones de escritura: solo ADMIN (un USER ni las ve).
+  if (canEdit) {
+    columns.push({
+      key: 'actions',
+      header: 'Acciones',
+      className: 'text-right',
+      cell: (invoice) => (
+        <div className="flex items-center justify-end gap-1">
+          <IconLink
+            to={`/invoices/${invoice.id}/edit`}
+            state={listState}
+            label={`Editar la factura ${invoice.invoiceNumber}`}
+            icon={Pencil}
+          />
+          {onDelete && (
+            <IconButton
+              label={`Eliminar la factura ${invoice.invoiceNumber}`}
+              icon={Trash2}
+              tone="danger"
+              onClick={() => onDelete(invoice)}
+            />
+          )}
+        </div>
+      ),
+    })
+  }
 
   return (
     <DataTable

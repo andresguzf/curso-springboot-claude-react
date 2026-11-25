@@ -40,7 +40,7 @@ necesita A-09 y A-10.
 | 07 | G · Rendimiento e interfaz: bundle por ruta, iconos, tablas compactas, paginación por rango y tema oscuro | `4-react` | [spec](07-rendimiento-interfaz/spec.md) | G-01 … G-07 | Hecha |
 | 08 | H · Iconos en la sesión y el resumen, y ficha de cliente en PDF | `4-react` | [spec](08-iconos-ficha-pdf/spec.md) | H-01 … H-04 | Hecha |
 | 09 | I · Docker y configuración para la nube (Render + Vercel con rewrite) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/09-docker-despliegue/spec.md) | I-01 … I-06 | Hecha |
-| 10 | J · Facturación de clientes (facturas y líneas sobre las tablas de Supabase) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/10-facturacion/spec.md) | J-01 … J-09 | En curso (7/9) |
+| 10 | J · Facturación de clientes (facturas y líneas sobre las tablas de Supabase) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/10-facturacion/spec.md) | J-01 … J-09 | En curso (8/9) |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 

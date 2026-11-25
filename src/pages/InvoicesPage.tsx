@@ -1,7 +1,9 @@
 import { X } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
 import { SearchField } from '../components/filters/SearchField.tsx'
+import { DeleteInvoiceDialog } from '../components/invoices/DeleteInvoiceDialog.tsx'
 import { InvoiceFilters } from '../components/invoices/InvoiceFilters.tsx'
 import { InvoiceTable } from '../components/invoices/InvoiceTable.tsx'
 import { Button } from '../components/ui/Button.tsx'
@@ -18,6 +20,7 @@ import { useInvoiceFilters } from '../hooks/useInvoiceFilters.ts'
 import { useInvoicesPage } from '../hooks/useInvoices.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { PAGE_SIZES } from '../schemas/common.ts'
+import type { Invoice } from '../schemas/invoice.ts'
 
 // Listado de facturas de todos los clientes (USER y ADMIN): orquesta los filtros (en la URL), la
 // consulta a la API y los componentes. Las facturas se crean desde la ficha de cada cliente.
@@ -29,6 +32,17 @@ export function InvoicesPage() {
   const data = invoices.data
   // Nombre del cliente filtrado (?customerId=), para el chip. Sin filtro, la consulta no corre (id 0).
   const customer = useCustomer(filters.customerId ?? 0)
+
+  // Factura que se está por eliminar (modal abierto) o null. Estado local: solo le importa a esta página.
+  const [toDelete, setToDelete] = useState<Invoice | null>(null)
+
+  function handleDeleted() {
+    // Si era la única fila de una página que no es la primera, esa página quedó vacía: se pasa a la
+    // anterior (en el handler, no en un effect).
+    const leftPageEmpty = data?.content.length === 1 && filters.page > 1
+    setToDelete(null)
+    if (leftPageEmpty) setFilters({ page: filters.page - 1 })
+  }
 
   // Página fuera de rango (?page=99 o tras borrar la última factura de la última página).
   const isPageOutOfRange = data !== undefined && data.content.length === 0 && filters.page > 1
@@ -115,7 +129,7 @@ export function InvoicesPage() {
             </div>
           )}
 
-          {invoices.isPending && <TableSkeleton label="Cargando facturas" columns={6} />}
+          {invoices.isPending && <TableSkeleton label="Cargando facturas" columns={isAdmin ? 7 : 6} />}
 
           {data && (
             <>
@@ -124,6 +138,8 @@ export function InvoicesPage() {
                 sort={filters.sort}
                 onSortChange={(sort) => setFilters({ sort })}
                 isDimmed={invoices.isPlaceholderData}
+                canEdit={isAdmin}
+                onDelete={isAdmin ? setToDelete : undefined}
                 empty={emptyState}
               />
               {!isPageOutOfRange && (
@@ -141,6 +157,13 @@ export function InvoicesPage() {
           )}
         </div>
       </FiltersLayout>
+
+      <DeleteInvoiceDialog
+        key={toDelete?.id}
+        invoice={toDelete}
+        onCancel={() => setToDelete(null)}
+        onDeleted={handleDeleted}
+      />
     </>
   )
 }

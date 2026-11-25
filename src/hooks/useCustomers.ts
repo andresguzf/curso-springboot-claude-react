@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import type { Customer, CustomerFilters, CustomerFormValues } from '../schemas/customer.ts'
 import { customerService } from '../services/customerService.ts'
 import { flash } from '../stores/flashStore.ts'
+import { invoiceKeys } from './useInvoices.ts'
 
 // Claves del cache de clientes, centralizadas: las mutaciones (D-06, D-07) invalidan `all`
 // y así se refrescan juntos el listado y los detalles.
@@ -51,7 +52,11 @@ export function useUpdateCustomer(id: number) {
     mutationFn: (values: CustomerFormValues) => customerService.update(id, values),
     onSuccess: async (customer) => {
       flash.success(`Cliente «${fullName(customer)}» actualizado`)
-      await queryClient.invalidateQueries({ queryKey: customerKeys.all })
+      // Las facturas muestran el nombre del cliente: se refrescan también.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: customerKeys.all }),
+        queryClient.invalidateQueries({ queryKey: invoiceKeys.all }),
+      ])
     },
   })
 }
@@ -66,7 +71,12 @@ export function useDeleteCustomer() {
       flash.success('Cliente eliminado')
       // El detalle ya no existe: se quita del cache en vez de refrescarlo (daría 404).
       queryClient.removeQueries({ queryKey: customerKeys.detail(id) })
-      await queryClient.invalidateQueries({ queryKey: customerKeys.all })
+      // Las facturas guardan el nombre del cliente: se refrescan también (en la práctica un cliente
+      // con facturas no se puede eliminar, pero el listado de facturas no debe quedar desfasado).
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: customerKeys.all }),
+        queryClient.invalidateQueries({ queryKey: invoiceKeys.all }),
+      ])
     },
   })
 }
