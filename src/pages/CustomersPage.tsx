@@ -16,10 +16,19 @@ import { useAuth } from '../hooks/useAuth.ts'
 import { useCustomerFilters } from '../hooks/useCustomerFilters.ts'
 import { useCustomersPage, useDeleteCustomer } from '../hooks/useCustomers.ts'
 import { useExportCustomers } from '../hooks/useExportCustomers.ts'
+import { useInvoiceCount } from '../hooks/useInvoices.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { PAGE_SIZES } from '../schemas/common.ts'
 import type { Customer } from '../schemas/customer.ts'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
+
+// Texto del modal de eliminar: avisa las facturas que se eliminan con el cliente. Mientras se cuentan
+// (undefined) o si no tiene, el texto de siempre.
+function deleteDescription(invoices: number | undefined): string {
+  if (!invoices) return 'Esta acción no se puede deshacer.'
+  const which = invoices === 1 ? 'se eliminará su factura' : `se eliminarán sus ${invoices} facturas`
+  return `También ${which}, con sus líneas. Esta acción no se puede deshacer.`
+}
 
 // Listado de clientes: orquesta los filtros (en la URL), la consulta a la API y los componentes.
 // Sin useEffect: los datos vienen de TanStack Query y cada cambio sale de un handler.
@@ -34,6 +43,8 @@ export function CustomersPage() {
   // Cliente que se está por eliminar (modal abierto) o null. Estado local: solo le importa a esta página.
   const [toDelete, setToDelete] = useState<Customer | null>(null)
   const deleteCustomer = useDeleteCustomer()
+  // Facturas del cliente que se está por eliminar: se eliminan con él (borrado lógico, spec 11).
+  const invoiceCount = useInvoiceCount(toDelete?.id)
   const exportCustomers = useExportCustomers()
 
   function openDelete(customer: Customer) {
@@ -165,7 +176,7 @@ export function CustomersPage() {
       <ConfirmDialog
         open={toDelete !== null}
         title={toDelete ? `¿Eliminar a «${toDelete.name} ${toDelete.lastName}»?` : ''}
-        description="Esta acción no se puede deshacer."
+        description={deleteDescription(invoiceCount.data)}
         confirmLabel="Eliminar"
         tone="danger"
         isPending={deleteCustomer.isPending}

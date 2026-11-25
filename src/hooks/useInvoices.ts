@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { InvoiceFilters, InvoiceFormValues } from '../schemas/invoice.ts'
+import { invoiceFiltersSchema, type InvoiceFilters, type InvoiceFormValues } from '../schemas/invoice.ts'
 import { invoiceService } from '../services/invoiceService.ts'
 import { flash } from '../stores/flashStore.ts'
 
@@ -18,6 +18,18 @@ export function useInvoicesPage(filters: InvoiceFilters) {
     queryKey: invoiceKeys.list(filters),
     queryFn: () => invoiceService.page(filters),
     placeholderData: keepPreviousData,
+  })
+}
+
+// Cuántas facturas tiene un cliente (solo page.totalElements: una página de 1). Sin cliente no consulta.
+// La usa el modal de eliminar cliente para avisar cuántas se eliminarán con él (spec 11).
+export function useInvoiceCount(customerId: number | undefined) {
+  const filters: InvoiceFilters = { ...invoiceFiltersSchema.parse({}), customerId, size: 1 }
+  return useQuery({
+    queryKey: invoiceKeys.list(filters),
+    queryFn: () => invoiceService.page(filters),
+    select: (page) => page.page.totalElements,
+    enabled: customerId !== undefined,
   })
 }
 
