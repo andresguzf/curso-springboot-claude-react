@@ -8,7 +8,8 @@ import { InvoiceStatusBadge } from './InvoiceStatusBadge.tsx'
 type InvoiceTableProps = {
   invoices: Invoice[]
   sort: string
-  onSortChange: (sort: string) => void
+  /** Sin callback, los encabezados no ordenan (la sección de la ficha del cliente tiene orden fijo). */
+  onSortChange?: (sort: string) => void
   isDimmed?: boolean
   empty?: ReactNode
   /** Oculta la columna del cliente (la sección de facturas dentro de su ficha). */
