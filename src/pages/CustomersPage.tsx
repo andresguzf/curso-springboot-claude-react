@@ -133,7 +133,7 @@ export function CustomersPage() {
             </div>
           )}
 
-          {customers.isPending && <TableSkeleton label="Cargando clientes" columns={isAdmin ? 8 : 7} />}
+          {customers.isPending && <TableSkeleton label="Cargando clientes" columns={8} />}
 
           {data && (
             <>

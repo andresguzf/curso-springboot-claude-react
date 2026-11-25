@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, ReceiptText, Trash2 } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import { formatDate, formatDay } from '../../lib/format.ts'
 import type { Customer } from '../../schemas/customer.ts'
@@ -13,7 +13,7 @@ type CustomerTableProps = {
   onSortChange: (sort: string) => void
   isDimmed?: boolean
   empty?: ReactNode
-  /** ADMIN: muestra las acciones de escritura por fila. */
+  /** ADMIN: además de «Ver facturas», muestra las acciones de escritura por fila. */
   canEdit?: boolean
   /** Pide eliminar un cliente; el padre abre el modal de confirmación. */
   onDelete?: (customer: Customer) => void
@@ -85,32 +85,38 @@ export function CustomerTable({ customers, sort, onSortChange, isDimmed, empty, 
     },
   ]
 
-  // Acciones de escritura: solo ADMIN (un USER ni las ve).
-  if (canEdit) {
-    columns.push({
-      key: 'actions',
-      header: 'Acciones',
-      className: 'text-right',
-      cell: (customer) => (
-        <div className="flex items-center justify-end gap-1">
+  // Acciones por fila. «Ver facturas» para todos (USER y ADMIN leen facturas, spec 11): abre el
+  // listado de facturas filtrado por el cliente. Editar y eliminar, solo ADMIN (un USER ni los ve).
+  columns.push({
+    key: 'actions',
+    header: 'Acciones',
+    className: 'text-right',
+    cell: (customer) => (
+      <div className="flex items-center justify-end gap-1">
+        <IconLink
+          to={`/invoices?customerId=${customer.id}`}
+          label={`Ver facturas de ${customer.name} ${customer.lastName}`}
+          icon={ReceiptText}
+        />
+        {canEdit && (
           <IconLink
             to={`/customers/${customer.id}/edit`}
             state={listState}
             label={`Editar a ${customer.name} ${customer.lastName}`}
             icon={Pencil}
           />
-          {onDelete && (
-            <IconButton
-              label={`Eliminar a ${customer.name} ${customer.lastName}`}
-              icon={Trash2}
-              tone="danger"
-              onClick={() => onDelete(customer)}
-            />
-          )}
-        </div>
-      ),
-    })
-  }
+        )}
+        {canEdit && onDelete && (
+          <IconButton
+            label={`Eliminar a ${customer.name} ${customer.lastName}`}
+            icon={Trash2}
+            tone="danger"
+            onClick={() => onDelete(customer)}
+          />
+        )}
+      </div>
+    ),
+  })
 
   return (
     <DataTable
