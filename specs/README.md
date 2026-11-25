@@ -25,7 +25,7 @@ hace merge a `main` y push.
 
 ## Fases
 
-Orden recomendado: 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09. La fase 02 y la 03 no dependen del
+Orden recomendado: 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10. La fase 02 y la 03 no dependen del
 backend nuevo y pueden avanzar antes de terminar la 01; la 04 necesita A-06 y la 05
 necesita A-09 y A-10.
 
@@ -40,6 +40,7 @@ necesita A-09 y A-10.
 | 07 | G · Rendimiento e interfaz: bundle por ruta, iconos, tablas compactas, paginación por rango y tema oscuro | `4-react` | [spec](07-rendimiento-interfaz/spec.md) | G-01 … G-07 | Hecha |
 | 08 | H · Iconos en la sesión y el resumen, y ficha de cliente en PDF | `4-react` | [spec](08-iconos-ficha-pdf/spec.md) | H-01 … H-04 | Hecha |
 | 09 | I · Docker y configuración para la nube (Render + Vercel con rewrite) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/09-docker-despliegue/spec.md) | I-01 … I-06 | Hecha |
+| 10 | J · Facturación de clientes (facturas y líneas sobre las tablas de Supabase) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/10-facturacion/spec.md) | J-01 … J-09 | Pendiente |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 
@@ -62,4 +63,5 @@ Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 | Filtros por fecha y otros | Spec 01 (backend) · specs 04 y 05 |
 | Sidebar izquierdo colapsable para filtros | Spec 02 (componente) · specs 04 y 05 (contenido) |
 | UI/UX moderna con Tailwind | Spec 02 (dirección visual) · spec 06 (pulido) |
+| Facturas por cliente: USER consulta, ADMIN administra | Spec 10 (backend y frontend) |
 | Crear roles nuevos | Fuera de alcance por decisión del usuario: se mantiene el enum USER / ADMIN |
