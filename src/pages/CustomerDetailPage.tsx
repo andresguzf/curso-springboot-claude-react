@@ -123,7 +123,7 @@ export function CustomerDetailPage() {
           </Field>
         </dl>
 
-        <CustomerInvoices customerId={data.id} />
+        <CustomerInvoices customerId={data.id} canCreate={isAdmin} />
       </div>
     </>
   )

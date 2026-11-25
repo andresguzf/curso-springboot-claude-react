@@ -3,6 +3,7 @@ import { useInvoicesPage } from '../../hooks/useInvoices.ts'
 import { errorMessage } from '../../lib/errors.ts'
 import { invoiceFiltersSchema, type InvoiceFilters } from '../../schemas/invoice.ts'
 import { Button } from '../ui/Button.tsx'
+import { buttonClassName } from '../ui/buttonStyles.ts'
 import { EmptyState } from '../ui/EmptyState.tsx'
 import { TableSkeleton } from '../ui/TableSkeleton.tsx'
 import { InvoiceTable } from './InvoiceTable.tsx'
@@ -12,16 +13,23 @@ const DEFAULT_FILTERS = invoiceFiltersSchema.parse({})
 
 type CustomerInvoicesProps = {
   customerId: number
+  /** ADMIN: muestra «Nueva factura». */
+  canCreate?: boolean
 }
 
 // Facturas de un cliente dentro de su ficha (USER y ADMIN): las 10 más recientes. Es el mismo
 // listado de /invoices con customerId, así que comparte cache e invalidaciones; el orden es fijo y
 // "Ver todas" abre el listado completo filtrado por este cliente.
-export function CustomerInvoices({ customerId }: CustomerInvoicesProps) {
+export function CustomerInvoices({ customerId, canCreate = false }: CustomerInvoicesProps) {
   const filters: InvoiceFilters = { ...DEFAULT_FILTERS, customerId }
   const invoices = useInvoicesPage(filters)
   const data = invoices.data
   const listPath = `/invoices?customerId=${customerId}`
+  const newInvoiceLink = canCreate && (
+    <Link to={`/invoices/new?customerId=${customerId}`} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
+      Nueva factura
+    </Link>
+  )
 
   return (
     <section aria-labelledby="customer-invoices" className="space-y-3">
@@ -32,11 +40,14 @@ export function CustomerInvoices({ customerId }: CustomerInvoicesProps) {
             <span className="ml-2 text-sm font-normal text-ink-muted tabular-nums">({data.page.totalElements})</span>
           )}
         </h2>
-        {data && data.page.totalElements > 0 && (
-          <Link to={listPath} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
-            {data.page.totalPages > 1 ? 'Ver todas las facturas' : 'Abrir en el listado'}
-          </Link>
-        )}
+        <div className="flex flex-wrap items-center gap-4">
+          {data && data.page.totalElements > 0 && (
+            <Link to={listPath} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
+              {data.page.totalPages > 1 ? 'Ver todas las facturas' : 'Abrir en el listado'}
+            </Link>
+          )}
+          {newInvoiceLink}
+        </div>
       </div>
 
       {invoices.isError && (
@@ -59,7 +70,12 @@ export function CustomerInvoices({ customerId }: CustomerInvoicesProps) {
           // Orden fijo (las más recientes, sin onSortChange); para ordenar o filtrar está el listado completo.
           sort={filters.sort}
           hideCustomer
-          empty={<EmptyState title="Este cliente todavía no tiene facturas" />}
+          empty={
+            <EmptyState
+              title="Este cliente todavía no tiene facturas"
+              description={canCreate ? 'Crea la primera con «Nueva factura».' : undefined}
+            />
+          }
         />
       )}
     </section>

@@ -4,9 +4,11 @@ import { InvoiceItemsTable } from '../components/invoices/InvoiceItemsTable.tsx'
 import { InvoiceStatusBadge } from '../components/invoices/InvoiceStatusBadge.tsx'
 import { InvoiceTotals } from '../components/invoices/InvoiceTotals.tsx'
 import { Button } from '../components/ui/Button.tsx'
+import { buttonClassName } from '../components/ui/buttonStyles.ts'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { Spinner } from '../components/ui/Spinner.tsx'
+import { useAuth } from '../hooks/useAuth.ts'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 import { useInvoice } from '../hooks/useInvoices.ts'
 import { useListPath } from '../hooks/useListPath.ts'
@@ -29,7 +31,8 @@ export function InvoiceDetailPage() {
   const id = Number(params.id)
   const invoice = useInvoice(id)
   useDocumentTitle(invoice.data ? `Factura ${invoice.data.invoiceNumber}` : 'Factura')
-  const { listPath } = useListPath('/invoices')
+  const { listPath, listState } = useListPath('/invoices')
+  const { isAdmin } = useAuth()
   const backLink = (
     <Link to={listPath} className="text-sm font-medium text-accent-strong underline underline-offset-2 hover:text-ink">
       Volver a facturas
@@ -76,7 +79,20 @@ export function InvoiceDetailPage() {
 
   return (
     <>
-      <PageHeader title={`Factura ${data.invoiceNumber}`} actions={backLink} />
+      <PageHeader
+        title={`Factura ${data.invoiceNumber}`}
+        actions={
+          <>
+            {backLink}
+            {isAdmin && (
+              // Se reenvía el state: tras editar, "Volver a facturas" sigue llevando al listado con sus filtros.
+              <Link to={`/invoices/${data.id}/edit`} state={listState} className={buttonClassName({ variant: 'primary' })}>
+                Editar
+              </Link>
+            )}
+          </>
+        }
+      />
 
       <div className="space-y-6">
         <dl className="divide-y divide-line rounded-panel border border-line bg-surface">

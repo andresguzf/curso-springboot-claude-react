@@ -30,14 +30,15 @@ export function useInvoice(id: number) {
   })
 }
 
-type CreateInvoiceInput = { customerId: number; values: InvoiceFormValues }
+// El cliente no es parte del formulario: llega fijo desde la ficha (alta) o desde la factura (edición).
+type InvoiceInput = { customerId: number; values: InvoiceFormValues }
 
 // Alta. En onSuccess se publica el flash y se refresca todo lo cacheado de facturas; la navegación
 // la decide la página (callback de mutate).
 export function useCreateInvoice() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ customerId, values }: CreateInvoiceInput) => invoiceService.create(customerId, values),
+    mutationFn: ({ customerId, values }: InvoiceInput) => invoiceService.create(customerId, values),
     onSuccess: async (invoice) => {
       flash.success(`Factura «${invoice.invoiceNumber}» creada`)
       await queryClient.invalidateQueries({ queryKey: invoiceKeys.all })
@@ -45,11 +46,11 @@ export function useCreateInvoice() {
   })
 }
 
-// Edición. El cliente no cambia desde el dashboard: se reenvía el de la factura.
-export function useUpdateInvoice(id: number, customerId: number) {
+// Edición. El cliente no cambia desde el dashboard: la página reenvía el de la factura.
+export function useUpdateInvoice(id: number) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (values: InvoiceFormValues) => invoiceService.update(id, customerId, values),
+    mutationFn: ({ customerId, values }: InvoiceInput) => invoiceService.update(id, customerId, values),
     onSuccess: async (invoice) => {
       flash.success(`Factura «${invoice.invoiceNumber}» actualizada`)
       await queryClient.invalidateQueries({ queryKey: invoiceKeys.all })
