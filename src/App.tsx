@@ -51,6 +51,11 @@ const router = createBrowserRouter([
             path: 'customers/:id',
             lazy: () => import('./pages/CustomerDetailPage.tsx').then((m) => ({ Component: m.CustomerDetailPage })),
           },
+          // Lectura de facturas: USER y ADMIN.
+          {
+            path: 'invoices',
+            lazy: () => import('./pages/InvoicesPage.tsx').then((m) => ({ Component: m.InvoicesPage })),
+          },
           // Solo ADMIN (un USER va a /forbidden): escritura de clientes y toda la sección de usuarios.
           // 'customers/new' gana a 'customers/:id' porque React Router prioriza los segmentos fijos.
           {
