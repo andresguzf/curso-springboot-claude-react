@@ -1,10 +1,10 @@
 # Frontend React de clientes
 
-Aplicación web en **React + TypeScript** que consume la [API REST de clientes con Spring Boot](https://github.com/andresguzf/curso-springboot-claude-api): inicio de sesión con JWT en cookies `HttpOnly`, listado y búsqueda de clientes y administración según el rol del usuario.
+Aplicación web en **React + TypeScript** que consume la [API REST de clientes con Spring Boot](https://github.com/andresguzf/curso-springboot-claude-api): inicio de sesión con JWT en cookies `HttpOnly`, listado y búsqueda de clientes, sus facturas y administración según el rol del usuario.
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** terminado. Las nueve fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF) y la fase 09 (Docker y configuración para publicar en Vercel con rewrite a Render). React 19.3.1, Vite 8, Tailwind 4.
+> **Estado:** terminado. Las diez fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF) la fase 09 (Docker y configuración para publicar en Vercel con rewrite a Render) y la fase 10 (facturas de cada cliente). React 19.3.1, Vite 8, Tailwind 4.
 
 ## Stack
 
@@ -151,6 +151,7 @@ Detalle y decisiones en la [spec 09](https://github.com/andresguzf/curso-springb
 - **Resumen** (`/`): cada cifra con su icono: total de clientes, activos, dados de alta este mes y, para `ADMIN`, usuarios. Cada cifra abre el listado ya filtrado y sale de una consulta de una sola fila (`size=1` → `totalElements`).
 - **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (ver «Flujo de sesión»).
 - **Clientes**, ver «Pantallas de clientes».
+- **Facturas**, ver «Facturas».
 - **Administración de usuarios** (solo `ADMIN`), ver «Administración de usuarios».
 - Páginas «Sin permiso» (`/forbidden`), 404 para rutas inexistentes y «Algo salió mal» para errores inesperados.
 
@@ -159,11 +160,25 @@ Detalle y decisiones en la [spec 09](https://github.com/andresguzf/curso-springb
 | Ruta | Quién | Qué hace |
 |---|---|---|
 | `/customers` | `USER` y `ADMIN` | Tabla paginada por rango (10 / 25 / 50 por página, «Mostrando a–b de N») con orden por columna, buscador por nombre, apellido, email y ciudad (espera una pausa al escribir) y filtros en el sidebar: estado, ciudad, rango de nacimiento y rango de alta (valida «desde ≤ hasta»). Al paginar, los datos anteriores se ven atenuados hasta que llegan los nuevos. Estados de carga, vacío (limpiar filtros o ir a la primera página) y error con «Reintentar». **Exportar** (icono de descarga con un menú de formatos) a CSV, Excel, PDF o XML descarga todos los clientes que cumplen los filtros y el orden, no solo la página visible. En escritorio la tabla cabe sin scroll horizontal: las columnas secundarias (teléfono, nacimiento, alta) aparecen cuando hay espacio y la columna «Alta» muestra solo el día. |
-| `/customers/:id` | `USER` y `ADMIN` | Ficha con todos los datos, fecha de alta y última modificación («Sin cambios» si nunca se editó). «Volver a clientes» regresa con los mismos filtros. **Exportar a PDF** (icono) descarga la ficha `cliente-{id}.pdf`. |
+| `/customers/:id` | `USER` y `ADMIN` | Ficha con todos los datos, fecha de alta y última modificación («Sin cambios» si nunca se editó). «Volver a clientes» regresa con los mismos filtros. **Exportar a PDF** (icono) descarga la ficha `cliente-{id}.pdf`. Debajo, la sección **Facturas** (ver «Facturas»). |
 | `/customers/new`, `/customers/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con las mismas validaciones que el backend; los errores del servidor (400 por campo, email duplicado 409) aparecen bajo su campo. Al guardar vuelve al listado con el flash «Cliente «Nombre Apellido» creado / actualizado». |
-| Eliminar (en la tabla) | `ADMIN` | Modal «¿Eliminar a «Nombre Apellido»?»; el error se muestra dentro; si era la última fila de la página, pasa a la anterior; flash «Cliente eliminado». |
+| Eliminar (en la tabla) | `ADMIN` | Modal «¿Eliminar a «Nombre Apellido»?»; el error se muestra dentro (un cliente con facturas no se puede eliminar: «No se puede eliminar el cliente: tiene N factura(s)»); si era la última fila de la página, pasa a la anterior; flash «Cliente eliminado». |
 
 **La URL es el estado del listado**: filtros, orden, tamaño y página viven en el query string (`/customers?search=perez&active=true&page=2&sort=lastName,desc`), así un enlace copiado reproduce el resultado y el botón atrás restaura el anterior. La página empieza en 1 en la URL y en 0 en la API; los valores por defecto (página 1, 10 por página, orden `id,asc`) no se escriben y un parámetro inválido se ignora.
+
+### Facturas
+
+Cada cliente puede tener facturas con líneas de detalle. `USER` las consulta; solo `ADMIN` las crea, edita y elimina. El backend calcula los importes (IVA del 19 %) y asigna el número (`FAC-2026-0001`).
+
+| Ruta | Quién | Qué hace |
+|---|---|---|
+| `/invoices` | `USER` y `ADMIN` | «Facturas» en el menú. Tabla paginada y ordenable (número, cliente, emisión, vencimiento, estado y total), buscador por número o cliente y filtros de estado y rango de emisión en el sidebar; la URL guarda todo, como en clientes (orden por defecto: emisión descendente). `?customerId=` filtra por un cliente y se muestra como un chip «Cliente: …» que se quita con su ×. `ADMIN`: editar y eliminar por fila. |
+| Ficha del cliente | `USER` y `ADMIN` | Sección «Facturas (N)» con las 10 más recientes y un enlace al listado filtrado por ese cliente. `ADMIN`: «Nueva factura», editar y eliminar. |
+| `/invoices/:id` | `USER` y `ADMIN` | Cliente (enlace a su ficha), estado, emisión, vencimiento, notas, alta y última modificación; tabla de líneas y resumen subtotal / IVA (19 %) / total. `ADMIN`: «Editar» y eliminar (vuelve al listado). |
+| `/invoices/new?customerId=`, `/invoices/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con el cliente fijo, emisión (hoy por defecto), vencimiento opcional, estado y notas, y líneas que se agregan y quitan (al menos una). El total de cada línea y el subtotal, el IVA y el total se recalculan mientras se escribe (vista previa con la misma fórmula que el backend). Validación equivalente al backend, también por línea. Al guardar va al detalle con el flash «Factura «FAC-…» creada / actualizada». |
+| Eliminar | `ADMIN` | Modal «¿Eliminar la factura «FAC-…»?» (se eliminan también sus líneas); flash «Factura eliminada». |
+
+Los montos se muestran en pesos chilenos (`$178.500`; decimales solo si los hay, `$33,33`).
 
 ### Administración de usuarios
 
@@ -202,21 +217,24 @@ src/
 │   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil), DateRangeField
 │   │                     # y SearchField (buscador con debounce)
 │   ├── customers/        # CustomerTable, CustomerSearch, CustomerFilters, CustomerForm, ExportMenu
+│   ├── invoices/         # InvoiceTable, InvoiceFilters, InvoiceStatusBadge, InvoiceForm (líneas dinámicas),
+│   │                     # InvoiceItemsTable, InvoiceTotals, CustomerInvoices, DeleteInvoiceDialog
 │   └── users/            # UserTable, UserFilters, UserForm, UserActions, RoleBadge
 ├── pages/                # una página por ruta (Dashboard, Login, Customers, CustomerDetail / Create / Edit,
-│                         # Users, UserDetail / Create / Edit, Forbidden, NotFound, RouteError)
-├── hooks/                # useAuth; useUrlFilters (URL ↔ filtros) con useCustomerFilters y useUserFilters;
-│                         # useCustomers y useUsers (consultas y mutaciones), useUserActions, useExportCustomers
+│                         # Invoices, InvoiceDetail / Create / Edit, Users, UserDetail / Create / Edit,
+│                         # Forbidden, NotFound, RouteError)
+├── hooks/                # useAuth; useUrlFilters (URL ↔ filtros) con useCustomerFilters, useInvoiceFilters y useUserFilters;
+│                         # useCustomers, useInvoices y useUsers (consultas y mutaciones), useUserActions, useExportCustomers
 │                         # (listado y ficha en PDF),
 │                         # useDashboardStats, useListPath, useDocumentTitle, useDebouncedCallback /
 │                         # useDebouncedText, useMediaQuery, useModalDialog
 ├── stores/               # authStore (sesión, sin tokens), flashStore (mensajes) y uiStore (sidebar y tema, persistidos)
-├── schemas/              # Zod: common (página, ProblemDetail, parámetros de listado), auth (login), customer y
-│                         # user (respuesta, filtros de la URL, formularios, ROLE_LABELS)
-├── services/             # authService, customerService (+ exportFile y exportPdf) y userService (page, get, create,
+├── schemas/              # Zod: common (página, ProblemDetail, parámetros de listado), auth (login), customer,
+│                         # invoice (más importes: invoiceTotals) y user (respuesta, filtros de la URL, formularios)
+├── services/             # authService, customerService (+ exportFile y exportPdf), invoiceService y userService (page, get, create,
 │                         # update, remove)
 └── lib/                  # http.ts (cliente HTTP), session.ts, query.ts (toQuery), queryClient.ts, format.ts
-                          # (fechas es-CL), errors.ts, serverErrors.ts (errores por campo), saveFile.ts,
+                          # (fechas y montos es-CL), dates.ts (todayIsoDate), errors.ts, serverErrors.ts (errores por campo), saveFile.ts,
                           # userRules.ts (reglas de administradores), pagination.ts (pageWindow), theme.ts (tema)
 ```
 
