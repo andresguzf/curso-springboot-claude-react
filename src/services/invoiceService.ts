@@ -1,0 +1,29 @@
+import { http } from '../lib/http.ts'
+import { toQuery } from '../lib/query.ts'
+import { invoicePageSchema, invoiceSchema, type InvoiceFilters, type InvoiceFormValues } from '../schemas/invoice.ts'
+
+// Cuerpo del POST / PUT: el formulario más el cliente. Vencimiento vacío → null. El número, los
+// totales de cada línea y los importes no se envían: los calcula el backend.
+function toBody(customerId: number, values: InvoiceFormValues) {
+  return { ...values, customerId, dueDate: values.dueDate === '' ? null : values.dueDate }
+}
+
+// Endpoints de /api/invoices.
+export const invoiceService = {
+  // Listado paginado. La URL del frontend cuenta las páginas desde 1 y la API desde 0:
+  // la conversión vive solo aquí. toQuery omite los filtros vacíos.
+  page: ({ page, ...filters }: InvoiceFilters) =>
+    http.get(`/api/invoices${toQuery({ ...filters, page: page - 1 })}`, invoicePageSchema),
+
+  get: (id: number) => http.get(`/api/invoices/${id}`, invoiceSchema),
+
+  // Escritura (solo ADMIN). El backend responde la factura con su número, líneas e importes.
+  create: (customerId: number, values: InvoiceFormValues) =>
+    http.post('/api/invoices', toBody(customerId, values), invoiceSchema),
+
+  update: (id: number, customerId: number, values: InvoiceFormValues) =>
+    http.put(`/api/invoices/${id}`, toBody(customerId, values), invoiceSchema),
+
+  // 204 sin cuerpo; también borra sus líneas.
+  remove: (id: number) => http.delete(`/api/invoices/${id}`),
+}

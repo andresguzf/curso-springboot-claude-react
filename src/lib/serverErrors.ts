@@ -12,7 +12,8 @@ type ServerErrorOptions<T extends FieldValues> = {
 }
 
 // Lleva los errores del backend a los campos del formulario (React Hook Form):
-// - 400 con `errors` (campo → mensaje): cada mensaje bajo su campo;
+// - 400 con `errors` (campo → mensaje): cada mensaje bajo su campo (también los de una lista,
+//   "items[0].quantity" → items.0.quantity);
 // - 409 (p. ej. email ya registrado): bajo el campo indicado en `conflict`.
 // Devuelve false si no pudo asignar nada: el llamador decide (normalmente, un flash de error).
 export function applyServerErrors<T extends FieldValues>(
@@ -23,10 +24,15 @@ export function applyServerErrors<T extends FieldValues>(
   if (!(error instanceof HttpError)) return false
 
   if (error.status === 400 && error.fieldErrors) {
-    const known = fields.filter((field) => error.fieldErrors?.[field] !== undefined)
-    known.forEach((field, index) => {
+    // Bean Validation nombra los campos de una lista como "items[0].quantity"; React Hook Form,
+    // como "items.0.quantity". Un error se asigna si su campo es uno de `fields` o está dentro de
+    // uno (con 'items' en `fields`, llega a cada línea).
+    const known = Object.entries(error.fieldErrors)
+      .map(([field, message]) => [field.replace(/\[(\d+)\]/g, '.$1'), message] as const)
+      .filter(([field]) => fields.some((allowed) => field === allowed || field.startsWith(`${allowed}.`)))
+    known.forEach(([field, message], index) => {
       // El foco va al primer campo con error, como en la validación del cliente.
-      setError(field, { type: 'server', message: error.fieldErrors?.[field] }, { shouldFocus: index === 0 })
+      setError(field as Path<T>, { type: 'server', message }, { shouldFocus: index === 0 })
     })
     return known.length > 0
   }
