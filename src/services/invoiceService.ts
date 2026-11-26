@@ -1,11 +1,17 @@
 import { http } from '../lib/http.ts'
 import { toQuery } from '../lib/query.ts'
-import { invoicePageSchema, invoiceSchema, type InvoiceFilters, type InvoiceFormValues } from '../schemas/invoice.ts'
+import {
+  invoicePageSchema,
+  invoiceSchema,
+  invoiceStatsSchema,
+  type InvoiceFilters,
+  type InvoiceFormValues,
+} from '../schemas/invoice.ts'
 
-// Cuerpo del POST / PUT: el formulario más el cliente. Vencimiento vacío → null. El número, los
-// totales de cada línea y los importes no se envían: los calcula el backend.
-function toBody(customerId: number, values: InvoiceFormValues) {
-  return { ...values, customerId, dueDate: values.dueDate === '' ? null : values.dueDate }
+// Cuerpo del POST / PUT: los valores del formulario (con el cliente). Vencimiento vacío → null. El
+// número, los totales de cada línea y los importes no se envían: los calcula el backend.
+function toBody(values: InvoiceFormValues) {
+  return { ...values, dueDate: values.dueDate === '' ? null : values.dueDate }
 }
 
 // Endpoints de /api/invoices.
@@ -17,12 +23,13 @@ export const invoiceService = {
 
   get: (id: number) => http.get(`/api/invoices/${id}`, invoiceSchema),
 
-  // Escritura (solo ADMIN). El backend responde la factura con su número, líneas e importes.
-  create: (customerId: number, values: InvoiceFormValues) =>
-    http.post('/api/invoices', toBody(customerId, values), invoiceSchema),
+  // Estadísticas del resumen: totales, por estado, 12 meses y los 5 clientes con más facturado.
+  stats: () => http.get('/api/invoices/stats', invoiceStatsSchema),
 
-  update: (id: number, customerId: number, values: InvoiceFormValues) =>
-    http.put(`/api/invoices/${id}`, toBody(customerId, values), invoiceSchema),
+  // Escritura (solo ADMIN). El backend responde la factura con su número, líneas e importes.
+  create: (values: InvoiceFormValues) => http.post('/api/invoices', toBody(values), invoiceSchema),
+
+  update: (id: number, values: InvoiceFormValues) => http.put(`/api/invoices/${id}`, toBody(values), invoiceSchema),
 
   // 204 sin cuerpo; también borra sus líneas.
   remove: (id: number) => http.delete(`/api/invoices/${id}`),

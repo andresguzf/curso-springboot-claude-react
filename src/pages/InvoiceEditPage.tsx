@@ -84,16 +84,13 @@ export function InvoiceEditPage() {
           isPending={update.isPending}
           cancelTo={detailPath}
           onSubmit={(values, setError) =>
-            update.mutate(
-              { customerId: data.customerId, values },
-              {
-                onSuccess: () => navigate(detailPath, { state: listState }),
-                onError: (error) => {
-                  const shown = applyServerErrors(error, setError, { fields: INVOICE_FORM_FIELDS })
-                  if (!shown) flash.error(errorMessage(error, 'No se pudieron guardar los cambios. Inténtalo de nuevo.'))
-                },
+            update.mutate(values, {
+              onSuccess: () => navigate(detailPath, { state: listState }),
+              onError: (error) => {
+                const shown = applyServerErrors(error, setError, { fields: INVOICE_FORM_FIELDS })
+                if (!shown) flash.error(errorMessage(error, 'No se pudieron guardar los cambios. Inténtalo de nuevo.'))
               },
-            )
+            })
           }
         />
       </div>

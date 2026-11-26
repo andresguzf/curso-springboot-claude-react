@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, Trash2 } from 'lucide-react'
-import { useFieldArray, useForm, useWatch, type Control, type UseFormSetError } from 'react-hook-form'
+import { Controller, useFieldArray, useForm, useWatch, type Control, type UseFormSetError } from 'react-hook-form'
 import { Link } from 'react-router'
 import { formatMoney } from '../../lib/format.ts'
 import {
@@ -18,13 +18,17 @@ import { FormField } from '../ui/FormField.tsx'
 import { IconButton } from '../ui/IconButton.tsx'
 import { Input } from '../ui/Input.tsx'
 import { Select } from '../ui/Select.tsx'
+import { CustomerCombobox } from './CustomerCombobox.tsx'
 import { InvoiceTotals } from './InvoiceTotals.tsx'
 
 const MAX_ITEMS = 100
 
 type InvoiceFormProps = {
-  /** Cliente de la factura: fijo, se muestra pero no se edita. */
-  customerName: string
+  /**
+   * Nombre del cliente cuando viene fijo (alta desde su ficha o edición): se muestra y no se edita.
+   * Sin él, el cliente se elige con el autocompletado (alta desde el listado de facturas, spec 11).
+   */
+  customerName?: string
   defaultValues: InvoiceFormValues
   submitLabel: string
   isPending?: boolean
@@ -73,9 +77,31 @@ export function InvoiceForm({ customerName, defaultValues, submitLabel, isPendin
       className="space-y-6 rounded-panel border border-line bg-surface p-5 sm:p-6"
     >
       <div className="grid gap-5 sm:grid-cols-2">
-        <div className="space-y-1.5 sm:col-span-2">
-          <p className="text-sm font-medium text-ink">Cliente</p>
-          <p className="text-[0.9375rem] text-ink">{customerName}</p>
+        <div className="sm:col-span-2">
+          {customerName ? (
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-ink">Cliente</p>
+              <p className="text-[0.9375rem] text-ink">{customerName}</p>
+            </div>
+          ) : (
+            <FormField label="Cliente" error={errors.customerId?.message}>
+              {(field) => (
+                <Controller
+                  control={control}
+                  name="customerId"
+                  render={({ field: customerField }) => (
+                    <CustomerCombobox
+                      field={field}
+                      // El formulario guarda solo el id; 0 = sin elegir (el esquema pide «Elige un cliente»).
+                      onSelect={(customer) => customerField.onChange(customer?.id ?? 0)}
+                      onBlur={customerField.onBlur}
+                      inputRef={customerField.ref}
+                    />
+                  )}
+                />
+              )}
+            </FormField>
+          )}
         </div>
         <FormField label="Fecha de emisión" error={errors.issueDate?.message}>
           {(field) => <Input {...field} type="date" className="tabular-nums" {...register('issueDate')} />}

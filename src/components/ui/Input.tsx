@@ -1,6 +1,7 @@
-import type { InputHTMLAttributes } from 'react'
+import type { ComponentProps } from 'react'
 
-type InputProps = InputHTMLAttributes<HTMLInputElement>
+// ComponentProps<'input'> incluye `ref` (React 19 lo pasa como prop): el combobox de clientes lo usa.
+type InputProps = ComponentProps<'input'>
 
 // Campo de texto con el estilo de la app. El error se marca con aria-invalid (lo pone FormField),
 // así el estilo y la accesibilidad salen del mismo atributo.

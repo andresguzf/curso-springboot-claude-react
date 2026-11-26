@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { InvoiceFilters, InvoiceFormValues } from '../schemas/invoice.ts'
+import { invoiceFiltersSchema, type InvoiceFilters, type InvoiceFormValues } from '../schemas/invoice.ts'
 import { invoiceService } from '../services/invoiceService.ts'
 import { flash } from '../stores/flashStore.ts'
 
@@ -9,6 +9,8 @@ export const invoiceKeys = {
   all: ['invoices'] as const,
   list: (filters: InvoiceFilters) => [...invoiceKeys.all, 'list', filters] as const,
   detail: (id: number) => [...invoiceKeys.all, 'detail', id] as const,
+  // Bajo `all`: crear, editar o eliminar facturas (y eliminar o editar clientes) refresca el resumen.
+  stats: () => [...invoiceKeys.all, 'stats'] as const,
 }
 
 // Una página del listado (también la sección de facturas de un cliente). Con keepPreviousData,
@@ -21,6 +23,23 @@ export function useInvoicesPage(filters: InvoiceFilters) {
   })
 }
 
+// Cuántas facturas tiene un cliente (solo page.totalElements: una página de 1). Sin cliente no consulta.
+// La usa el modal de eliminar cliente para avisar cuántas se eliminarán con él (spec 11).
+export function useInvoiceCount(customerId: number | undefined) {
+  const filters: InvoiceFilters = { ...invoiceFiltersSchema.parse({}), customerId, size: 1 }
+  return useQuery({
+    queryKey: invoiceKeys.list(filters),
+    queryFn: () => invoiceService.page(filters),
+    select: (page) => page.page.totalElements,
+    enabled: customerId !== undefined,
+  })
+}
+
+// Estadísticas de facturación del resumen.
+export function useInvoiceStats() {
+  return useQuery({ queryKey: invoiceKeys.stats(), queryFn: () => invoiceService.stats() })
+}
+
 export function useInvoice(id: number) {
   return useQuery({
     queryKey: invoiceKeys.detail(id),
@@ -30,15 +49,12 @@ export function useInvoice(id: number) {
   })
 }
 
-// El cliente no es parte del formulario: llega fijo desde la ficha (alta) o desde la factura (edición).
-type InvoiceInput = { customerId: number; values: InvoiceFormValues }
-
 // Alta. En onSuccess se publica el flash y se refresca todo lo cacheado de facturas; la navegación
 // la decide la página (callback de mutate).
 export function useCreateInvoice() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ customerId, values }: InvoiceInput) => invoiceService.create(customerId, values),
+    mutationFn: (values: InvoiceFormValues) => invoiceService.create(values),
     onSuccess: async (invoice) => {
       flash.success(`Factura «${invoice.invoiceNumber}» creada`)
       await queryClient.invalidateQueries({ queryKey: invoiceKeys.all })
@@ -46,11 +62,11 @@ export function useCreateInvoice() {
   })
 }
 
-// Edición. El cliente no cambia desde el dashboard: la página reenvía el de la factura.
+// Edición. El cliente no cambia desde el dashboard: va fijo en los valores del formulario.
 export function useUpdateInvoice(id: number) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ customerId, values }: InvoiceInput) => invoiceService.update(id, customerId, values),
+    mutationFn: (values: InvoiceFormValues) => invoiceService.update(id, values),
     onSuccess: async (invoice) => {
       flash.success(`Factura «${invoice.invoiceNumber}» actualizada`)
       await queryClient.invalidateQueries({ queryKey: invoiceKeys.all })

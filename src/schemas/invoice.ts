@@ -96,10 +96,12 @@ export const invoiceItemFormSchema = z.object({
 
 const isoDate = z.iso.date()
 
-// El cliente no es parte del formulario: llega fijo desde la ficha (alta) o desde la factura (edición).
+// El cliente es parte del formulario (spec 11): se elige con el autocompletado en el alta desde el
+// listado, o llega fijo desde la ficha del cliente (alta) o desde la factura (edición). 0 = sin elegir.
 // El backend valida igual; sus 400 por campo (también items[n].campo) se muestran con applyServerErrors.
 export const invoiceFormSchema = z
   .object({
+    customerId: z.number({ error: 'Elige un cliente' }).int().positive('Elige un cliente'),
     issueDate: z.string().min(1, 'La fecha de emisión es obligatoria').pipe(z.iso.date('Ingresa una fecha válida')),
     // '' = sin vencimiento.
     dueDate: z.union([z.literal(''), z.iso.date('Ingresa una fecha válida')]),
@@ -125,7 +127,7 @@ export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>
 export type InvoiceItemFormValues = z.infer<typeof invoiceItemFormSchema>
 
 // Campos que pueden recibir errores 400 del backend ('items' cubre items.0.description, etc.).
-export const INVOICE_FORM_FIELDS = ['issueDate', 'dueDate', 'status', 'notes', 'items'] as const
+export const INVOICE_FORM_FIELDS = ['customerId', 'issueDate', 'dueDate', 'status', 'notes', 'items'] as const
 
 export const EMPTY_INVOICE_ITEM: InvoiceItemFormValues = { description: '', quantity: 1, unitPrice: 0 }
 
@@ -155,6 +157,7 @@ export function invoiceTotals(items: readonly { quantity: number; unitPrice: num
 /** Valores iniciales del formulario de edición a partir de la factura guardada. */
 export function invoiceToFormValues(invoice: Invoice): InvoiceFormValues {
   return {
+    customerId: invoice.customerId,
     issueDate: invoice.issueDate,
     dueDate: invoice.dueDate ?? '',
     status: invoice.status,
@@ -162,3 +165,29 @@ export function invoiceToFormValues(invoice: Invoice): InvoiceFormValues {
     items: invoice.items.map(({ description, quantity, unitPrice }) => ({ description, quantity, unitPrice })),
   }
 }
+
+// --- Estadísticas del resumen (GET /api/invoices/stats, spec 11) ---
+
+// Importes como números JSON (BigDecimal): 464100.00 → 464100. Las anuladas cuentan en invoiceCount y
+// byStatus, no en los importes; las eliminadas no cuentan.
+export const invoiceStatsSchema = z.object({
+  invoiceCount: z.number().int(),
+  billed: z.number(),
+  paid: z.number(),
+  pending: z.number(),
+  overdue: z.number(),
+  overdueCount: z.number().int(),
+  byStatus: z.array(z.object({ status: invoiceStatusSchema, count: z.number().int(), total: z.number() })),
+  // 12 meses ("2026-11"), del más antiguo al actual.
+  monthly: z.array(z.object({ month: z.string().regex(/^\d{4}-\d{2}$/), paid: z.number(), pending: z.number() })),
+  topCustomers: z.array(
+    z.object({
+      customerId: z.number().int().positive(),
+      customerName: z.string(),
+      invoiceCount: z.number().int(),
+      total: z.number(),
+    }),
+  ),
+})
+
+export type InvoiceStats = z.infer<typeof invoiceStatsSchema>

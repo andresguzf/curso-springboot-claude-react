@@ -1,6 +1,7 @@
 import type { UseQueryResult } from '@tanstack/react-query'
 import { ShieldUser, UserCheck, UserPlus, Users, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router'
+import { BillingSection } from '../components/dashboard/BillingSection.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
@@ -9,46 +10,37 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 
 const numberFormat = new Intl.NumberFormat('es-CL')
 
-type StatRowProps = {
+type StatTileProps = {
   to: string
   label: string
-  detail: string
   /** Icono que identifica la cifra (decorativo: el texto ya la nombra). */
   icon: LucideIcon
   stat: UseQueryResult<number>
 }
 
-// Una fila del fichero: qué se cuenta, el total y un dato de contexto. Toda la fila enlaza al
-// listado con ese filtro aplicado (el mismo resultado que cuenta la cifra).
-function StatRow({ to, label, detail, icon: Icon, stat }: StatRowProps) {
+// Una cifra de la cartera: qué se cuenta y el total. Toda la celda enlaza al listado con ese filtro
+// aplicado (el mismo resultado que cuenta la cifra).
+function StatTile({ to, label, icon: Icon, stat }: StatTileProps) {
   const value = stat.isPending ? '…' : stat.isError ? '—' : numberFormat.format(stat.data)
   return (
     <li>
-      <Link
-        to={to}
-        className="flex items-center justify-between gap-6 px-5 py-4 transition-colors hover:bg-canvas sm:px-6"
-      >
-        <span className="flex min-w-0 items-center gap-4">
-          <span className="grid size-10 shrink-0 place-items-center rounded-control bg-accent-soft text-accent-strong">
-            <Icon aria-hidden="true" size={20} strokeWidth={1.75} />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-[0.9375rem] font-medium text-ink">{label}</span>
-            <span className="block text-sm text-ink-muted">{detail}</span>
-          </span>
+      <Link to={to} className="flex h-full items-center gap-3 px-5 py-4 transition-colors hover:bg-canvas">
+        <span className="grid size-9 shrink-0 place-items-center rounded-control bg-accent-soft text-accent-strong">
+          <Icon aria-hidden="true" size={18} strokeWidth={1.75} />
         </span>
-        <span
-          className="text-[1.75rem] leading-none font-semibold text-ink tabular-nums"
-          aria-busy={stat.isPending || undefined}
-        >
-          {value}
+        <span className="min-w-0">
+          <span className="block text-sm text-ink-muted">{label}</span>
+          <span className="block text-xl leading-tight font-semibold text-ink tabular-nums" aria-busy={stat.isPending || undefined}>
+            {value}
+          </span>
         </span>
       </Link>
     </li>
   )
 }
 
-// Página de inicio: la cartera en cuatro cifras, cada una como puerta al listado filtrado.
+// Página de inicio (spec 11): la facturación (balance, gráficos y ranking) y, debajo, la cartera en
+// cuatro cifras, cada una como puerta al listado filtrado.
 export function DashboardPage() {
   useDocumentTitle('Resumen')
   const { isAdmin } = useAuth()
@@ -56,34 +48,34 @@ export function DashboardPage() {
   const rows = [customers, active, newThisMonth, ...(isAdmin ? [users] : [])]
   const failed = rows.filter((stat) => stat.isError)
 
-  const totalCustomers = customers.data
-  const activeDetail = totalCustomers === undefined ? 'Clientes con estado activo' : `De ${numberFormat.format(totalCustomers)} clientes`
-
   return (
     <>
-      <PageHeader title="Resumen" description="La cartera de clientes al día de hoy. Cada cifra abre el listado correspondiente." />
+      <PageHeader title="Resumen" description="La facturación y la cartera al día de hoy. Cada cifra abre el listado correspondiente." />
 
-      <ul className="max-w-3xl divide-y divide-line rounded-panel border border-line bg-surface">
-        <StatRow to="/customers" label="Clientes en la cartera" detail="Todos los registros" icon={Users} stat={customers} />
-        <StatRow to="/customers?active=true" label="Clientes activos" detail={activeDetail} icon={UserCheck} stat={active} />
-        <StatRow
-          to={`/customers?createdFrom=${month.start}`}
-          label={`Clientes dados de alta en ${month.name}`}
-          detail={`Desde el 1 de ${month.name}`}
-          icon={UserPlus}
-          stat={newThisMonth}
-        />
-        {isAdmin && <StatRow to="/users" label="Usuarios con acceso" detail="Administradores y usuarios" icon={ShieldUser} stat={users} />}
-      </ul>
+      <div className="space-y-6">
+        <BillingSection canCreate={isAdmin} />
 
-      {failed.length > 0 && (
-        <div role="alert" className="mt-4 flex max-w-3xl flex-wrap items-center justify-between gap-3 text-sm text-danger">
-          <p>No se pudieron cargar algunas cifras.</p>
-          <Button size="sm" onClick={() => failed.forEach((stat) => stat.refetch())}>
-            Reintentar
-          </Button>
-        </div>
-      )}
+        <section aria-labelledby="portfolio">
+          <h2 id="portfolio" className="mb-3 text-[1.25rem] font-semibold text-ink">
+            Cartera
+          </h2>
+          <ul className="grid divide-line overflow-hidden rounded-panel border border-line bg-surface max-sm:divide-y sm:grid-cols-2 sm:[&>li:nth-child(odd)]:border-r sm:[&>li:nth-child(odd)]:border-line lg:flex lg:divide-x [&>li]:flex-1">
+            <StatTile to="/customers" label="Clientes" icon={Users} stat={customers} />
+            <StatTile to="/customers?active=true" label="Clientes activos" icon={UserCheck} stat={active} />
+            <StatTile to={`/customers?createdFrom=${month.start}`} label={`Nuevos en ${month.name}`} icon={UserPlus} stat={newThisMonth} />
+            {isAdmin && <StatTile to="/users" label="Usuarios con acceso" icon={ShieldUser} stat={users} />}
+          </ul>
+
+          {failed.length > 0 && (
+            <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-danger">
+              <p>No se pudieron cargar algunas cifras.</p>
+              <Button size="sm" onClick={() => failed.forEach((stat) => stat.refetch())}>
+                Reintentar
+              </Button>
+            </div>
+          )}
+        </section>
+      </div>
     </>
   )
 }

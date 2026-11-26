@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { FiltersLayout } from '../components/filters/FiltersLayout.tsx'
 import { SearchField } from '../components/filters/SearchField.tsx'
 import { DeleteInvoiceDialog } from '../components/invoices/DeleteInvoiceDialog.tsx'
@@ -23,12 +23,13 @@ import { PAGE_SIZES } from '../schemas/common.ts'
 import type { Invoice } from '../schemas/invoice.ts'
 
 // Listado de facturas de todos los clientes (USER y ADMIN): orquesta los filtros (en la URL), la
-// consulta a la API y los componentes. Las facturas se crean desde la ficha de cada cliente.
+// consulta a la API y los componentes. ADMIN crea facturas con «Nueva factura» (o desde la ficha del cliente).
 export function InvoicesPage() {
   useDocumentTitle('Facturas')
   const { filters, setFilters, clearFilters, activeCount, hasFilters, resetKey } = useInvoiceFilters()
   const invoices = useInvoicesPage(filters)
   const { isAdmin } = useAuth()
+  const location = useLocation()
   const data = invoices.data
   // Nombre del cliente filtrado (?customerId=), para el chip. Sin filtro, la consulta no corre (id 0).
   const customer = useCustomer(filters.customerId ?? 0)
@@ -67,12 +68,12 @@ export function InvoicesPage() {
     <EmptyState
       title="Todavía no hay facturas"
       description={
-        isAdmin ? 'Crea la primera desde la ficha de un cliente.' : 'Cuando se emita la primera, aparecerá aquí.'
+        isAdmin ? 'Crea la primera con «Nueva factura».' : 'Cuando se emita la primera, aparecerá aquí.'
       }
       action={
         isAdmin && (
-          <Link to="/customers" className={buttonClassName({ variant: 'primary' })}>
-            Ir a clientes
+          <Link to="/invoices/new" className={buttonClassName({ variant: 'primary' })}>
+            Nueva factura
           </Link>
         )
       }
@@ -83,7 +84,18 @@ export function InvoicesPage() {
 
   return (
     <>
-      <PageHeader title="Facturas" description="Busca, filtra y ordena las facturas de todos los clientes." />
+      <PageHeader
+        title="Facturas"
+        description="Busca, filtra y ordena las facturas de todos los clientes."
+        actions={
+          isAdmin && (
+            // El state lleva los filtros: «Cancelar» del alta vuelve al listado tal como estaba.
+            <Link to="/invoices/new" state={{ listSearch: location.search }} className={buttonClassName({ variant: 'primary' })}>
+              Nueva factura
+            </Link>
+          )
+        }
+      />
 
       <FiltersLayout
         activeCount={activeCount}

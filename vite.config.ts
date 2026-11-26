@@ -17,6 +17,12 @@ export default defineConfig({
             { name: 'query', test: /node_modules[\\/]@tanstack[\\/]/ },
             { name: 'zod', test: /node_modules[\\/]zod[\\/]/ },
             { name: 'forms', test: /node_modules[\\/](react-hook-form|@hookform)[\\/]/ },
+            // Recharts y sus dependencias (spec 11): solo los usa el resumen, así el resto de la app no
+            // los descarga.
+            {
+              name: 'charts',
+              test: /node_modules[\\/](recharts|victory-vendor|d3-[a-z-]+|internmap|@reduxjs|react-redux|redux|redux-thunk|reselect|immer|decimal\.js-light|es-toolkit|eventemitter3|tiny-invariant|use-sync-external-store|clsx)[\\/]/,
+            },
           ],
         },
       },
