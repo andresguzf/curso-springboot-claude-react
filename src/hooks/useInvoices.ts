@@ -1,5 +1,10 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { invoiceFiltersSchema, type InvoiceFilters, type InvoiceFormValues } from '../schemas/invoice.ts'
+import {
+  invoiceFiltersSchema,
+  type InvoiceFilters,
+  type InvoiceFormValues,
+  type StatsFilters,
+} from '../schemas/invoice.ts'
 import { invoiceService } from '../services/invoiceService.ts'
 import { flash } from '../stores/flashStore.ts'
 
@@ -10,7 +15,7 @@ export const invoiceKeys = {
   list: (filters: InvoiceFilters) => [...invoiceKeys.all, 'list', filters] as const,
   detail: (id: number) => [...invoiceKeys.all, 'detail', id] as const,
   // Bajo `all`: crear, editar o eliminar facturas (y eliminar o editar clientes) refresca el resumen.
-  stats: () => [...invoiceKeys.all, 'stats'] as const,
+  stats: (filters: StatsFilters) => [...invoiceKeys.all, 'stats', filters] as const,
 }
 
 // Una página del listado (también la sección de facturas de un cliente). Con keepPreviousData,
@@ -35,9 +40,14 @@ export function useInvoiceCount(customerId: number | undefined) {
   })
 }
 
-// Estadísticas de facturación del resumen.
-export function useInvoiceStats() {
-  return useQuery({ queryKey: invoiceKeys.stats(), queryFn: () => invoiceService.stats() })
+// Estadísticas de facturación del resumen, con los filtros de la URL (spec 12).
+export function useInvoiceStats(filters: StatsFilters) {
+  return useQuery({
+    queryKey: invoiceKeys.stats(filters),
+    queryFn: () => invoiceService.stats(filters),
+    // Al cambiar un filtro se siguen viendo los datos anteriores (atenuados) hasta que llegan los nuevos.
+    placeholderData: keepPreviousData,
+  })
 }
 
 export function useInvoice(id: number) {

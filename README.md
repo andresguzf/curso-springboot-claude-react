@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** terminado. Las once fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF) la fase 09 (Docker y configuración para publicar en Vercel con rewrite a Render) la fase 10 (facturas de cada cliente) y la fase 11 (dashboard de facturación con gráficos, nueva factura con autocompletado y borrado lógico de clientes). React 19.3.1, Vite 8, Tailwind 4.
+> **Estado:** terminado. Las doce fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF) la fase 09 (Docker y configuración para publicar en Vercel con rewrite a Render) la fase 10 (facturas de cada cliente) la fase 11 (dashboard de facturación con gráficos, nueva factura con autocompletado y borrado lógico de clientes) y la fase 12 (filtros de cliente y fechas en el dashboard). React 19.3.1, Vite 8, Tailwind 4.
 
 ## Stack
 
@@ -172,7 +172,7 @@ Detalle y decisiones en la [spec 09](https://github.com/andresguzf/curso-springb
 
 La página de inicio (`/`, `USER` y `ADMIN`) tiene dos secciones:
 
-- **Facturación**: «Facturado» (pagadas + pendientes) y una **barra de balance** que lo reparte entre pagado y pendiente, con lo vencido rayado; debajo, las barras de facturación por mes de los últimos 12 meses (6 en móvil; el mes actual marcado), una dona con las facturas por estado y los 5 clientes con más facturado. Todo enlaza a su listado filtrado (la leyenda «Pendiente», una barra mensual, un estado, un cliente). Los datos salen de `GET /api/invoices/stats` y se actualizan solos al crear, editar o eliminar facturas o clientes. Los gráficos (Recharts) tienen una tabla equivalente para lectores de pantalla y se descargan solo al abrir el resumen.
+- **Facturación**: arriba, una **barra de filtros**: «Cliente» (el mismo autocompletado de la nueva factura; elegido, un chip con × para quitarlo), «Emisión» (desde / hasta) y los atajos «Este mes», «Últimos 3 meses», «Este año» y «Últimos 12 meses» (el de siempre, marcado si no hay rango). Los filtros cambian toda la sección, viven en la URL (`/?customerId=4&issuedFrom=2026-09-01`: recargar o compartir el enlace muestra lo mismo; atrás deshace) y viajan en cada enlace al listado; una frase bajo el título dice qué se ve, al cambiar un filtro los datos anteriores se ven atenuados hasta que llegan los nuevos, con un cliente elegido el ranking se oculta y sin resultados aparece «No hay facturas con estos filtros». Debajo, «Facturado» (pagadas + pendientes) y una **barra de balance** que lo reparte entre pagado y pendiente, con lo vencido rayado; debajo, las barras de facturación por mes de los últimos 12 meses (6 en móvil; el mes actual marcado), una dona con las facturas por estado y los 5 clientes con más facturado. Todo enlaza a su listado filtrado (la leyenda «Pendiente», una barra mensual, un estado, un cliente). Los datos salen de `GET /api/invoices/stats` y se actualizan solos al crear, editar o eliminar facturas o clientes. Los gráficos (Recharts) tienen una tabla equivalente para lectores de pantalla y se descargan solo al abrir el resumen.
 - **Cartera**: clientes, activos, nuevos del mes y, para `ADMIN`, usuarios; cada cifra abre su listado y sale de una consulta de una sola fila (`size=1` → `totalElements`).
 
 ### Facturas
@@ -226,7 +226,8 @@ src/
 │   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil), DateRangeField
 │   │                     # y SearchField (buscador con debounce)
 │   ├── customers/        # CustomerTable, CustomerSearch, CustomerFilters, CustomerForm, ExportMenu
-│   ├── dashboard/        # BillingSection, BalanceBar, MonthlyChart y StatusChart (Recharts), TopCustomers
+│   ├── dashboard/        # BillingSection, StatsFilters (filtros), BalanceBar, MonthlyChart y StatusChart (Recharts),
+│   │                     # TopCustomers
 │   ├── invoices/         # InvoiceTable, InvoiceFilters, InvoiceStatusBadge, InvoiceForm (líneas dinámicas),
 │   │                     # InvoiceItemsTable, InvoiceTotals, CustomerInvoices, DeleteInvoiceDialog,
 │   │                     # CustomerCombobox (autocompletado de clientes)

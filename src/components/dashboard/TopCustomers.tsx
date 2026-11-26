@@ -1,15 +1,18 @@
 import { Link } from 'react-router'
 import { formatMoney } from '../../lib/format.ts'
-import type { InvoiceStats } from '../../schemas/invoice.ts'
+import { invoicesListPath } from '../../lib/statsRanges.ts'
+import type { InvoiceStats, StatsFilters } from '../../schemas/invoice.ts'
 
 type TopCustomersProps = {
   customers: InvoiceStats['topCustomers']
+  /** Filtros del resumen: el rango se mantiene al abrir las facturas de un cliente. */
+  filters: StatsFilters
 }
 
 // Ranking de los clientes con más facturado (sin anuladas). Es un orden real, por eso va numerado
 // (lista ordenada); la barra muestra cada monto en proporción al primero. Cada cliente abre su
 // listado de facturas.
-export function TopCustomers({ customers }: TopCustomersProps) {
+export function TopCustomers({ customers, filters }: TopCustomersProps) {
   const max = customers[0]?.total ?? 0
 
   return (
@@ -21,7 +24,7 @@ export function TopCustomers({ customers }: TopCustomersProps) {
         {customers.map((customer, index) => (
           <li key={customer.customerId}>
             <Link
-              to={`/invoices?customerId=${customer.customerId}`}
+              to={invoicesListPath(filters, { customerId: customer.customerId })}
               className="grid grid-cols-[1.25rem_minmax(0,9rem)_1fr_auto] items-center gap-x-3 rounded-control px-1 py-1.5 text-sm hover:bg-canvas sm:grid-cols-[1.25rem_minmax(0,12rem)_1fr_auto_6rem]"
             >
               <span className="text-ink-muted tabular-nums">{index + 1}</span>
