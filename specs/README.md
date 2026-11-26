@@ -25,7 +25,7 @@ hace merge a `main` y push.
 
 ## Fases
 
-Orden recomendado: 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 11. La fase 02 y la 03 no dependen del
+Orden recomendado: 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 11 → 12. La fase 02 y la 03 no dependen del
 backend nuevo y pueden avanzar antes de terminar la 01; la 04 necesita A-06 y la 05
 necesita A-09 y A-10.
 
@@ -42,6 +42,7 @@ necesita A-09 y A-10.
 | 09 | I · Docker y configuración para la nube (Render + Vercel con rewrite) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/09-docker-despliegue/spec.md) | I-01 … I-06 | Hecha |
 | 10 | J · Facturación de clientes (facturas y líneas sobre las tablas de Supabase) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/10-facturacion/spec.md) | J-01 … J-09 | Hecha |
 | 11 | K · Facturas desde clientes, nueva factura con autocompletado, dashboard de facturación y borrado lógico de clientes | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/11-dashboard-borrado-logico/spec.md) | K-01 … K-09 | Hecha |
+| 12 | L · Filtros del dashboard: cliente (autocompletado) y rango de fechas | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/12-filtros-dashboard/spec.md) | L-01 … L-04 | Pendiente |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 
