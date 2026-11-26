@@ -6,6 +6,7 @@ import {
   invoiceStatsSchema,
   type InvoiceFilters,
   type InvoiceFormValues,
+  type StatsFilters,
 } from '../schemas/invoice.ts'
 
 // Cuerpo del POST / PUT: los valores del formulario (con el cliente). Vencimiento vacío → null. El
@@ -23,8 +24,9 @@ export const invoiceService = {
 
   get: (id: number) => http.get(`/api/invoices/${id}`, invoiceSchema),
 
-  // Estadísticas del resumen: totales, por estado, 12 meses y los 5 clientes con más facturado.
-  stats: () => http.get('/api/invoices/stats', invoiceStatsSchema),
+  // Estadísticas del resumen: totales, por estado, por mes y los 5 clientes con más facturado, con los
+  // filtros opcionales de cliente y rango de emisión (spec 12). toQuery omite los vacíos.
+  stats: (filters: StatsFilters) => http.get(`/api/invoices/stats${toQuery(filters)}`, invoiceStatsSchema),
 
   // Escritura (solo ADMIN). El backend responde la factura con su número, líneas e importes.
   create: (values: InvoiceFormValues) => http.post('/api/invoices', toBody(values), invoiceSchema),

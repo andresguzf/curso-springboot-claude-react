@@ -43,7 +43,8 @@ type BillingSectionProps = {
 // GET /api/invoices/stats (invoiceKeys.stats, bajo invoiceKeys.all: se refresca con cada mutación de
 // facturas o de clientes).
 export function BillingSection({ canCreate }: BillingSectionProps) {
-  const stats = useInvoiceStats()
+  // Los filtros llegan en L-03; por ahora, sin filtros (el resumen de siempre).
+  const stats = useInvoiceStats({})
 
   return (
     <section aria-labelledby="billing" className="rounded-panel border border-line bg-surface p-5 sm:p-6">

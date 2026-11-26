@@ -191,3 +191,20 @@ export const invoiceStatsSchema = z.object({
 })
 
 export type InvoiceStats = z.infer<typeof invoiceStatsSchema>
+
+// Filtros del resumen en la URL (/?customerId=3&issuedFrom=2026-01-01&issuedTo=2026-06-30, spec 12).
+// Cada campo cae a undefined si es inválido; un rango invertido (escrito a mano) se descarta entero
+// en vez de llegar a la API como un 400.
+export const statsFiltersSchema = z
+  .object({
+    customerId: z.coerce.number().int().positive().optional().catch(undefined),
+    issuedFrom: z.iso.date().optional().catch(undefined),
+    issuedTo: z.iso.date().optional().catch(undefined),
+  })
+  .transform((filters) =>
+    filters.issuedFrom && filters.issuedTo && filters.issuedFrom > filters.issuedTo
+      ? { ...filters, issuedFrom: undefined, issuedTo: undefined }
+      : filters,
+  )
+
+export type StatsFilters = z.infer<typeof statsFiltersSchema>
