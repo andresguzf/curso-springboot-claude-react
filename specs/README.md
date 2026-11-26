@@ -41,7 +41,7 @@ necesita A-09 y A-10.
 | 08 | H · Iconos en la sesión y el resumen, y ficha de cliente en PDF | `4-react` | [spec](08-iconos-ficha-pdf/spec.md) | H-01 … H-04 | Hecha |
 | 09 | I · Docker y configuración para la nube (Render + Vercel con rewrite) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/09-docker-despliegue/spec.md) | I-01 … I-06 | Hecha |
 | 10 | J · Facturación de clientes (facturas y líneas sobre las tablas de Supabase) | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/10-facturacion/spec.md) | J-01 … J-09 | Hecha |
-| 11 | K · Facturas desde clientes, nueva factura con autocompletado, dashboard de facturación y borrado lógico de clientes | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/11-dashboard-borrado-logico/spec.md) | K-01 … K-09 | En curso (7/9) |
+| 11 | K · Facturas desde clientes, nueva factura con autocompletado, dashboard de facturación y borrado lógico de clientes | `3-spring-api` y `4-react` | [spec](../../3-spring-api/specs/11-dashboard-borrado-logico/spec.md) | K-01 … K-09 | En curso (8/9) |
 
 Estados posibles: Pendiente, En curso (`X/N` tareas), Hecha.
 

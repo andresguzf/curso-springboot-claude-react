@@ -1,6 +1,12 @@
 import { http } from '../lib/http.ts'
 import { toQuery } from '../lib/query.ts'
-import { invoicePageSchema, invoiceSchema, type InvoiceFilters, type InvoiceFormValues } from '../schemas/invoice.ts'
+import {
+  invoicePageSchema,
+  invoiceSchema,
+  invoiceStatsSchema,
+  type InvoiceFilters,
+  type InvoiceFormValues,
+} from '../schemas/invoice.ts'
 
 // Cuerpo del POST / PUT: los valores del formulario (con el cliente). Vencimiento vacío → null. El
 // número, los totales de cada línea y los importes no se envían: los calcula el backend.
@@ -16,6 +22,9 @@ export const invoiceService = {
     http.get(`/api/invoices${toQuery({ ...filters, page: page - 1 })}`, invoicePageSchema),
 
   get: (id: number) => http.get(`/api/invoices/${id}`, invoiceSchema),
+
+  // Estadísticas del resumen: totales, por estado, 12 meses y los 5 clientes con más facturado.
+  stats: () => http.get('/api/invoices/stats', invoiceStatsSchema),
 
   // Escritura (solo ADMIN). El backend responde la factura con su número, líneas e importes.
   create: (values: InvoiceFormValues) => http.post('/api/invoices', toBody(values), invoiceSchema),

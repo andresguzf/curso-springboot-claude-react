@@ -9,6 +9,8 @@ export const invoiceKeys = {
   all: ['invoices'] as const,
   list: (filters: InvoiceFilters) => [...invoiceKeys.all, 'list', filters] as const,
   detail: (id: number) => [...invoiceKeys.all, 'detail', id] as const,
+  // Bajo `all`: crear, editar o eliminar facturas (y eliminar o editar clientes) refresca el resumen.
+  stats: () => [...invoiceKeys.all, 'stats'] as const,
 }
 
 // Una página del listado (también la sección de facturas de un cliente). Con keepPreviousData,
@@ -31,6 +33,11 @@ export function useInvoiceCount(customerId: number | undefined) {
     select: (page) => page.page.totalElements,
     enabled: customerId !== undefined,
   })
+}
+
+// Estadísticas de facturación del resumen.
+export function useInvoiceStats() {
+  return useQuery({ queryKey: invoiceKeys.stats(), queryFn: () => invoiceService.stats() })
 }
 
 export function useInvoice(id: number) {

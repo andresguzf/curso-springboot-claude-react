@@ -53,3 +53,40 @@ const quantityFormat = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 2
 export function formatQuantity(value: number): string {
   return quantityFormat.format(value)
 }
+
+// Montos abreviados para los ejes de los gráficos: "$950", "$25 mil", "$464 mil", "$1,5 M".
+// (notation: 'compact' en es-CL da "$464,1 k", menos claro.) En tooltips y leyendas, formatMoney.
+const shortNumber = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 })
+
+// Espacio no separable antes de "mil" / "M": Recharts parte las etiquetas del eje en los espacios.
+export function formatCompactMoney(value: number): string {
+  if (Math.abs(value) >= 1_000_000) return `$${shortNumber.format(value / 1_000_000)} M`
+  if (Math.abs(value) >= 1_000) return `$${shortNumber.format(Math.round(value / 1_000))} mil`
+  return `$${shortNumber.format(value)}`
+}
+
+const monthShort = new Intl.DateTimeFormat('es-CL', { month: 'short' })
+const monthLong = new Intl.DateTimeFormat('es-CL', { month: 'long', year: 'numeric' })
+
+// "2026-11" → fecha local del día 1 (sin corrimiento de zona horaria).
+function monthDate(month: string): Date {
+  const [year, monthNumber] = month.split('-').map(Number)
+  return new Date(year, monthNumber - 1, 1)
+}
+
+// "2026-11" → "nov" (ejes de gráficos; es-CL agrega un punto que aquí sobra).
+export function formatMonthShort(month: string): string {
+  return monthShort.format(monthDate(month)).replace('.', '')
+}
+
+// "2026-11" → "noviembre de 2026" (tooltips y tablas).
+export function formatMonthLong(month: string): string {
+  return monthLong.format(monthDate(month))
+}
+
+// "2026-11" → { from: "2026-11-01", to: "2026-11-30" } para filtrar el listado de facturas por mes.
+export function monthRange(month: string): { from: string; to: string } {
+  const [year, monthNumber] = month.split('-').map(Number)
+  const lastDay = new Date(year, monthNumber, 0).getDate()
+  return { from: `${month}-01`, to: `${month}-${String(lastDay).padStart(2, '0')}` }
+}

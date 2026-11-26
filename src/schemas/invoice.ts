@@ -165,3 +165,29 @@ export function invoiceToFormValues(invoice: Invoice): InvoiceFormValues {
     items: invoice.items.map(({ description, quantity, unitPrice }) => ({ description, quantity, unitPrice })),
   }
 }
+
+// --- Estadísticas del resumen (GET /api/invoices/stats, spec 11) ---
+
+// Importes como números JSON (BigDecimal): 464100.00 → 464100. Las anuladas cuentan en invoiceCount y
+// byStatus, no en los importes; las eliminadas no cuentan.
+export const invoiceStatsSchema = z.object({
+  invoiceCount: z.number().int(),
+  billed: z.number(),
+  paid: z.number(),
+  pending: z.number(),
+  overdue: z.number(),
+  overdueCount: z.number().int(),
+  byStatus: z.array(z.object({ status: invoiceStatusSchema, count: z.number().int(), total: z.number() })),
+  // 12 meses ("2026-11"), del más antiguo al actual.
+  monthly: z.array(z.object({ month: z.string().regex(/^\d{4}-\d{2}$/), paid: z.number(), pending: z.number() })),
+  topCustomers: z.array(
+    z.object({
+      customerId: z.number().int().positive(),
+      customerName: z.string(),
+      invoiceCount: z.number().int(),
+      total: z.number(),
+    }),
+  ),
+})
+
+export type InvoiceStats = z.infer<typeof invoiceStatsSchema>
