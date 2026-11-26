@@ -4,7 +4,7 @@ Aplicación web en **React + TypeScript** que consume la [API REST de clientes c
 
 Proyecto del curso de Spring Boot con Claude Code.
 
-> **Estado:** terminado. Las diez fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF) la fase 09 (Docker y configuración para publicar en Vercel con rewrite a Render) y la fase 10 (facturas de cada cliente). React 19.3.1, Vite 8, Tailwind 4.
+> **Estado:** terminado. Las once fases de las [especificaciones](specs/README.md) están hechas: resumen, autenticación, clientes, administración de usuarios, accesibilidad y responsive, la fase 07 (carga por ruta, acciones con iconos, tablas compactas, paginación por rango y tema oscuro) la fase 08 (iconos en cerrar sesión y en el resumen, y ficha de cliente en PDF) la fase 09 (Docker y configuración para publicar en Vercel con rewrite a Render) la fase 10 (facturas de cada cliente) y la fase 11 (dashboard de facturación con gráficos, nueva factura con autocompletado y borrado lógico de clientes). React 19.3.1, Vite 8, Tailwind 4.
 
 ## Stack
 
@@ -18,6 +18,7 @@ Proyecto del curso de Spring Boot con Claude Code.
 | Datos de la API | TanStack Query 5 (+ devtools) | Cache compartido, refetch automático y estados de carga |
 | Estado global | Zustand 5 | Estado del cliente compartido (p. ej. usuario en sesión) |
 | Validación | Zod 4 | Esquemas que validan respuestas y formularios y generan los tipos |
+| Gráficos | Recharts 3 | Gráficos del resumen (barras por mes y dona por estado), en su propio chunk |
 | Formularios | React Hook Form + `@hookform/resolvers` | Formularios validados con los esquemas Zod |
 | Iconos | `lucide-react` | Iconos de trazo fino en las acciones, la paginación, exportar, cerrar sesión, el resumen y el selector de tema (solo se empaquetan los que se usan) |
 | Lint | oxlint | Reglas de hooks (`rules-of-hooks`, `exhaustive-deps`) |
@@ -148,7 +149,7 @@ Detalle y decisiones en la [spec 09](https://github.com/andresguzf/curso-springb
 
 ## Funcionalidades
 
-- **Resumen** (`/`): cada cifra con su icono: total de clientes, activos, dados de alta este mes y, para `ADMIN`, usuarios. Cada cifra abre el listado ya filtrado y sale de una consulta de una sola fila (`size=1` → `totalElements`).
+- **Resumen** (`/`), ver «Resumen».
 - **Login y logout**, con el usuario en sesión y su rol en el header; rutas protegidas por sesión y por rol (ver «Flujo de sesión»).
 - **Clientes**, ver «Pantallas de clientes».
 - **Facturas**, ver «Facturas».
@@ -162,9 +163,17 @@ Detalle y decisiones en la [spec 09](https://github.com/andresguzf/curso-springb
 | `/customers` | `USER` y `ADMIN` | Tabla paginada por rango (10 / 25 / 50 por página, «Mostrando a–b de N») con orden por columna, buscador por nombre, apellido, email y ciudad (espera una pausa al escribir) y filtros en el sidebar: estado, ciudad, rango de nacimiento y rango de alta (valida «desde ≤ hasta»). Al paginar, los datos anteriores se ven atenuados hasta que llegan los nuevos. Estados de carga, vacío (limpiar filtros o ir a la primera página) y error con «Reintentar». **Exportar** (icono de descarga con un menú de formatos) a CSV, Excel, PDF o XML descarga todos los clientes que cumplen los filtros y el orden, no solo la página visible. En escritorio la tabla cabe sin scroll horizontal: las columnas secundarias (teléfono, nacimiento, alta) aparecen cuando hay espacio y la columna «Alta» muestra solo el día. |
 | `/customers/:id` | `USER` y `ADMIN` | Ficha con todos los datos, fecha de alta y última modificación («Sin cambios» si nunca se editó). «Volver a clientes» regresa con los mismos filtros. **Exportar a PDF** (icono) descarga la ficha `cliente-{id}.pdf`. Debajo, la sección **Facturas** (ver «Facturas»). |
 | `/customers/new`, `/customers/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con las mismas validaciones que el backend; los errores del servidor (400 por campo, email duplicado 409) aparecen bajo su campo. Al guardar vuelve al listado con el flash «Cliente «Nombre Apellido» creado / actualizado». |
-| Eliminar (en la tabla) | `ADMIN` | Modal «¿Eliminar a «Nombre Apellido»?»; el error se muestra dentro (un cliente con facturas no se puede eliminar: «No se puede eliminar el cliente: tiene N factura(s)»); si era la última fila de la página, pasa a la anterior; flash «Cliente eliminado». |
+| Ver facturas (en la tabla) | `USER` y `ADMIN` | Icono «Ver facturas de Nombre Apellido» en cada fila: abre `/invoices?customerId=` con el chip del cliente. |
+| Eliminar (en la tabla) | `ADMIN` | Modal «¿Eliminar a «Nombre Apellido»?» que avisa cuántas facturas se eliminan con él («También se eliminarán sus 3 facturas, con sus líneas.»). Es un **borrado lógico**: el cliente y sus facturas desaparecen del dashboard, pero siguen en la base. El error se muestra dentro del modal; si era la última fila de la página, pasa a la anterior; flash «Cliente eliminado». |
 
 **La URL es el estado del listado**: filtros, orden, tamaño y página viven en el query string (`/customers?search=perez&active=true&page=2&sort=lastName,desc`), así un enlace copiado reproduce el resultado y el botón atrás restaura el anterior. La página empieza en 1 en la URL y en 0 en la API; los valores por defecto (página 1, 10 por página, orden `id,asc`) no se escriben y un parámetro inválido se ignora.
+
+### Resumen
+
+La página de inicio (`/`, `USER` y `ADMIN`) tiene dos secciones:
+
+- **Facturación**: «Facturado» (pagadas + pendientes) y una **barra de balance** que lo reparte entre pagado y pendiente, con lo vencido rayado; debajo, las barras de facturación por mes de los últimos 12 meses (6 en móvil; el mes actual marcado), una dona con las facturas por estado y los 5 clientes con más facturado. Todo enlaza a su listado filtrado (la leyenda «Pendiente», una barra mensual, un estado, un cliente). Los datos salen de `GET /api/invoices/stats` y se actualizan solos al crear, editar o eliminar facturas o clientes. Los gráficos (Recharts) tienen una tabla equivalente para lectores de pantalla y se descargan solo al abrir el resumen.
+- **Cartera**: clientes, activos, nuevos del mes y, para `ADMIN`, usuarios; cada cifra abre su listado y sale de una consulta de una sola fila (`size=1` → `totalElements`).
 
 ### Facturas
 
@@ -172,10 +181,10 @@ Cada cliente puede tener facturas con líneas de detalle. `USER` las consulta; s
 
 | Ruta | Quién | Qué hace |
 |---|---|---|
-| `/invoices` | `USER` y `ADMIN` | «Facturas» en el menú. Tabla paginada y ordenable (número, cliente, emisión, vencimiento, estado y total), buscador por número o cliente y filtros de estado y rango de emisión en el sidebar; la URL guarda todo, como en clientes (orden por defecto: emisión descendente). `?customerId=` filtra por un cliente y se muestra como un chip «Cliente: …» que se quita con su ×. `ADMIN`: editar y eliminar por fila. |
+| `/invoices` | `USER` y `ADMIN` | «Facturas» en el menú. Tabla paginada y ordenable (número, cliente, emisión, vencimiento, estado y total), buscador por número o cliente y filtros de estado y rango de emisión en el sidebar; la URL guarda todo, como en clientes (orden por defecto: emisión descendente). `?customerId=` filtra por un cliente y se muestra como un chip «Cliente: …» que se quita con su ×. `ADMIN`: «Nueva factura» y editar y eliminar por fila. |
 | Ficha del cliente | `USER` y `ADMIN` | Sección «Facturas (N)» con las 10 más recientes y un enlace al listado filtrado por ese cliente. `ADMIN`: «Nueva factura», editar y eliminar. |
 | `/invoices/:id` | `USER` y `ADMIN` | Cliente (enlace a su ficha), estado, emisión, vencimiento, notas, alta y última modificación; tabla de líneas y resumen subtotal / IVA (19 %) / total. `ADMIN`: «Editar» y eliminar (vuelve al listado). |
-| `/invoices/new?customerId=`, `/invoices/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con el cliente fijo, emisión (hoy por defecto), vencimiento opcional, estado y notas, y líneas que se agregan y quitan (al menos una). El total de cada línea y el subtotal, el IVA y el total se recalculan mientras se escribe (vista previa con la misma fórmula que el backend). Validación equivalente al backend, también por línea. Al guardar va al detalle con el flash «Factura «FAC-…» creada / actualizada». |
+| `/invoices/new`, `/invoices/new?customerId=`, `/invoices/:id/edit` | `ADMIN` (un `USER` va a «Sin permiso») | Formulario con el cliente: desde «Nueva factura» del listado se **busca con autocompletado** (nombre, apellido o email, con pausa al escribir; ↑ ↓ Enter Esc o clic; «Cambiar» para elegir otro); desde la ficha del cliente o al editar llega fijo. Además, emisión (hoy por defecto), vencimiento opcional, estado y notas, y líneas que se agregan y quitan (al menos una). El total de cada línea y el subtotal, el IVA y el total se recalculan mientras se escribe (vista previa con la misma fórmula que el backend). Validación equivalente al backend, también por línea. Al guardar va al detalle con el flash «Factura «FAC-…» creada / actualizada». |
 | Eliminar | `ADMIN` | Modal «¿Eliminar la factura «FAC-…»?» (se eliminan también sus líneas); flash «Factura eliminada». |
 
 Los montos se muestran en pesos chilenos (`$178.500`; decimales solo si los hay, `$33,33`).
@@ -217,8 +226,10 @@ src/
 │   ├── filters/          # FiltersLayout, FiltersSidebar (escritorio), FiltersDrawer (móvil), DateRangeField
 │   │                     # y SearchField (buscador con debounce)
 │   ├── customers/        # CustomerTable, CustomerSearch, CustomerFilters, CustomerForm, ExportMenu
+│   ├── dashboard/        # BillingSection, BalanceBar, MonthlyChart y StatusChart (Recharts), TopCustomers
 │   ├── invoices/         # InvoiceTable, InvoiceFilters, InvoiceStatusBadge, InvoiceForm (líneas dinámicas),
-│   │                     # InvoiceItemsTable, InvoiceTotals, CustomerInvoices, DeleteInvoiceDialog
+│   │                     # InvoiceItemsTable, InvoiceTotals, CustomerInvoices, DeleteInvoiceDialog,
+│   │                     # CustomerCombobox (autocompletado de clientes)
 │   └── users/            # UserTable, UserFilters, UserForm, UserActions, RoleBadge
 ├── pages/                # una página por ruta (Dashboard, Login, Customers, CustomerDetail / Create / Edit,
 │                         # Invoices, InvoiceDetail / Create / Edit, Users, UserDetail / Create / Edit,

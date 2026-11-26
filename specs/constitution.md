@@ -13,7 +13,7 @@ Fuentes: [`CLAUDE.md`](../CLAUDE.md), skill [`react-rules`](../.claude/skills/re
 ## 1. Stack
 
 - React 19.3.1 o superior, TypeScript (strict), Vite, Tailwind CSS 4, React Router.
-- TanStack Query para datos de la API, Zustand para estado global de cliente, Zod para validar, React Hook Form + `@hookform/resolvers` para formularios, `lucide-react` para iconos (spec 07), oxlint.
+- TanStack Query para datos de la API, Zustand para estado global de cliente, Zod para validar, React Hook Form + `@hookform/resolvers` para formularios, `lucide-react` para iconos (spec 07), Recharts para los gráficos del resumen (spec 11, en su propio chunk), oxlint.
 - Todas las dependencias en su última versión al instalarlas (`paquete@latest`).
 - Node 22.22 o superior (lo pide React Router 8).
 - El proyecto se genera con `bash .claude/skills/react-rules/scripts/create_project.sh .` (nunca un `package.json` a mano).
