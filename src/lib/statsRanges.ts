@@ -1,3 +1,5 @@
+import { toQuery } from './query.ts'
+
 // Atajos de rango del resumen (spec 12). Funciones puras: reciben "hoy" (yyyy-MM-dd) y devuelven el
 // rango de emisión; la página las llama en el handler del clic (no en el render), con todayIsoDate().
 // Todos dejan "hasta" vacío: la API completa la serie hasta el mes actual.
@@ -31,4 +33,14 @@ export function activePreset(range: StatsRange, today: string): StatsPreset['key
     const presetRange = preset.range(today)
     return presetRange.issuedFrom === range.issuedFrom && presetRange.issuedTo === range.issuedTo
   })?.key
+}
+
+// Enlace al listado de facturas con los filtros del resumen (cliente y rango de emisión) más los
+// propios del enlace (estado, orden u otro cliente): "Pendiente" del resumen filtrado abre exactamente
+// esas facturas.
+export function invoicesListPath(
+  filters: StatsRange & { customerId?: number },
+  params: Record<string, string | number | undefined> = {},
+): string {
+  return `/invoices${toQuery({ ...filters, ...params })}`
 }

@@ -1,7 +1,8 @@
 import { Link } from 'react-router'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import { formatMoney } from '../../lib/format.ts'
-import type { InvoiceStats, InvoiceStatus } from '../../schemas/invoice.ts'
+import { invoicesListPath } from '../../lib/statsRanges.ts'
+import type { InvoiceStats, InvoiceStatus, StatsFilters } from '../../schemas/invoice.ts'
 
 // Los colores de estado que ya usan los badges; la anulada en neutro porque no suma a los importes.
 const STATUS_COLORS: Record<InvoiceStatus, string> = {
@@ -20,11 +21,13 @@ const STATUS_NOUNS: Record<InvoiceStatus, [string, string]> = {
 type StatusChartProps = {
   byStatus: InvoiceStats['byStatus']
   invoiceCount: number
+  /** Filtros del resumen: los enlaces los llevan al listado. */
+  filters: StatsFilters
 }
 
 // Cuántas facturas hay en cada estado (K-07): una dona con el total al centro y, al lado, la leyenda
 // con un enlace por estado al listado filtrado. La dona es decorativa: la leyenda lleva los números.
-export function StatusChart({ byStatus, invoiceCount }: StatusChartProps) {
+export function StatusChart({ byStatus, invoiceCount, filters }: StatusChartProps) {
   const slices = byStatus.filter((total) => total.count > 0)
 
   return (
@@ -65,7 +68,7 @@ export function StatusChart({ byStatus, invoiceCount }: StatusChartProps) {
           {byStatus.map((total) => (
             <li key={total.status}>
               <Link
-                to={`/invoices?status=${total.status}`}
+                to={invoicesListPath(filters, { status: total.status })}
                 className="group flex items-center gap-2 rounded-control text-ink"
                 // El nombre accesible empieza con el texto visible ("5 pendientes") y suma el importe.
                 aria-label={`${total.count} ${STATUS_NOUNS[total.status][total.count === 1 ? 0 : 1]}, ${formatMoney(total.total)}`}

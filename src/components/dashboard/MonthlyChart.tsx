@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useMediaQuery } from '../../hooks/useMediaQuery.ts'
 import { formatCompactMoney, formatMoney, formatMonthLong, formatMonthShort, monthRange } from '../../lib/format.ts'
-import type { InvoiceStats } from '../../schemas/invoice.ts'
+import { invoicesListPath } from '../../lib/statsRanges.ts'
+import type { InvoiceStats, StatsFilters } from '../../schemas/invoice.ts'
 
 type Month = InvoiceStats['monthly'][number]
 
@@ -52,29 +53,44 @@ function MonthTooltip({ active, payload }: MonthTooltipProps) {
   )
 }
 
+// Título del gráfico: sin rango, "últimos N meses"; con rango, de qué mes a qué mes.
+function monthCaption(months: InvoiceStats['monthly'], hasRange: boolean): string {
+  if (!hasRange) return `Por mes, últimos ${months.length} meses`
+  const first = months.at(0)?.month
+  const last = months.at(-1)?.month
+  if (!first || !last) return 'Por mes'
+  return first === last ? `Por mes, ${formatMonthLong(first)}` : `Por mes, de ${formatMonthLong(first)} a ${formatMonthLong(last)}`
+}
+
 type MonthlyChartProps = {
   monthly: InvoiceStats['monthly']
+  /** Filtros del resumen: el clic en una barra abre ese mes (acotado al rango) con el mismo cliente. */
+  filters: StatsFilters
 }
 
 // Facturación por mes de emisión (K-07): barras apiladas, pagado abajo y pendiente arriba. En pantallas
 // chicas, los 6 meses más recientes (12 barras quedarían de pocos píxeles). Un clic en una barra abre
 // el listado de facturas de ese mes; la misma información va en una tabla para lectores de pantalla.
-export function MonthlyChart({ monthly }: MonthlyChartProps) {
+export function MonthlyChart({ monthly, filters }: MonthlyChartProps) {
   const navigate = useNavigate()
   const isWide = useMediaQuery('(min-width: 40rem)')
-  const months = isWide ? monthly : monthly.slice(-6)
+  const hasRange = filters.issuedFrom !== undefined || filters.issuedTo !== undefined
+  // En móvil, sin rango, los 6 meses más recientes; con un rango elegido, todos los del rango.
+  const months = isWide || hasRange ? monthly : monthly.slice(-6)
   const current = monthly.at(-1)?.month
+  const caption = monthCaption(months, hasRange)
 
+  // El mes de la barra, acotado al rango del filtro (las fechas yyyy-MM-dd se comparan como texto).
   function openMonth(month: string) {
-    const { from, to } = monthRange(month)
-    navigate(`/invoices?issuedFrom=${from}&issuedTo=${to}`)
+    const range = monthRange(month)
+    const from = filters.issuedFrom && filters.issuedFrom > range.from ? filters.issuedFrom : range.from
+    const to = filters.issuedTo && filters.issuedTo < range.to ? filters.issuedTo : range.to
+    navigate(invoicesListPath(filters, { issuedFrom: from, issuedTo: to }))
   }
 
   return (
     <figure className="min-w-0">
-      <figcaption className="mb-2 text-sm font-semibold text-ink">
-        Por mes, últimos {months.length} meses
-      </figcaption>
+      <figcaption className="mb-2 text-sm font-semibold text-ink">{caption}</figcaption>
       <div aria-hidden="true" className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           {/* accessibilityLayer={false}: sin él Recharts hace enfocable el SVG, que está dentro de un

@@ -7,6 +7,7 @@ import { PageHeader } from '../components/ui/PageHeader.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { useDashboardStats } from '../hooks/useDashboardStats.ts'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
+import { useStatsFilters } from '../hooks/useStatsFilters.ts'
 
 const numberFormat = new Intl.NumberFormat('es-CL')
 
@@ -39,21 +40,30 @@ function StatTile({ to, label, icon: Icon, stat }: StatTileProps) {
   )
 }
 
-// Página de inicio (spec 11): la facturación (balance, gráficos y ranking) y, debajo, la cartera en
-// cuatro cifras, cada una como puerta al listado filtrado.
+// Página de inicio (spec 11): la facturación (balance, gráficos y ranking, con filtros de cliente y
+// fechas en la URL, spec 12) y, debajo, la cartera en cuatro cifras, cada una como puerta al listado filtrado.
 export function DashboardPage() {
   useDocumentTitle('Resumen')
   const { isAdmin } = useAuth()
   const { month, customers, active, newThisMonth, users } = useDashboardStats({ includeUsers: isAdmin })
   const rows = [customers, active, newThisMonth, ...(isAdmin ? [users] : [])]
   const failed = rows.filter((stat) => stat.isError)
+  // Filtros de la sección «Facturación» (cliente y rango de emisión) en la URL; «Cartera» no se filtra.
+  const { filters, setFilters, clearFilters, hasFilters, resetKey } = useStatsFilters()
 
   return (
     <>
       <PageHeader title="Resumen" description="La facturación y la cartera al día de hoy. Cada cifra abre el listado correspondiente." />
 
       <div className="space-y-6">
-        <BillingSection canCreate={isAdmin} />
+        <BillingSection
+          canCreate={isAdmin}
+          filters={filters}
+          onFiltersChange={setFilters}
+          onClearFilters={clearFilters}
+          hasFilters={hasFilters}
+          resetKey={resetKey}
+        />
 
         <section aria-labelledby="portfolio">
           <h2 id="portfolio" className="mb-3 text-[1.25rem] font-semibold text-ink">
